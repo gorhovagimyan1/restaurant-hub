@@ -1,13 +1,53 @@
-# 08 — Task Board
+# Task Board
 
-## Backlog
+## Sprint 1
 
-- [ ] _..._
+* [x] Create repository
+* [x] Create documentation
+* [ ] Install Laravel 12
+* [ ] Install Vue 3
+* [ ] Configure Sanctum
+* [ ] Configure Spatie Permission
+* [ ] Configure Tailwind CSS
+* [ ] Configure PrimeVue
 
-## In Progress
+---
 
-- [ ] _..._
+## Sprint 2
 
-## Done
+* [ ] Authentication
+* [ ] User Roles
+* [ ] Restaurant Module
 
-- [x] _Initialize project structure._
+---
+
+## Sprint 3
+
+* [ ] Restaurant Tables
+* [ ] QR Code Generator
+
+---
+
+## Sprint 4
+
+* [ ] Menus
+* [ ] Categories
+* [ ] Products
+* [ ] Product Images
+
+---
+
+## Sprint 5
+
+* [ ] Cart
+* [ ] Orders
+* [ ] Kitchen Dashboard
+
+---
+
+## Sprint 6
+
+* [ ] Reports
+* [ ] Settings
+* [ ] Testing
+* [ ] Deployment

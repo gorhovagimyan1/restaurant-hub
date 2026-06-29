@@ -1,17 +1,84 @@
-# 06 — API Design
+# API Design
 
-## Conventions
+Version: 1.0
 
-- _Base URL, versioning, auth, error format._
+---
 
-## Endpoints
+# API Overview
 
-### Resource: _Example_
+Restaurant Hub exposes a RESTful API consumed by the Vue frontend.
 
-| Method | Path | Description | Auth |
-| ------ | ---- | ----------- | ---- |
-| GET | `/api/v1/...` | _..._ | _..._ |
+Authentication is handled using Laravel Sanctum.
 
-## Data Formats
+---
 
-- _Request/response schemas._
+# API Modules
+
+## Authentication
+
+* Login
+* Logout
+* Register
+* Forgot Password
+
+---
+
+## Restaurants
+
+* Create Restaurant
+* Update Restaurant
+* View Restaurant
+* Restaurant Settings
+
+---
+
+## Employees
+
+* Employee CRUD
+* Assign Roles
+
+---
+
+## Tables
+
+* Create Table
+* Update Table
+* Delete Table
+* Generate QR Code
+
+---
+
+## Menus
+
+* Menu CRUD
+
+---
+
+## Categories
+
+* Category CRUD
+
+---
+
+## Products
+
+* Product CRUD
+* Product Images
+* Product Modifiers
+
+---
+
+## Orders
+
+* Create Order
+* View Orders
+* Update Order Status
+* Cancel Order
+
+---
+
+## Reports
+
+* Daily Reports
+* Weekly Reports
+* Monthly Reports
