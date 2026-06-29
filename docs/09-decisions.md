@@ -1,13 +1,35 @@
-# 09 — Decisions (ADR Log)
+# Architecture Decisions
 
-Architecture Decision Records. Add one entry per significant decision.
+This document records important technical and business decisions made during the project.
 
 ---
 
-## ADR-001: _Title_
+## ADR-001: Guest Ordering
 
-- **Date:** _YYYY-MM-DD_
-- **Status:** _Proposed | Accepted | Superseded_
-- **Context:** _What is the issue being addressed?_
-- **Decision:** _What was decided?_
-- **Consequences:** _What are the trade-offs?_
+**Status:** Accepted
+
+### Decision
+
+Customers can place orders without creating an account.
+
+### Reason
+
+The primary goal is to provide the fastest possible ordering experience.
+
+Customers only need to:
+
+1. Scan the QR code.
+2. Browse the menu.
+3. Add products to the cart.
+4. Place the order.
+
+No registration or login is required.
+
+### Future
+
+Customer accounts will become optional in Version 2 to support:
+
+- Loyalty points
+- Favorite products
+- Order history
+- Faster reordering
