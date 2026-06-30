@@ -41,19 +41,19 @@ Project Status: 🟢 Development Started
 
 ### Backend
 
-* [ ] Configure authentication
-* [ ] Configure role & permission system
-* [ ] Create base project structure
-* [ ] Configure API responses
-* [ ] Configure exception handling
-* [ ] Configure request validation
+* [x] Configure authentication
+* [x] Configure role & permission system
+* [x] Create base project structure
+* [x] Configure API responses
+* [x] Configure exception handling
+* [x] Configure request validation
 
 ### Database
 
-* [ ] Create restaurants table
-* [ ] Create users table
-* [ ] Create restaurant_users table
-* [ ] Create restaurant_settings table
+* [x] Create restaurants table
+* [x] Create users table
+* [x] Create restaurant_users table
+* [x] Create restaurant_settings table
 
 ---
 
@@ -109,7 +109,7 @@ Project Status: 🟢 Development Started
 
 ## Sprint 8 - Dashboard & Reports
 
-* [ ] Dashboard
+* [ ] Dashboard. Square
 * [ ] Sales Reports
 * [ ] Order Reports
 * [ ] Product Reports

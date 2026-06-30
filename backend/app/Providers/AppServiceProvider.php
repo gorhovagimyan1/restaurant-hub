@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Enums\Role;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +21,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Super Admin bypasses all permission checks.
+        Gate::before(function ($user, string $ability) {
+            return $user->hasRole(Role::SuperAdmin->value) ? true : null;
+        });
     }
 }
