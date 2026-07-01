@@ -32,9 +32,16 @@ class CategoryController extends Controller
     public function store(StoreCategoryRequest $request): JsonResponse
     {
         $restaurant = $this->currentRestaurant($request);
+        $data = $request->validated();
 
-        $category = $restaurant->categories()->make($request->validated());
+        $category = $restaurant->categories()->make($data);
         $category->menu_id = $this->defaultMenu($restaurant)->id;
+
+        // Append new categories at the end of the list by default.
+        if (! isset($data['sort_order'])) {
+            $category->sort_order = ((int) $restaurant->categories()->max('sort_order')) + 1;
+        }
+
         $category->save();
 
         return ApiResponse::created(

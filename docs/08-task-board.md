@@ -141,7 +141,7 @@ Project Status: 🟢 Development Started
 
 # Sprint 7 - Table Management
 
-* [ ] Restaurant Tables
+* [ ] Restaurant Tables 
 * [ ] QR Code Generator
 * [ ] Download QR
 * [ ] Regenerate QR

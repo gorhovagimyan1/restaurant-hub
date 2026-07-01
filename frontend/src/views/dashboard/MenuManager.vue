@@ -70,9 +70,11 @@ async function toggleAvailability(product) {
           <li
             v-for="category in categories"
             :key="category.id"
-            class="group flex items-center justify-between rounded-lg px-3 py-2 text-sm"
+            class="group flex items-center justify-between rounded-lg border-l-4 px-3 py-2 text-sm transition"
             :class="
-              selectedCategoryId === category.id ? 'bg-amber-50 text-amber-800' : 'hover:bg-stone-50'
+              selectedCategoryId === category.id
+                ? 'border-amber-500 bg-amber-100 font-semibold text-amber-900'
+                : 'border-transparent text-stone-700 hover:bg-stone-50'
             "
           >
             <button class="flex-1 truncate text-left" @click="dashboard.selectCategory(category.id)">
