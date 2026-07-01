@@ -23,6 +23,7 @@ class Product extends Model
         'category_id',
         'name',
         'description',
+        'ingredients',
         'sku',
         'price',
         'preparation_time',
@@ -37,6 +38,7 @@ class Product extends Model
     protected function casts(): array
     {
         return [
+            'ingredients' => 'array',
             'price' => 'decimal:2',
             'preparation_time' => 'integer',
             'is_available' => 'boolean',
