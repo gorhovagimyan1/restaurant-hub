@@ -28,5 +28,8 @@ class DatabaseSeeder extends Seeder
         );
 
         $admin->assignRole(RoleEnum::SuperAdmin->value);
+
+        $this->call(DemoRestaurantSeeder::class);
+        $this->call(SecondRestaurantSeeder::class);
     }
 }
