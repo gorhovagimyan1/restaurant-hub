@@ -15,7 +15,8 @@ async function submit() {
   error.value = null
   try {
     await auth.login({ email: email.value, password: password.value })
-    const redirect = route.query.redirect || { name: 'dashboard-menu' }
+    // Kitchen/waiter staff land on the kitchen display; owners on the dashboard.
+    const redirect = route.query.redirect || auth.homeRoute
     router.push(redirect)
   } catch (err) {
     error.value =
@@ -23,8 +24,8 @@ async function submit() {
   }
 }
 
-function fillDemo() {
-  email.value = 'owner@thegoldenfork.test'
+function fillDemo(role) {
+  email.value = role === 'kitchen' ? 'kitchen@thegoldenfork.test' : 'owner@thegoldenfork.test'
   password.value = 'password'
 }
 </script>
@@ -68,12 +69,11 @@ function fillDemo() {
         </button>
       </form>
 
-      <button
-        class="mt-4 w-full text-center text-xs text-stone-400 hover:text-amber-600"
-        @click="fillDemo"
-      >
-        Use demo owner account
-      </button>
+      <div class="mt-4 flex justify-center gap-4 text-xs text-stone-400">
+        <button class="hover:text-amber-600" @click="fillDemo('owner')">Demo owner</button>
+        <span class="text-stone-300">·</span>
+        <button class="hover:text-amber-600" @click="fillDemo('kitchen')">Demo kitchen</button>
+      </div>
     </div>
   </div>
 </template>

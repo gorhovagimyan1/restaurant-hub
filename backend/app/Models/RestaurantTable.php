@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatus;
 use App\Enums\TableStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class RestaurantTable extends Model
@@ -21,6 +23,8 @@ class RestaurantTable extends Model
         'name',
         'capacity',
         'status',
+        'bill_requested_at',
+        'waiter_called_at',
     ];
 
     /**
@@ -31,7 +35,32 @@ class RestaurantTable extends Model
         return [
             'capacity' => 'integer',
             'status' => TableStatus::class,
+            'bill_requested_at' => 'datetime',
+            'waiter_called_at' => 'datetime',
         ];
+    }
+
+    /**
+     * All orders ever placed at this table.
+     *
+     * @return HasMany<Order, $this>
+     */
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Orders that make up this table's current (unpaid) bill.
+     *
+     * @return HasMany<Order, $this>
+     */
+    public function openOrders(): HasMany
+    {
+        return $this->hasMany(Order::class)->whereNotIn('status', [
+            OrderStatus::Completed->value,
+            OrderStatus::Cancelled->value,
+        ]);
     }
 
     /**

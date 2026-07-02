@@ -17,7 +17,14 @@ onMounted(async () => {
       await auth.fetchMe()
     } catch {
       // interceptor handles the redirect on 401
+      return
     }
+  }
+  // Kitchen/waiter staff don't have menu-management access — send them to the
+  // kitchen display instead of loading (and failing) the owner dashboard.
+  if (auth.isKitchenOnly) {
+    router.replace({ name: 'kitchen' })
+    return
   }
   if (!restaurant.value) {
     await dashboard.init()
@@ -40,11 +47,39 @@ async function logout() {
       </div>
       <nav class="flex-1 space-y-1 p-3 text-sm">
         <RouterLink
-          :to="{ name: 'dashboard-menu' }"
+          :to="{ name: 'dashboard-orders' }"
+          class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-stone-600 hover:bg-stone-100"
+          exact-active-class="!bg-amber-100 !text-amber-700"
+        >
+          🧾 Live Orders
+        </RouterLink>
+        <RouterLink
+          :to="{ name: 'dashboard-orders-history' }"
           class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-stone-600 hover:bg-stone-100"
           active-class="!bg-amber-100 !text-amber-700"
         >
+          📋 All Orders
+        </RouterLink>
+        <RouterLink
+          :to="{ name: 'kitchen' }"
+          class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-stone-600 hover:bg-stone-100"
+          active-class="!bg-amber-100 !text-amber-700"
+        >
+          👨‍🍳 Kitchen Display
+        </RouterLink>
+        <RouterLink
+          :to="{ name: 'dashboard-menu' }"
+          class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-stone-600 hover:bg-stone-100"
+          exact-active-class="!bg-amber-100 !text-amber-700"
+        >
           🍽️ Menu Management
+        </RouterLink>
+        <RouterLink
+          :to="{ name: 'dashboard-tables' }"
+          class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-stone-600 hover:bg-stone-100"
+          active-class="!bg-amber-100 !text-amber-700"
+        >
+          🔳 Tables & QR
         </RouterLink>
         <a
           :href="restaurant ? `/r/${restaurant.slug}` : '/'"

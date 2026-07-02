@@ -73,41 +73,41 @@ Project Status: 🟢 Development Started
 
 ---
 
-# Sprint 3 - UI Foundation
+# Sprint 3 - UI Foundation 🟡
 
 ## Layouts
 
-* [ ] Authentication Layout
-* [ ] Customer Layout
-* [ ] Restaurant Dashboard Layout
+* [ ] Authentication Layout (login page exists; not a shared layout)
+* [x] Customer Layout
+* [x] Restaurant Dashboard Layout
 * [ ] Kitchen Layout
 * [ ] Platform Admin Layout
 
 ## Frontend
 
-* [ ] Configure Vue Router
-* [ ] Configure Pinia
-* [ ] Configure Axios
-* [ ] Configure Route Guards
-* [ ] Configure Permission Guards
-* [ ] Configure Theme
-* [ ] Configure Navigation
-* [ ] Configure Sidebar
-* [ ] Configure Header
-* [ ] Configure Footer
+* [x] Configure Vue Router
+* [x] Configure Pinia
+* [x] Configure Axios
+* [x] Configure Route Guards
+* [ ] Configure Permission Guards (enforced on backend; frontend guard is auth-only)
+* [x] Configure Theme
+* [x] Configure Navigation
+* [x] Configure Sidebar
+* [x] Configure Header
+* [x] Configure Footer
 
 ---
 
-# Sprint 4 - Authentication Module
+# Sprint 4 - Authentication Module 🟡
 
-* [ ] Login
-* [ ] Logout
+* [x] Login
+* [x] Logout
 * [ ] Forgot Password
 * [ ] Reset Password
 * [ ] Change Password
 * [ ] User Profile
-* [ ] Current User API
-* [ ] Role Based Redirect
+* [x] Current User API
+* [ ] Role Based Redirect (redirects to dashboard; not yet role-branching)
 
 
 ---
@@ -150,28 +150,28 @@ Project Status: 🟢 Development Started
 
 ---
 
-# Sprint 8 - Menu Management
+# Sprint 8 - Menu Management 🟡
 
-* [ ] Menus
-* [ ] Categories
-* [ ] Products
-* [ ] Product Images
-* [ ] Product Availability
+* [ ] Menus (single menu auto-managed; no dedicated screen yet)
+* [x] Categories
+* [x] Products
+* [x] Product Images
+* [x] Product Availability
 * [ ] Product Modifiers
-* [ ] Ingredients
+* [x] Ingredients
 * [ ] Allergens
 * [ ] Product Search
 
 ---
 
-# Sprint 9 - Customer Portal
+# Sprint 9 - Customer Portal 🟡
 
-* [ ] Restaurant Landing Page
+* [x] Restaurant Landing Page
 * [ ] Scan QR
-* [ ] Browse Menu
-* [ ] Browse Categories
-* [ ] Product Details
-* [ ] Ingredients
+* [x] Browse Menu
+* [x] Browse Categories
+* [x] Product Details
+* [x] Ingredients
 * [ ] Allergens
 * [ ] Shopping Cart
 * [ ] Checkout

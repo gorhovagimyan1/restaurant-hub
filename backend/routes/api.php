@@ -3,9 +3,14 @@
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Dashboard\CategoryController;
 use App\Http\Controllers\Api\Dashboard\DashboardController;
+use App\Http\Controllers\Api\Dashboard\OrderController;
+use App\Http\Controllers\Api\Dashboard\OrderItemController;
 use App\Http\Controllers\Api\Dashboard\ProductController;
 use App\Http\Controllers\Api\Dashboard\ProductImageController;
+use App\Http\Controllers\Api\Dashboard\TableController;
 use App\Http\Controllers\Api\Public\MenuController;
+use App\Http\Controllers\Api\Public\OrderController as PublicOrderController;
+use App\Http\Controllers\Api\Public\TableController as PublicTableController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,6 +19,17 @@ use Illuminate\Support\Facades\Route;
  */
 Route::prefix('public')->group(function () {
     Route::get('restaurants/{restaurant:slug}/menu', [MenuController::class, 'show']);
+
+    // QR flow: resolve a scanned table token, then place a guest order for it.
+    Route::get('tables/{tableQrCode}', [PublicTableController::class, 'show']);
+    Route::post('tables/{tableQrCode}/orders', [PublicOrderController::class, 'store']);
+
+    // The table's running bill (all orders this visit) + "request bill" signal.
+    Route::get('tables/{tableQrCode}/bill', [PublicTableController::class, 'bill']);
+    Route::post('tables/{tableQrCode}/bill/request', [PublicTableController::class, 'requestBill']);
+
+    // Call a waiter over to the table.
+    Route::post('tables/{tableQrCode}/call-waiter', [PublicTableController::class, 'callWaiter']);
 });
 
 Route::prefix('auth')->group(function () {
@@ -27,6 +43,7 @@ Route::prefix('auth')->group(function () {
 });
 
 /*
+ *
  * Authenticated restaurant-owner dashboard: menu management scoped to the
  * user's own restaurant.
  */
@@ -48,5 +65,31 @@ Route::prefix('dashboard')->middleware('auth:sanctum')->group(function () {
 
         Route::post('products/{product}/images', [ProductImageController::class, 'store']);
         Route::delete('product-images/{productImage}', [ProductImageController::class, 'destroy']);
+    });
+
+    // Live orders board — visible to owners, managers, waiters and kitchen.
+    Route::middleware('can:orders.view')->group(function () {
+        Route::get('orders', [OrderController::class, 'index']);
+        Route::get('orders/history', [OrderController::class, 'history']);
+        // Tables asking for a waiter / bill.
+        Route::get('service-calls', [TableController::class, 'serviceCalls']);
+    });
+
+    Route::middleware('can:orders.update-status')->group(function () {
+        Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus']);
+        // Advance a single item (cook / ready / deliver) independently.
+        Route::patch('order-items/{orderItem}/status', [OrderItemController::class, 'updateStatus']);
+        // Settle a table's whole bill and free it (payment on leaving).
+        Route::post('tables/{table}/settle', [TableController::class, 'settle']);
+        // Acknowledge (clear) a table's waiter call.
+        Route::post('tables/{table}/ack-call', [TableController::class, 'acknowledgeCall']);
+    });
+
+
+    // Table + QR management (owners/managers).
+    Route::middleware('can:tables.manage')->group(function () {
+        Route::get('tables', [TableController::class, 'index']);
+        Route::post('tables', [TableController::class, 'store']);
+        Route::delete('tables/{table}', [TableController::class, 'destroy']);
     });
 });

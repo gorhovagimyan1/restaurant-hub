@@ -1,15 +1,25 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { DEFAULT_RESTAURANT_SLUG } from '@/config'
 import { TOKEN_KEY } from '@/services/http'
+import { activeDiningSlug } from '@/stores/dining'
 import CustomerLayout from '@/layouts/CustomerLayout.vue'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
+import KitchenLayout from '@/layouts/KitchenLayout.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
+      // Root: continue an active dining session, otherwise ask for a scan.
       path: '/',
-      redirect: `/r/${DEFAULT_RESTAURANT_SLUG}`,
+      redirect: () => {
+        const slug = activeDiningSlug()
+        return slug ? `/r/${slug}` : { name: 'scan-required' }
+      },
+    },
+    {
+      path: '/scan',
+      name: 'scan-required',
+      component: () => import('@/views/customer/ScanRequired.vue'),
     },
     {
       path: '/login',
@@ -26,11 +36,49 @@ const router = createRouter({
           name: 'dashboard-menu',
           component: () => import('@/views/dashboard/MenuManager.vue'),
         },
+        {
+          path: 'orders',
+          name: 'dashboard-orders',
+          component: () => import('@/views/dashboard/OrdersBoard.vue'),
+        },
+        {
+          path: 'orders/history',
+          name: 'dashboard-orders-history',
+          component: () => import('@/views/dashboard/OrdersHistory.vue'),
+        },
+        {
+          path: 'tables',
+          name: 'dashboard-tables',
+          component: () => import('@/views/dashboard/TablesManager.vue'),
+        },
       ],
     },
     {
+      // Kitchen display — minimal full-screen board for kitchen/waiter staff.
+      path: '/kitchen',
+      component: KitchenLayout,
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: '',
+          name: 'kitchen',
+          component: () => import('@/views/dashboard/KitchenBoard.vue'),
+        },
+      ],
+    },
+    {
+      // Landing target of a scanned table QR code — opens a dining session
+      // then redirects into the restaurant portal below.
+      path: '/t/:token',
+      name: 'table-order',
+      component: () => import('@/views/customer/TableEntry.vue'),
+    },
+    {
+      // Customer portal. Gated: only reachable with a dining session started
+      // by scanning a QR (see the guard below).
       path: '/r/:slug',
       component: CustomerLayout,
+      meta: { requiresDining: true },
       children: [
         {
           path: '',
@@ -46,7 +94,7 @@ const router = createRouter({
     },
     {
       path: '/:pathMatch(.*)*',
-      redirect: `/r/${DEFAULT_RESTAURANT_SLUG}`,
+      redirect: { name: 'scan-required' },
     },
   ],
   scrollBehavior(to, from, savedPosition) {
@@ -65,6 +113,15 @@ router.beforeEach((to) => {
   if (to.name === 'login' && hasToken) {
     return { name: 'dashboard-menu' }
   }
+
+  // The customer menu portal only opens for a table whose QR was scanned.
+  if (to.meta.requiresDining) {
+    const slug = activeDiningSlug()
+    if (!slug || slug !== to.params.slug) {
+      return { name: 'scan-required' }
+    }
+  }
+
   return true
 })
 

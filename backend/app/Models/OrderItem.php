@@ -24,6 +24,7 @@ class OrderItem extends Model
         'unit_price',
         'total_price',
         'notes',
+        'status',
     ];
 
     /**
@@ -35,6 +36,7 @@ class OrderItem extends Model
             'quantity' => 'integer',
             'unit_price' => 'decimal:2',
             'total_price' => 'decimal:2',
+            'status' => \App\Enums\OrderItemStatus::class,
         ];
     }
 

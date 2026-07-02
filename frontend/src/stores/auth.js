@@ -11,6 +11,22 @@ export const useAuthStore = defineStore('auth', () => {
   const roles = computed(() => user.value?.roles ?? [])
   const permissions = computed(() => user.value?.permissions ?? [])
 
+  function hasRole(role) {
+    return roles.value.includes(role)
+  }
+
+  // Kitchen/front-of-house staff who should land on the kitchen display rather
+  // than the owner dashboard (which they lack permissions for).
+  const isKitchenOnly = computed(() => {
+    const managerial = ['super-admin', 'restaurant-owner', 'restaurant-manager']
+    return roles.value.length > 0 && !roles.value.some((r) => managerial.includes(r))
+  })
+
+  // Where a freshly-authenticated user should be sent.
+  const homeRoute = computed(() =>
+    isKitchenOnly.value ? { name: 'kitchen' } : { name: 'dashboard-menu' },
+  )
+
   function setToken(value) {
     token.value = value
     if (value) {
@@ -55,6 +71,9 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     roles,
     permissions,
+    hasRole,
+    isKitchenOnly,
+    homeRoute,
     login,
     fetchMe,
     logout,

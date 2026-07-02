@@ -1,6 +1,9 @@
 <script setup>
+import { storeToRefs } from 'pinia'
 import AppImage from '@/components/ui/AppImage.vue'
 import { formatPrice } from '@/utils/format'
+import { useDiningStore } from '@/stores/dining'
+import { useCartStore } from '@/stores/cart'
 
 defineProps({
   product: { type: Object, required: true },
@@ -8,6 +11,10 @@ defineProps({
 })
 
 defineEmits(['select'])
+
+const dining = useDiningStore()
+const cart = useCartStore()
+const { allowOrders } = storeToRefs(dining)
 </script>
 
 <template>
@@ -37,8 +44,42 @@ defineEmits(['select'])
         </div>
       </div>
 
-      <div class="shrink-0 text-right">
+      <div class="flex shrink-0 flex-col items-end gap-2">
         <span class="font-bold text-stone-900">{{ formatPrice(product.price, currency) }}</span>
+
+        <!-- Ordering controls (only when seated via a scanned QR) -->
+        <template v-if="allowOrders && product.is_available">
+          <div
+            v-if="cart.quantityOf(product.id) > 0"
+            class="inline-flex items-center gap-2 rounded-full bg-amber-500 px-1.5 py-1 text-white shadow-sm"
+            @click.stop
+          >
+            <button
+              class="grid h-6 w-6 place-items-center rounded-full text-lg leading-none transition hover:bg-amber-600"
+              aria-label="Remove one"
+              @click="cart.decrement(product.id)"
+            >
+              −
+            </button>
+            <span class="min-w-4 text-center text-sm font-bold tabular-nums">
+              {{ cart.quantityOf(product.id) }}
+            </span>
+            <button
+              class="grid h-6 w-6 place-items-center rounded-full text-lg leading-none transition hover:bg-amber-600"
+              aria-label="Add one"
+              @click="cart.add(product)"
+            >
+              +
+            </button>
+          </div>
+          <button
+            v-else
+            class="rounded-full border border-amber-500 px-3.5 py-1 text-sm font-semibold text-amber-600 transition hover:bg-amber-50"
+            @click.stop="cart.add(product)"
+          >
+            + Add
+          </button>
+        </template>
       </div>
     </div>
   </article>

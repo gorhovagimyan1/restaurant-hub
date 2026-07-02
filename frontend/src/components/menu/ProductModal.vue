@@ -2,13 +2,24 @@
 import { computed, watch, onBeforeUnmount } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useMenuStore } from '@/stores/menu'
+import { useDiningStore } from '@/stores/dining'
+import { useCartStore } from '@/stores/cart'
 import AppImage from '@/components/ui/AppImage.vue'
 import { formatPrice } from '@/utils/format'
 
 const store = useMenuStore()
+const dining = useDiningStore()
+const cart = useCartStore()
 const { selectedProduct, currency } = storeToRefs(store)
+const { allowOrders } = storeToRefs(dining)
 
 const open = computed(() => !!selectedProduct.value)
+
+// Ordering is offered inside the modal only when seated via a scanned QR.
+const canOrder = computed(() => allowOrders.value && selectedProduct.value?.is_available)
+const quantity = computed(() =>
+  selectedProduct.value ? cart.quantityOf(selectedProduct.value.id) : 0,
+)
 
 function close() {
   store.closeProduct()
@@ -109,6 +120,42 @@ onBeforeUnmount(() => {
               No ingredient information available.
             </p>
           </div>
+
+          <!-- Add to order -->
+          <footer v-if="canOrder" class="shrink-0 border-t border-stone-200 p-4">
+            <div v-if="quantity > 0" class="flex items-center gap-3">
+              <div class="flex items-center gap-3 rounded-full bg-stone-100 px-2 py-1.5">
+                <button
+                  class="grid h-8 w-8 place-items-center rounded-full text-xl leading-none text-stone-600 hover:bg-stone-200"
+                  aria-label="Remove one"
+                  @click="cart.decrement(selectedProduct.id)"
+                >
+                  −
+                </button>
+                <span class="min-w-5 text-center font-bold tabular-nums">{{ quantity }}</span>
+                <button
+                  class="grid h-8 w-8 place-items-center rounded-full text-xl leading-none text-stone-600 hover:bg-stone-200"
+                  aria-label="Add one"
+                  @click="cart.add(selectedProduct)"
+                >
+                  +
+                </button>
+              </div>
+              <button
+                class="flex-1 rounded-full bg-amber-500 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600"
+                @click="close"
+              >
+                Done · {{ formatPrice(selectedProduct.price * quantity, currency) }}
+              </button>
+            </div>
+            <button
+              v-else
+              class="w-full rounded-full bg-amber-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600"
+              @click="cart.add(selectedProduct)"
+            >
+              Add to order · {{ formatPrice(selectedProduct.price, currency) }}
+            </button>
+          </footer>
         </div>
       </div>
     </Transition>
