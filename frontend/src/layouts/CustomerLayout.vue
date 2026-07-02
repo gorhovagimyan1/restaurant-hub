@@ -1,17 +1,62 @@
 <script setup>
-import { computed, watch } from 'vue'
+import { computed, watch, onMounted, ref } from 'vue'
 import { useRoute, RouterView, RouterLink } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useMenuStore } from '@/stores/menu'
+import { useDiningStore } from '@/stores/dining'
+import { useCartStore } from '@/stores/cart'
 import AppImage from '@/components/ui/AppImage.vue'
 import ProductModal from '@/components/menu/ProductModal.vue'
+import CartSheet from '@/components/order/CartSheet.vue'
+import BillSheet from '@/components/order/BillSheet.vue'
+import { callWaiter } from '@/services/orders'
+import { formatPrice } from '@/utils/format'
 
 const route = useRoute()
 const store = useMenuStore()
+const dining = useDiningStore()
+const cart = useCartStore()
 const { restaurant, loading, error } = storeToRefs(store)
+const { tableName, allowOrders, ordering, token: diningToken, active: diningActive } = storeToRefs(dining)
+const { count, total, currency } = storeToRefs(cart)
 
 const slug = computed(() => route.params.slug)
 const ready = computed(() => !!restaurant.value)
+
+const cartOpen = ref(false)
+const billOpen = ref(false)
+const placedOrder = ref(null)
+
+const canCallWaiter = computed(() => diningActive.value && ordering.value?.enable_waiter_call !== false)
+const waiterCalling = ref(false)
+const toast = ref(null)
+let toastTimer = null
+
+async function summonWaiter() {
+  if (waiterCalling.value) return
+  waiterCalling.value = true
+  try {
+    await callWaiter(diningToken.value)
+    toast.value = 'A waiter is on the way 🙋'
+  } catch (err) {
+    toast.value = err?.response?.data?.message || 'Could not call a waiter. Please try again.'
+  } finally {
+    waiterCalling.value = false
+    clearTimeout(toastTimer)
+    toastTimer = setTimeout(() => (toast.value = null), 3500)
+  }
+}
+
+// Re-establish the cart's table context from the dining session (e.g. after a
+// page refresh) so ordering keeps working without re-scanning.
+onMounted(() => {
+  if (dining.active && cart.token !== dining.token) {
+    cart.setContext(dining.token, {
+      currency: dining.currency,
+      ordering: dining.ordering,
+    })
+  }
+})
 
 watch(
   slug,
@@ -23,6 +68,11 @@ watch(
 
 function retry() {
   if (slug.value) store.load(slug.value, { force: true })
+}
+
+function onPlaced(result) {
+  cartOpen.value = false
+  placedOrder.value = result
 }
 </script>
 
@@ -48,27 +98,50 @@ function retry() {
           </span>
         </RouterLink>
 
-        <nav class="flex items-center gap-1 text-sm font-medium">
-          <RouterLink
-            :to="{ name: 'restaurant-home', params: { slug } }"
-            class="rounded-full px-3 py-1.5 text-stone-600 hover:bg-stone-100"
-            active-class="!bg-amber-100 !text-amber-700"
-            exact-active-class="!bg-amber-100 !text-amber-700"
+        <div class="flex items-center gap-2">
+          <nav class="flex items-center gap-1 text-sm font-medium">
+            <RouterLink
+              :to="{ name: 'restaurant-home', params: { slug } }"
+              class="rounded-full px-3 py-1.5 text-stone-600 hover:bg-stone-100"
+              active-class="!bg-amber-100 !text-amber-700"
+              exact-active-class="!bg-amber-100 !text-amber-700"
+            >
+              Home
+            </RouterLink>
+            <RouterLink
+              :to="{ name: 'restaurant-menu', params: { slug } }"
+              class="rounded-full px-3 py-1.5 text-stone-600 hover:bg-stone-100"
+              active-class="!bg-amber-100 !text-amber-700"
+            >
+              Menu
+            </RouterLink>
+          </nav>
+          <button
+            v-if="canCallWaiter"
+            class="flex items-center gap-1 rounded-full border border-stone-200 px-3 py-1 text-xs font-semibold text-stone-600 transition hover:bg-stone-100 disabled:opacity-50"
+            :disabled="waiterCalling"
+            @click="summonWaiter"
           >
-            Home
-          </RouterLink>
-          <RouterLink
-            :to="{ name: 'restaurant-menu', params: { slug } }"
-            class="rounded-full px-3 py-1.5 text-stone-600 hover:bg-stone-100"
-            active-class="!bg-amber-100 !text-amber-700"
+            🙋 Waiter
+          </button>
+          <button
+            v-if="diningActive"
+            class="flex items-center gap-1 rounded-full border border-stone-200 px-3 py-1 text-xs font-semibold text-stone-600 transition hover:bg-stone-100"
+            @click="billOpen = true"
           >
-            Menu
-          </RouterLink>
-        </nav>
+            🧾 Bill
+          </button>
+          <span
+            v-if="tableName"
+            class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700"
+          >
+            {{ tableName }}
+          </span>
+        </div>
       </div>
     </header>
 
-    <main class="flex-1">
+    <main class="flex-1" :class="{ 'pb-24': allowOrders && count > 0 }">
       <!-- Loading -->
       <div v-if="loading && !ready" class="flex h-[60vh] items-center justify-center">
         <div class="flex flex-col items-center gap-3 text-stone-400">
@@ -109,7 +182,89 @@ function retry() {
       </div>
     </footer>
 
+    <!-- Floating cart bar -->
+    <div
+      v-if="allowOrders && count > 0"
+      class="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-white/95 backdrop-blur"
+    >
+      <div class="mx-auto max-w-3xl px-4 py-3">
+        <button
+          class="flex w-full items-center justify-between rounded-full bg-amber-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600"
+          @click="cartOpen = true"
+        >
+          <span class="flex items-center gap-2">
+            <span class="grid h-6 w-6 place-items-center rounded-full bg-white/25 text-xs font-bold">
+              {{ count }}
+            </span>
+            View order
+          </span>
+          <span>{{ formatPrice(total, currency) }}</span>
+        </button>
+      </div>
+    </div>
+
+    <CartSheet
+      v-if="cartOpen"
+      :table-name="tableName"
+      @close="cartOpen = false"
+      @placed="onPlaced"
+    />
+
+    <BillSheet v-if="billOpen && diningToken" :token="diningToken" @close="billOpen = false" />
+
+    <!-- Order confirmation -->
+    <div
+      v-if="placedOrder"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6"
+      @click.self="placedOrder = null"
+    >
+      <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-xl">
+        <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-100 text-3xl text-emerald-600">✓</div>
+        <h2 class="mt-4 text-xl font-bold text-stone-900">Order sent!</h2>
+        <p class="mt-1 text-sm text-stone-500">
+          {{ tableName }} · your order is on its way to the kitchen.
+        </p>
+        <div class="mt-4 rounded-xl bg-stone-50 p-3">
+          <p class="text-xs uppercase tracking-wide text-stone-400">Order number</p>
+          <p class="mt-1 text-lg font-bold text-stone-900">{{ placedOrder.order_number }}</p>
+          <p class="mt-1 text-sm text-stone-500">
+            Total <span class="font-semibold text-stone-800">{{ formatPrice(placedOrder.total, currency) }}</span>
+          </p>
+        </div>
+        <button
+          class="mt-5 w-full rounded-full bg-amber-500 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600"
+          @click="placedOrder = null"
+        >
+          Order more
+        </button>
+      </div>
+    </div>
+
+    <!-- Toast (e.g. waiter called) -->
+    <Transition name="toast">
+      <div
+        v-if="toast"
+        class="fixed inset-x-0 bottom-24 z-50 mx-auto w-fit max-w-[90%] rounded-full bg-stone-900 px-5 py-3 text-center text-sm font-semibold text-white shadow-lg"
+      >
+        {{ toast }}
+      </div>
+    </Transition>
+
     <!-- Product detail modal (shared across pages) -->
     <ProductModal />
   </div>
 </template>
+
+<style scoped>
+.toast-enter-active,
+.toast-leave-active {
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+</style>

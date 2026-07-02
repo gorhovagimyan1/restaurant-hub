@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\OrderItemStatus;
 use App\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -83,5 +84,38 @@ class Order extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Recompute the overall order status from its items' statuses.
+     *
+     * Kitchen/waiter staff drive individual items; this keeps the order-level
+     * status (used by the board grouping and open-bill logic) in sync. A paid
+     * or cancelled order is left untouched.
+     */
+    public function syncStatusFromItems(): void
+    {
+        if (in_array($this->status, [OrderStatus::Completed, OrderStatus::Cancelled], true)) {
+            return;
+        }
+
+        $items = $this->items()->get()
+            ->reject(fn (OrderItem $item) => $item->status === OrderItemStatus::Cancelled);
+
+        if ($items->isEmpty()) {
+            return;
+        }
+
+        $new = match (true) {
+            $items->every(fn (OrderItem $i) => $i->status === OrderItemStatus::Served) => OrderStatus::Served,
+            $items->every(fn (OrderItem $i) => in_array($i->status, [OrderItemStatus::Ready, OrderItemStatus::Served], true)) => OrderStatus::Ready,
+            $items->contains(fn (OrderItem $i) => in_array($i->status, [OrderItemStatus::Preparing, OrderItemStatus::Ready, OrderItemStatus::Served], true)) => OrderStatus::Preparing,
+            default => OrderStatus::Pending,
+        };
+
+        if ($this->status !== $new) {
+            $this->status = $new;
+            $this->save();
+        }
     }
 }
