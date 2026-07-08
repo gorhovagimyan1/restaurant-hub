@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\DiningSessionStatus;
 use App\Enums\OrderStatus;
 use App\Enums\TableStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -71,6 +72,28 @@ class RestaurantTable extends Model
     public function restaurant(): BelongsTo
     {
         return $this->belongsTo(Restaurant::class);
+    }
+
+    /**
+     * Every dining session (visit) this table has hosted.
+     *
+     * @return HasMany<DiningSession, $this>
+     */
+    public function diningSessions(): HasMany
+    {
+        return $this->hasMany(DiningSession::class);
+    }
+
+    /**
+     * The table's currently open dining session, if any. There is at most one
+     * (enforced by a unique lock column on dining_sessions).
+     *
+     * @return HasOne<DiningSession, $this>
+     */
+    public function openSession(): HasOne
+    {
+        return $this->hasOne(DiningSession::class)
+            ->where('status', DiningSessionStatus::Open->value);
     }
 
     /**

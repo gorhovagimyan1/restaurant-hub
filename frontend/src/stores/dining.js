@@ -12,6 +12,7 @@ const KEY = 'rh_dining'
 export const useDiningStore = defineStore('dining', () => {
   const slug = ref(null)
   const token = ref(null)
+  const sessionToken = ref(null) // dining session opened for this visit
   const tableName = ref(null)
   const ordering = ref(null) // { allow_guest_orders, tax_percentage, service_charge }
   const currency = ref('AMD')
@@ -34,9 +35,19 @@ export const useDiningStore = defineStore('dining', () => {
     persist()
   }
 
+  /**
+   * Record the dining session token returned when the QR was scanned. This is
+   * what authorizes ordering / bill / service calls until the bill is settled.
+   */
+  function setSessionToken(value) {
+    sessionToken.value = value || null
+    persist()
+  }
+
   function end() {
     slug.value = null
     token.value = null
+    sessionToken.value = null
     tableName.value = null
     ordering.value = null
     try {
@@ -53,6 +64,7 @@ export const useDiningStore = defineStore('dining', () => {
         JSON.stringify({
           slug: slug.value,
           token: token.value,
+          sessionToken: sessionToken.value,
           tableName: tableName.value,
           ordering: ordering.value,
           currency: currency.value,
@@ -70,6 +82,7 @@ export const useDiningStore = defineStore('dining', () => {
       const data = JSON.parse(raw)
       slug.value = data.slug
       token.value = data.token
+      sessionToken.value = data.sessionToken || null
       tableName.value = data.tableName
       ordering.value = data.ordering
       currency.value = data.currency || 'AMD'
@@ -81,6 +94,7 @@ export const useDiningStore = defineStore('dining', () => {
   return {
     slug,
     token,
+    sessionToken,
     tableName,
     ordering,
     currency,
@@ -88,6 +102,7 @@ export const useDiningStore = defineStore('dining', () => {
     allowOrders,
     isActiveFor,
     start,
+    setSessionToken,
     end,
   }
 })

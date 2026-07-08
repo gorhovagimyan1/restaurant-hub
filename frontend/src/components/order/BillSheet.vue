@@ -6,6 +6,7 @@ import { formatPrice } from '@/utils/format'
 
 const props = defineProps({
   token: { type: String, required: true },
+  sessionToken: { type: String, required: true },
 })
 
 const emit = defineEmits(['close'])
@@ -20,7 +21,7 @@ async function load() {
   loading.value = true
   error.value = null
   try {
-    bill.value = await fetchBill(props.token)
+    bill.value = await fetchBill(props.token, props.sessionToken)
     requested.value = !!bill.value.bill_requested
   } catch (err) {
     error.value = err?.response?.data?.message || 'Could not load your bill.'
@@ -33,7 +34,7 @@ async function askForBill() {
   if (requesting.value) return
   requesting.value = true
   try {
-    await requestBill(props.token)
+    await requestBill(props.token, props.sessionToken)
     requested.value = true
   } catch (err) {
     error.value = err?.response?.data?.message || 'Could not send the request.'

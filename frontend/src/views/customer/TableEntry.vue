@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { resolveTable } from '@/services/orders'
+import { resolveTable, openSession } from '@/services/orders'
 import { useDiningStore } from '@/stores/dining'
 import { useCartStore } from '@/stores/cart'
 
@@ -22,9 +22,14 @@ async function boot(token) {
   try {
     const context = await resolveTable(token)
     dining.start(context)
+    // Open (or re-join) this table's dining session — the session token it
+    // returns is what authorizes ordering until staff settle the bill.
+    const sessionToken = await openSession(token)
+    dining.setSessionToken(sessionToken)
     cart.setContext(token, {
       currency: context.restaurant.currency,
       ordering: context.ordering,
+      sessionToken,
     })
     router.replace({ name: 'restaurant-home', params: { slug: context.restaurant.slug } })
   } catch (err) {

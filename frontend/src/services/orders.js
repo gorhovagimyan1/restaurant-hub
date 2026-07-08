@@ -10,8 +10,18 @@ export async function resolveTable(token) {
 }
 
 /**
+ * Open (or re-join) the table's dining session for this visit. Returns the
+ * session_token that authorizes ordering / bill / service calls until staff
+ * settle the bill. Called right after resolveTable on scan.
+ */
+export async function openSession(token) {
+  const { data } = await http.post(`/public/tables/${token}/session`)
+  return data.data.session_token
+}
+
+/**
  * Place a guest order for a scanned table.
- * payload: { customer_name?, customer_phone?, notes?, items: [{product_id, quantity, notes?}] }
+ * payload: { session_token, customer_name?, customer_phone?, notes?, items: [{product_id, quantity, notes?}] }
  */
 export async function placeOrder(token, payload) {
   const { data } = await http.post(`/public/tables/${token}/orders`, payload)
@@ -21,24 +31,30 @@ export async function placeOrder(token, payload) {
 /**
  * Fetch the table's running bill (all unsettled orders this visit).
  */
-export async function fetchBill(token) {
-  const { data } = await http.get(`/public/tables/${token}/bill`)
+export async function fetchBill(token, sessionToken) {
+  const { data } = await http.get(`/public/tables/${token}/bill`, {
+    params: { session_token: sessionToken },
+  })
   return data.data
 }
 
 /**
  * Signal staff that the guest is ready to pay and leave.
  */
-export async function requestBill(token) {
-  const { data } = await http.post(`/public/tables/${token}/bill/request`)
+export async function requestBill(token, sessionToken) {
+  const { data } = await http.post(`/public/tables/${token}/bill/request`, {
+    session_token: sessionToken,
+  })
   return data.data
 }
 
 /**
  * Call a waiter over to the table.
  */
-export async function callWaiter(token) {
-  const { data } = await http.post(`/public/tables/${token}/call-waiter`)
+export async function callWaiter(token, sessionToken) {
+  const { data } = await http.post(`/public/tables/${token}/call-waiter`, {
+    session_token: sessionToken,
+  })
   return data.data
 }
 

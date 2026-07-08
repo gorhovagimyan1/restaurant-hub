@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Public;
 use App\Enums\OrderStatus;
 use App\Enums\TableStatus;
 use App\Helpers\ApiResponse;
+use App\Http\Controllers\Concerns\ResolvesDiningSession;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Public\PlaceOrderRequest;
 use App\Models\Order;
@@ -15,6 +16,8 @@ use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
+    use ResolvesDiningSession;
+
     /**
      * Place a guest order for a scanned table.
      *
@@ -34,6 +37,10 @@ class OrderController extends Controller
             422,
             'This restaurant is not accepting online orders right now.',
         );
+
+        // Orders must belong to the open dining session started by scanning the
+        // QR. Rejects orders once the bill is settled (session closed).
+        $session = $this->requireOpenSession($table, $request->validated('session_token'));
 
         // Only this restaurant's available products can be ordered.
         $requested = collect($request->validated('items'));
@@ -68,11 +75,12 @@ class OrderController extends Controller
         $total = round($subtotal + $tax + $serviceCharge, 2);
 
         $order = DB::transaction(function () use (
-            $request, $restaurant, $table, $lines, $subtotal, $tax, $serviceCharge, $total, $settings
+            $request, $restaurant, $table, $session, $lines, $subtotal, $tax, $serviceCharge, $total, $settings
         ) {
             $order = Order::create([
                 'restaurant_id' => $restaurant->id,
                 'restaurant_table_id' => $table->id,
+                'dining_session_id' => $session->id,
                 'customer_name' => $request->validated('customer_name'),
                 'customer_phone' => $request->validated('customer_phone'),
                 'notes' => $request->validated('notes'),

@@ -2,15 +2,21 @@
 
 namespace App\Http\Controllers\Api\Public;
 
+use App\Enums\DiningSessionStatus;
 use App\Enums\OrderStatus;
 use App\Helpers\ApiResponse;
+use App\Http\Controllers\Concerns\ResolvesDiningSession;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Public\TableResource;
 use App\Models\TableQrCode;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TableController extends Controller
 {
+    use ResolvesDiningSession;
+
     /**
      * Resolve a scanned QR token into the table + restaurant context the
      * customer ordering screen needs. Bound by the QR token route key.
@@ -28,15 +34,52 @@ class TableController extends Controller
     }
 
     /**
+     * Open (or re-join) the table's dining session for this visit.
+     *
+     * Called right after a QR scan. There is at most one open session per
+     * table, so a second guest scanning the same table joins the existing
+     * session — everyone shares one running bill. The returned session_token
+     * is what authorizes ordering / bill / service calls until staff settle.
+     */
+    public function openSession(TableQrCode $tableQrCode): JsonResponse
+    {
+        $table = $tableQrCode->table()->with('restaurant')->firstOrFail();
+
+        abort_unless($table->restaurant->is_active, 404);
+
+        $session = DB::transaction(function () use ($table) {
+            // Lock any existing open session so concurrent scans join it rather
+            // than race to create a second (which the unique lock would reject).
+            $existing = $table->openSession()->lockForUpdate()->first();
+
+            if ($existing) {
+                // Re-joining an existing visit still counts as activity.
+                $existing->touchActivity();
+
+                return $existing;
+            }
+
+            return $table->diningSessions()->create([
+                'status' => DiningSessionStatus::Open,
+            ]);
+        });
+
+        return ApiResponse::success([
+            'session_token' => $session->session_token,
+        ], 'Dining session started.');
+    }
+
+    /**
      * The table's running bill: every order placed this visit that hasn't been
      * settled yet, plus the combined total. The customer pays this once when
      * they leave — orders are not paid individually.
      */
-    public function bill(TableQrCode $tableQrCode): JsonResponse
+    public function bill(Request $request, TableQrCode $tableQrCode): JsonResponse
     {
         $table = $tableQrCode->table()->with('restaurant')->firstOrFail();
+        $session = $this->requireOpenSession($table, $request->query('session_token'));
 
-        $orders = $table->orders()
+        $orders = $session->orders()
             ->whereNotIn('status', [OrderStatus::Completed->value, OrderStatus::Cancelled->value])
             ->with('items')
             ->orderBy('created_at')
@@ -67,9 +110,10 @@ class TableController extends Controller
     /**
      * Signal staff that the guest is ready to pay and leave.
      */
-    public function requestBill(TableQrCode $tableQrCode): JsonResponse
+    public function requestBill(Request $request, TableQrCode $tableQrCode): JsonResponse
     {
         $table = $tableQrCode->table()->firstOrFail();
+        $this->requireOpenSession($table, $request->input('session_token'));
 
         if ($table->bill_requested_at === null) {
             $table->update(['bill_requested_at' => now()]);
@@ -81,9 +125,11 @@ class TableController extends Controller
     /**
      * Call a waiter over to the table.
      */
-    public function callWaiter(TableQrCode $tableQrCode): JsonResponse
+    public function callWaiter(Request $request, TableQrCode $tableQrCode): JsonResponse
     {
         $table = $tableQrCode->table()->with('restaurant.settings')->firstOrFail();
+        $this->requireOpenSession($table, $request->input('session_token'));
+
         $settings = $table->restaurant->settings;
 
         abort_if(

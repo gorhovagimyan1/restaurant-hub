@@ -119,6 +119,11 @@ class TableController extends Controller
                     ]);
                 });
 
+            // End the dining session for this visit. This is the single point
+            // the QR "expires": afterwards the guest's stale session token is
+            // rejected and they must scan again to open a fresh session.
+            $table->openSession()->first()?->close();
+
             $table->update([
                 'status' => TableStatus::Available,
                 'bill_requested_at' => null,
