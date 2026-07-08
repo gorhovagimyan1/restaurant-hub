@@ -21,6 +21,7 @@ class Order extends Model
     protected $fillable = [
         'restaurant_id',
         'restaurant_table_id',
+        'dining_session_id',
         'order_number',
         'customer_name',
         'customer_phone',
@@ -76,6 +77,16 @@ class Order extends Model
     public function table(): BelongsTo
     {
         return $this->belongsTo(RestaurantTable::class, 'restaurant_table_id');
+    }
+
+    /**
+     * The dining session (visit) this order was placed during.
+     *
+     * @return BelongsTo<DiningSession, $this>
+     */
+    public function diningSession(): BelongsTo
+    {
+        return $this->belongsTo(DiningSession::class);
     }
 
     /**

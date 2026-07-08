@@ -20,6 +20,8 @@ class PlaceOrderRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // The dining session opened when this table's QR was scanned.
+            'session_token' => ['required', 'uuid'],
             'customer_name' => ['nullable', 'string', 'max:120'],
             'customer_phone' => ['nullable', 'string', 'max:40'],
             'notes' => ['nullable', 'string', 'max:1000'],

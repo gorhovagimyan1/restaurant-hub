@@ -20,8 +20,10 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('public')->group(function () {
     Route::get('restaurants/{restaurant:slug}/menu', [MenuController::class, 'show']);
 
-    // QR flow: resolve a scanned table token, then place a guest order for it.
+    // QR flow: resolve a scanned table token, open the visit's dining session,
+    // then place a guest order for it.
     Route::get('tables/{tableQrCode}', [PublicTableController::class, 'show']);
+    Route::post('tables/{tableQrCode}/session', [PublicTableController::class, 'openSession']);
     Route::post('tables/{tableQrCode}/orders', [PublicOrderController::class, 'store']);
 
     // The table's running bill (all orders this visit) + "request bill" signal.

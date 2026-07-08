@@ -17,7 +17,14 @@ const store = useMenuStore()
 const dining = useDiningStore()
 const cart = useCartStore()
 const { restaurant, loading, error } = storeToRefs(store)
-const { tableName, allowOrders, ordering, token: diningToken, active: diningActive } = storeToRefs(dining)
+const {
+  tableName,
+  allowOrders,
+  ordering,
+  token: diningToken,
+  sessionToken: diningSessionToken,
+  active: diningActive,
+} = storeToRefs(dining)
 const { count, total, currency } = storeToRefs(cart)
 
 const slug = computed(() => route.params.slug)
@@ -36,7 +43,7 @@ async function summonWaiter() {
   if (waiterCalling.value) return
   waiterCalling.value = true
   try {
-    await callWaiter(diningToken.value)
+    await callWaiter(diningToken.value, diningSessionToken.value)
     toast.value = 'A waiter is on the way 🙋'
   } catch (err) {
     toast.value = err?.response?.data?.message || 'Could not call a waiter. Please try again.'
@@ -54,6 +61,7 @@ onMounted(() => {
     cart.setContext(dining.token, {
       currency: dining.currency,
       ordering: dining.ordering,
+      sessionToken: dining.sessionToken,
     })
   }
 })
@@ -210,7 +218,12 @@ function onPlaced(result) {
       @placed="onPlaced"
     />
 
-    <BillSheet v-if="billOpen && diningToken" :token="diningToken" @close="billOpen = false" />
+    <BillSheet
+      v-if="billOpen && diningToken && diningSessionToken"
+      :token="diningToken"
+      :session-token="diningSessionToken"
+      @close="billOpen = false"
+    />
 
     <!-- Order confirmation -->
     <div

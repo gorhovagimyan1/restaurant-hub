@@ -8,6 +8,7 @@ import { placeOrder } from '@/services/orders'
  */
 export const useCartStore = defineStore('cart', () => {
   const token = ref(null)
+  const sessionToken = ref(null) // dining session that authorizes ordering
   const lines = ref([]) // [{ product, quantity }]
 
   const currency = ref('AMD')
@@ -25,12 +26,13 @@ export const useCartStore = defineStore('cart', () => {
 
   const storageKey = (t) => `rh_cart_${t}`
 
-  function setContext(t, { currency: c, ordering } = {}) {
+  function setContext(t, { currency: c, ordering, sessionToken: s } = {}) {
     // Switching to a different table starts a fresh cart.
     if (token.value && token.value !== t) {
       lines.value = []
     }
     token.value = t
+    if (s !== undefined) sessionToken.value = s
     if (c) currency.value = c
     if (ordering) {
       serviceCharge.value = Number(ordering.service_charge) || 0
@@ -104,6 +106,7 @@ export const useCartStore = defineStore('cart', () => {
    */
   async function submit({ customer_name, notes } = {}) {
     const payload = {
+      session_token: sessionToken.value,
       customer_name: customer_name || null,
       notes: notes || null,
       items: lines.value.map((line) => ({
