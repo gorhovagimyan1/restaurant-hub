@@ -3,7 +3,10 @@
 namespace App\Models;
 
 use App\Enums\RestaurantStatus;
+use App\Support\OpeningHours;
 use App\Traits\HasUuid;
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -145,5 +148,24 @@ class Restaurant extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    /**
+     * Open/closed snapshot for a given moment (defaults to now), resolving the
+     * weekly hours and any special-day overrides in the restaurant's timezone.
+     *
+     * @return array<string, mixed>
+     */
+    public function openStatus(?CarbonInterface $at = null): array
+    {
+        return (new OpeningHours($this))->statusAt($at ?? Carbon::now());
+    }
+
+    /**
+     * Whether the restaurant is open at the given moment (defaults to now).
+     */
+    public function isOpen(?CarbonInterface $at = null): bool
+    {
+        return (new OpeningHours($this))->isOpenAt($at ?? Carbon::now());
     }
 }

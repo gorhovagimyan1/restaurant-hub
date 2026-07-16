@@ -39,6 +39,7 @@ class RestaurantResource extends JsonResource
             'special_hours' => SpecialHourResource::collection(
                 $this->whenLoaded('specialHours'),
             ),
+            'open_status' => $this->openStatus(),
         ];
     }
 }

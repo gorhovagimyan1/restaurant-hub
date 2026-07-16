@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Route;
  */
 Route::prefix('public')->group(function () {
     Route::get('restaurants/{restaurant:slug}/menu', [MenuController::class, 'show']);
+    Route::get('restaurants/{restaurant:slug}/status', [MenuController::class, 'status']);
 
     // QR flow: resolve a scanned table token, open the visit's dining session,
     // then place a guest order for it.

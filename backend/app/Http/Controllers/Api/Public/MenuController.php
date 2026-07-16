@@ -51,4 +51,15 @@ class MenuController extends Controller
             'categories' => CategoryResource::collection($categories),
         ], 'Menu retrieved successfully.');
     }
+
+    /**
+     * Lightweight open/closed status for a restaurant — cheap enough for the
+     * customer portal to poll without re-fetching the whole menu.
+     */
+    public function status(Restaurant $restaurant): JsonResponse
+    {
+        abort_unless($restaurant->is_active, 404);
+
+        return ApiResponse::success($restaurant->openStatus(), 'Status retrieved.');
+    }
 }
