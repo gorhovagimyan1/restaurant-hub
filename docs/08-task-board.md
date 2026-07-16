@@ -129,7 +129,8 @@ Project Status: 🟢 Development Started
 # Sprint 6 - Restaurant Management 🟡
 
 * [x] Restaurant Dashboard
-* [ ] Restaurant CRUD (platform-admin; owner self-registration pending)
+* [x] Owner self-registration (provisions restaurant + settings on sign-up)
+* [ ] Restaurant CRUD (platform-admin: manage all restaurants — Sprint 5)
 * [x] Restaurant Profile
 * [x] Restaurant Settings
 * [x] Business Hours

@@ -82,6 +82,13 @@ function fillDemo(role) {
         <span class="text-stone-300">·</span>
         <button class="hover:text-amber-600" @click="fillDemo('kitchen')">Demo kitchen</button>
       </div>
+
+      <p class="mt-4 text-center text-xs text-stone-400">
+        New here?
+        <RouterLink :to="{ name: 'register' }" class="font-medium text-amber-600 hover:underline">
+          Create your restaurant
+        </RouterLink>
+      </p>
     </div>
   </div>
 </template>

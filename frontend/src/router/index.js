@@ -28,6 +28,11 @@ const router = createRouter({
       component: () => import('@/views/dashboard/LoginView.vue'),
     },
     {
+      path: '/register',
+      name: 'register',
+      component: () => import('@/views/dashboard/RegisterView.vue'),
+    },
+    {
       path: '/forgot-password',
       name: 'forgot-password',
       component: () => import('@/views/dashboard/ForgotPasswordView.vue'),
@@ -144,7 +149,7 @@ router.beforeEach((to) => {
   if (to.meta.requiresAuth && !hasToken) {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
-  if (to.name === 'login' && hasToken) {
+  if ((to.name === 'login' || to.name === 'register') && hasToken) {
     // Send already-authenticated users to their role's home (kitchen staff to
     // the kitchen display, everyone else to the owner dashboard).
     return useAuthStore().homeRoute

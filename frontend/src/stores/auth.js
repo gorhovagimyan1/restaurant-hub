@@ -52,6 +52,18 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function register(payload) {
+    loading.value = true
+    try {
+      const { data } = await http.post('/auth/register', payload)
+      setToken(data.data.token)
+      user.value = data.data.user
+      return data.data.user
+    } finally {
+      loading.value = false
+    }
+  }
+
   async function fetchMe() {
     const { data } = await http.get('/auth/me')
     user.value = data.data
@@ -106,6 +118,7 @@ export const useAuthStore = defineStore('auth', () => {
     isKitchenOnly,
     homeRoute,
     login,
+    register,
     fetchMe,
     logout,
     forgotPassword,

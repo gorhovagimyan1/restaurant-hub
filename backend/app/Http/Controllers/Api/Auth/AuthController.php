@@ -2,34 +2,85 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
+use App\Enums\RestaurantStatus;
 use App\Enums\Role;
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Resources\Dashboard\RestaurantResource;
 use App\Http\Resources\UserResource;
+use App\Models\Restaurant;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
     /**
-     * Register a new account. Self-registration creates a Restaurant Owner.
+     * Register a new account. Self-registration provisions a fresh tenant: a
+     * Restaurant Owner plus their restaurant, its default settings, and their
+     * membership — so they can start managing it immediately.
      */
     public function register(RegisterRequest $request): JsonResponse
     {
-        $user = User::create($request->validated());
-        $user->assignRole(Role::RestaurantOwner->value);
+        $data = $request->validated();
+
+        [$user, $restaurant] = DB::transaction(function () use ($data) {
+            $user = User::create([
+                'first_name' => $data['first_name'],
+                'last_name' => $data['last_name'],
+                'email' => $data['email'],
+                'phone' => $data['phone'] ?? null,
+                'password' => $data['password'],
+            ]);
+            $user->assignRole(Role::RestaurantOwner->value);
+
+            $restaurant = Restaurant::create([
+                'name' => $data['restaurant_name'],
+                'slug' => $this->uniqueSlug($data['restaurant_name']),
+                'currency' => 'AMD',
+                'timezone' => 'Asia/Yerevan',
+                'status' => RestaurantStatus::Active->value,
+                'is_active' => true,
+            ]);
+            $restaurant->settings()->create([]);
+            $restaurant->users()->attach($user->id, [
+                'is_active' => true,
+                'joined_at' => now(),
+            ]);
+
+            return [$user, $restaurant];
+        });
 
         $token = $user->createToken('auth')->plainTextToken;
 
         return ApiResponse::created([
             'user' => new UserResource($user->load('roles')),
+            'restaurant' => new RestaurantResource($restaurant),
             'token' => $token,
         ], 'Registration successful.');
+    }
+
+    /**
+     * Build a URL-safe, unique slug from the restaurant name.
+     */
+    private function uniqueSlug(string $name): string
+    {
+        $base = Str::slug($name) ?: 'restaurant';
+        $slug = $base;
+        $suffix = 2;
+
+        while (Restaurant::where('slug', $slug)->exists()) {
+            $slug = "{$base}-{$suffix}";
+            $suffix++;
+        }
+
+        return $slug;
     }
 
     /**
