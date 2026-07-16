@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\PasswordResetController;
 use App\Http\Controllers\Api\Auth\ProfileController;
+use App\Http\Controllers\Api\Dashboard\BusinessHoursController;
 use App\Http\Controllers\Api\Dashboard\CategoryController;
 use App\Http\Controllers\Api\Dashboard\DashboardController;
 use App\Http\Controllers\Api\Dashboard\EmployeeController;
@@ -64,9 +65,12 @@ Route::prefix('auth')->group(function () {
 Route::prefix('dashboard')->middleware('auth:sanctum')->group(function () {
     Route::get('restaurant', [DashboardController::class, 'restaurant']);
 
-    // Restaurant profile (owners/managers).
+    // Restaurant profile & opening hours (owners/managers).
     Route::middleware('can:restaurant.manage')->group(function () {
         Route::put('restaurant', [DashboardController::class, 'updateRestaurant']);
+
+        Route::get('business-hours', [BusinessHoursController::class, 'index']);
+        Route::put('business-hours', [BusinessHoursController::class, 'update']);
     });
 
     // Operational settings.

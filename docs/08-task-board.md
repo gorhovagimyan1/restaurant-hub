@@ -132,7 +132,7 @@ Project Status: 🟢 Development Started
 * [ ] Restaurant CRUD (platform-admin; owner self-registration pending)
 * [x] Restaurant Profile
 * [x] Restaurant Settings
-* [ ] Business Hours (no schema yet)
+* [x] Business Hours
 * [x] Employee Management
 * [x] Invite Employees (email set-password link)
 * [x] Assign Roles

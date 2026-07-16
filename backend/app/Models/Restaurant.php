@@ -64,6 +64,16 @@ class Restaurant extends Model
     }
 
     /**
+     * The opening hours for this restaurant, one row per weekday.
+     *
+     * @return HasMany<BusinessHour, $this>
+     */
+    public function businessHours(): HasMany
+    {
+        return $this->hasMany(BusinessHour::class)->orderBy('day_of_week');
+    }
+
+    /**
      * The users (staff) attached to this restaurant.
      *
      * @return BelongsToMany<User, $this>

@@ -8,6 +8,8 @@ import {
   updateRestaurant,
   getSettings,
   updateSettings,
+  getBusinessHours,
+  updateBusinessHours,
 } from '@/services/dashboard'
 
 const auth = useAuthStore()
@@ -53,6 +55,16 @@ const settingsErrors = ref({})
 const settingsNotice = ref(null)
 const savingSettings = ref(false)
 
+// --- Business hours ---
+const hours = ref([])
+const hoursErrors = ref({})
+const hoursNotice = ref(null)
+const savingHours = ref(false)
+
+function hoursError(index, field) {
+  return hoursErrors.value[`hours.${index}.${field}`]?.[0]
+}
+
 const TOGGLES = [
   { key: 'allow_guest_orders', label: 'Allow guest orders', hint: 'Guests can order without an account.' },
   { key: 'require_table_selection', label: 'Require table selection', hint: 'Force a table before ordering.' },
@@ -83,6 +95,7 @@ function fillSettings(data) {
 onMounted(async () => {
   try {
     fillProfile(await getRestaurant())
+    hours.value = await getBusinessHours()
     if (canSettings) fillSettings(await getSettings())
   } catch (err) {
     loadError.value = err?.response?.data?.message || 'Could not load settings.'
@@ -90,6 +103,30 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+async function saveHours() {
+  hoursErrors.value = {}
+  hoursNotice.value = null
+  savingHours.value = true
+  try {
+    hours.value = await updateBusinessHours(
+      hours.value.map((h) => ({
+        day_of_week: h.day_of_week,
+        is_closed: h.is_closed,
+        open_time: h.is_closed ? null : h.open_time || null,
+        close_time: h.is_closed ? null : h.close_time || null,
+      })),
+    )
+    hoursNotice.value = 'Hours saved.'
+  } catch (err) {
+    hoursErrors.value = err?.response?.data?.errors || {}
+    if (!Object.keys(hoursErrors.value).length) {
+      loadError.value = err?.response?.data?.message || 'Could not save the hours.'
+    }
+  } finally {
+    savingHours.value = false
+  }
+}
 
 async function saveProfile() {
   profileErrors.value = {}
@@ -316,6 +353,59 @@ const inputClass =
             {{ savingSettings ? 'Saving…' : 'Save settings' }}
           </button>
           <span v-if="settingsNotice" class="text-sm text-green-700">{{ settingsNotice }}</span>
+        </div>
+      </form>
+
+      <!-- Business hours -->
+      <form class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5" @submit.prevent="saveHours">
+        <h2 class="text-lg font-bold text-stone-900">Opening hours</h2>
+        <p class="mt-1 text-xs text-stone-400">Shown to customers on your menu page.</p>
+
+        <ul class="mt-4 divide-y divide-stone-100">
+          <li
+            v-for="(day, i) in hours"
+            :key="day.day_of_week"
+            class="flex flex-wrap items-center gap-3 py-3"
+          >
+            <span class="w-24 text-sm font-medium text-stone-800">{{ day.day_label }}</span>
+
+            <label class="flex items-center gap-1.5 text-xs text-stone-500">
+              <input v-model="day.is_closed" type="checkbox" class="rounded border-stone-300" />
+              Closed
+            </label>
+
+            <template v-if="!day.is_closed">
+              <input
+                v-model="day.open_time"
+                type="time"
+                class="rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+              />
+              <span class="text-stone-400">–</span>
+              <input
+                v-model="day.close_time"
+                type="time"
+                class="rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+              />
+              <span
+                v-if="hoursError(i, 'open_time') || hoursError(i, 'close_time')"
+                class="text-xs text-red-600"
+              >
+                {{ hoursError(i, 'open_time') || hoursError(i, 'close_time') }}
+              </span>
+            </template>
+            <span v-else class="text-sm text-stone-400">Closed all day</span>
+          </li>
+        </ul>
+
+        <div class="mt-4 flex items-center gap-3">
+          <button
+            type="submit"
+            :disabled="savingHours"
+            class="rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-60"
+          >
+            {{ savingHours ? 'Saving…' : 'Save hours' }}
+          </button>
+          <span v-if="hoursNotice" class="text-sm text-green-700">{{ hoursNotice }}</span>
         </div>
       </form>
     </div>

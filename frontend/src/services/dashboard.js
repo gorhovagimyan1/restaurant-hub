@@ -22,6 +22,16 @@ export async function updateSettings(payload) {
   return data.data
 }
 
+export async function getBusinessHours() {
+  const { data } = await http.get('/dashboard/business-hours')
+  return data.data
+}
+
+export async function updateBusinessHours(hours) {
+  const { data } = await http.put('/dashboard/business-hours', { hours })
+  return data.data
+}
+
 export async function getCategories() {
   const { data } = await http.get('/dashboard/categories')
   return data.data

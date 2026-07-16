@@ -22,6 +22,8 @@ class MenuController extends Controller
     {
         abort_unless($restaurant->is_active, 404);
 
+        $restaurant->load('businessHours');
+
         $menu = $restaurant->menus()
             ->where('is_active', true)
             ->orderBy('sort_order')
