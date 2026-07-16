@@ -69,26 +69,101 @@ function hoursError(index, field) {
 
 // --- Special days (holidays) ---
 const specialHours = ref([])
-const specialErrors = ref({})
 const specialNotice = ref(null)
 const savingSpecial = ref(false)
 
-function specialError(index, field) {
-  return specialErrors.value[`special_hours.${index}.${field}`]?.[0]
-}
+// Add/edit happens in a modal; the list itself is read-only.
+const showSpecialModal = ref(false)
+const editingIndex = ref(null)
+const modalError = ref(null)
+const draft = reactive({
+  date: '',
+  label: '',
+  is_closed: true,
+  open_time: '09:00',
+  close_time: '17:00',
+})
 
-function addSpecialDay() {
-  specialHours.value.push({
+function openAddSpecial() {
+  editingIndex.value = null
+  modalError.value = null
+  Object.assign(draft, {
     date: '',
+    label: '',
     is_closed: true,
     open_time: '09:00',
     close_time: '17:00',
-    label: '',
+  })
+  showSpecialModal.value = true
+}
+
+function openEditSpecial(index) {
+  const day = specialHours.value[index]
+  editingIndex.value = index
+  modalError.value = null
+  Object.assign(draft, {
+    date: day.date,
+    label: day.label || '',
+    is_closed: day.is_closed,
+    open_time: day.open_time || '09:00',
+    close_time: day.close_time || '17:00',
+  })
+  showSpecialModal.value = true
+}
+
+function closeSpecialModal() {
+  showSpecialModal.value = false
+}
+
+function formatSpecialDate(date) {
+  return new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   })
 }
 
-function removeSpecialDay(index) {
-  specialHours.value.splice(index, 1)
+async function confirmSpecial() {
+  modalError.value = null
+
+  if (!draft.date) {
+    modalError.value = 'Please choose a date.'
+    return
+  }
+  const duplicate = specialHours.value.some((d, i) => d.date === draft.date && i !== editingIndex.value)
+  if (duplicate) {
+    modalError.value = 'That date already has an entry.'
+    return
+  }
+  if (!draft.is_closed && (!draft.open_time || !draft.close_time)) {
+    modalError.value = 'Set both opening and closing times, or mark the day closed.'
+    return
+  }
+
+  const entry = {
+    date: draft.date,
+    is_closed: draft.is_closed,
+    open_time: draft.is_closed ? null : draft.open_time,
+    close_time: draft.is_closed ? null : draft.close_time,
+    label: draft.label.trim() || null,
+  }
+
+  const next = [...specialHours.value]
+  if (editingIndex.value === null) {
+    next.push(entry)
+  } else {
+    next.splice(editingIndex.value, 1, entry)
+  }
+  next.sort((a, b) => a.date.localeCompare(b.date))
+
+  await persistSpecial(next, { fromModal: true })
+}
+
+async function removeSpecial(index) {
+  await persistSpecial(
+    specialHours.value.filter((_, i) => i !== index),
+  )
 }
 
 const TOGGLES = [
@@ -155,13 +230,14 @@ async function saveHours() {
   }
 }
 
-async function saveSpecial() {
-  specialErrors.value = {}
+// Persist the whole set (add/edit/remove all use bulk replace). On success the
+// server response becomes the new source of truth for the list.
+async function persistSpecial(list, { fromModal = false } = {}) {
   specialNotice.value = null
   savingSpecial.value = true
   try {
     specialHours.value = await updateSpecialHours(
-      specialHours.value.map((d) => ({
+      list.map((d) => ({
         date: d.date,
         is_closed: d.is_closed,
         open_time: d.is_closed ? null : d.open_time || null,
@@ -170,10 +246,16 @@ async function saveSpecial() {
       })),
     )
     specialNotice.value = 'Special days saved.'
+    if (fromModal) showSpecialModal.value = false
   } catch (err) {
-    specialErrors.value = err?.response?.data?.errors || {}
-    if (!Object.keys(specialErrors.value).length) {
-      loadError.value = err?.response?.data?.message || 'Could not save the special days.'
+    const message =
+      err?.response?.data?.errors
+        ? 'Please check the date and times.'
+        : err?.response?.data?.message || 'Could not save the special days.'
+    if (fromModal) {
+      modalError.value = message
+    } else {
+      loadError.value = message
     }
   } finally {
     savingSpecial.value = false
@@ -462,7 +544,7 @@ const inputClass =
       </form>
 
       <!-- Holidays / special days -->
-      <form class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5" @submit.prevent="saveSpecial">
+      <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
         <div class="flex items-start justify-between gap-3">
           <div>
             <h2 class="text-lg font-bold text-stone-900">Holidays &amp; special days</h2>
@@ -472,8 +554,8 @@ const inputClass =
           </div>
           <button
             type="button"
-            class="shrink-0 rounded-xl border border-stone-200 px-3 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-100"
-            @click="addSpecialDay"
+            class="shrink-0 rounded-xl bg-amber-500 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-amber-600"
+            @click="openAddSpecial"
           >
             + Add date
           </button>
@@ -483,78 +565,121 @@ const inputClass =
           No special days set. Add one for a holiday or one-off closure.
         </p>
 
-        <ul v-else class="mt-4 space-y-3">
+        <ul v-else class="mt-4 divide-y divide-stone-100">
           <li
             v-for="(day, i) in specialHours"
-            :key="i"
-            class="rounded-xl border border-stone-100 p-3"
+            :key="day.date"
+            class="flex items-center gap-3 py-3"
           >
-            <div class="flex flex-wrap items-center gap-3">
-              <div>
-                <input
-                  v-model="day.date"
-                  type="date"
-                  class="rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
-                />
-                <p v-if="specialError(i, 'date')" class="mt-1 text-xs text-red-600">
-                  {{ specialError(i, 'date') }}
-                </p>
-              </div>
-
-              <input
-                v-model="day.label"
-                type="text"
-                placeholder="Label (e.g. Christmas)"
-                class="min-w-40 flex-1 rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
-              />
-
-              <label class="flex items-center gap-1.5 text-xs text-stone-500">
-                <input v-model="day.is_closed" type="checkbox" class="rounded border-stone-300" />
-                Closed
-              </label>
-
-              <button
-                type="button"
-                class="ml-auto rounded-lg px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50"
-                @click="removeSpecialDay(i)"
-              >
-                Remove
-              </button>
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm font-medium text-stone-800">
+                {{ formatSpecialDate(day.date) }}
+                <span v-if="day.label" class="font-normal text-stone-400">· {{ day.label }}</span>
+              </p>
+              <p class="text-xs" :class="day.is_closed ? 'text-red-500' : 'text-stone-500'">
+                {{ day.is_closed ? 'Closed all day' : `${day.open_time} – ${day.close_time}` }}
+              </p>
             </div>
-
-            <div v-if="!day.is_closed" class="mt-2 flex flex-wrap items-center gap-3">
-              <input
-                v-model="day.open_time"
-                type="time"
-                class="rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
-              />
-              <span class="text-stone-400">–</span>
-              <input
-                v-model="day.close_time"
-                type="time"
-                class="rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
-              />
-              <span
-                v-if="specialError(i, 'open_time') || specialError(i, 'close_time')"
-                class="text-xs text-red-600"
-              >
-                {{ specialError(i, 'open_time') || specialError(i, 'close_time') }}
-              </span>
-            </div>
+            <button
+              type="button"
+              class="rounded-lg px-2 py-1 text-xs font-medium text-stone-500 hover:bg-stone-100"
+              @click="openEditSpecial(i)"
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              class="rounded-lg px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50 disabled:opacity-50"
+              :disabled="savingSpecial"
+              @click="removeSpecial(i)"
+            >
+              Remove
+            </button>
           </li>
         </ul>
 
-        <div class="mt-4 flex items-center gap-3">
-          <button
-            type="submit"
-            :disabled="savingSpecial"
-            class="rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-60"
-          >
-            {{ savingSpecial ? 'Saving…' : 'Save special days' }}
-          </button>
-          <span v-if="specialNotice" class="text-sm text-green-700">{{ specialNotice }}</span>
+        <span v-if="specialNotice" class="mt-3 block text-sm text-green-700">{{ specialNotice }}</span>
+      </section>
+    </div>
+
+    <!-- Add / edit special day modal -->
+    <div
+      v-if="showSpecialModal"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      @click.self="closeSpecialModal"
+    >
+      <div class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+        <h3 class="text-lg font-bold text-stone-900">
+          {{ editingIndex === null ? 'Add special day' : 'Edit special day' }}
+        </h3>
+
+        <div class="mt-4 space-y-4">
+          <div>
+            <label class="block text-xs font-medium text-stone-500">Date</label>
+            <input
+              v-model="draft.date"
+              type="date"
+              class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-stone-500">Label (optional)</label>
+            <input
+              v-model="draft.label"
+              type="text"
+              placeholder="e.g. Christmas Day"
+              class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            />
+          </div>
+
+          <label class="flex items-center gap-2 text-sm text-stone-600">
+            <input v-model="draft.is_closed" type="checkbox" class="rounded border-stone-300" />
+            Closed all day
+          </label>
+
+          <div v-if="!draft.is_closed" class="flex items-center gap-3">
+            <div>
+              <label class="block text-xs font-medium text-stone-500">Opens</label>
+              <input
+                v-model="draft.open_time"
+                type="time"
+                class="mt-1 rounded-xl border border-stone-200 px-3 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-stone-500">Closes</label>
+              <input
+                v-model="draft.close_time"
+                type="time"
+                class="mt-1 rounded-xl border border-stone-200 px-3 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+              />
+            </div>
+          </div>
+
+          <p v-if="modalError" class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+            {{ modalError }}
+          </p>
         </div>
-      </form>
+
+        <div class="mt-6 flex justify-end gap-3">
+          <button
+            type="button"
+            class="rounded-xl px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100"
+            @click="closeSpecialModal"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            :disabled="savingSpecial"
+            class="rounded-xl bg-amber-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-60"
+            @click="confirmSpecial"
+          >
+            {{ savingSpecial ? 'Saving…' : editingIndex === null ? 'Add' : 'Save' }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
