@@ -10,6 +10,8 @@ import {
   updateSettings,
   getBusinessHours,
   updateBusinessHours,
+  getSpecialHours,
+  updateSpecialHours,
 } from '@/services/dashboard'
 
 const auth = useAuthStore()
@@ -65,6 +67,30 @@ function hoursError(index, field) {
   return hoursErrors.value[`hours.${index}.${field}`]?.[0]
 }
 
+// --- Special days (holidays) ---
+const specialHours = ref([])
+const specialErrors = ref({})
+const specialNotice = ref(null)
+const savingSpecial = ref(false)
+
+function specialError(index, field) {
+  return specialErrors.value[`special_hours.${index}.${field}`]?.[0]
+}
+
+function addSpecialDay() {
+  specialHours.value.push({
+    date: '',
+    is_closed: true,
+    open_time: '09:00',
+    close_time: '17:00',
+    label: '',
+  })
+}
+
+function removeSpecialDay(index) {
+  specialHours.value.splice(index, 1)
+}
+
 const TOGGLES = [
   { key: 'allow_guest_orders', label: 'Allow guest orders', hint: 'Guests can order without an account.' },
   { key: 'require_table_selection', label: 'Require table selection', hint: 'Force a table before ordering.' },
@@ -96,6 +122,7 @@ onMounted(async () => {
   try {
     fillProfile(await getRestaurant())
     hours.value = await getBusinessHours()
+    specialHours.value = await getSpecialHours()
     if (canSettings) fillSettings(await getSettings())
   } catch (err) {
     loadError.value = err?.response?.data?.message || 'Could not load settings.'
@@ -125,6 +152,31 @@ async function saveHours() {
     }
   } finally {
     savingHours.value = false
+  }
+}
+
+async function saveSpecial() {
+  specialErrors.value = {}
+  specialNotice.value = null
+  savingSpecial.value = true
+  try {
+    specialHours.value = await updateSpecialHours(
+      specialHours.value.map((d) => ({
+        date: d.date,
+        is_closed: d.is_closed,
+        open_time: d.is_closed ? null : d.open_time || null,
+        close_time: d.is_closed ? null : d.close_time || null,
+        label: d.label?.trim() || null,
+      })),
+    )
+    specialNotice.value = 'Special days saved.'
+  } catch (err) {
+    specialErrors.value = err?.response?.data?.errors || {}
+    if (!Object.keys(specialErrors.value).length) {
+      loadError.value = err?.response?.data?.message || 'Could not save the special days.'
+    }
+  } finally {
+    savingSpecial.value = false
   }
 }
 
@@ -406,6 +458,101 @@ const inputClass =
             {{ savingHours ? 'Saving…' : 'Save hours' }}
           </button>
           <span v-if="hoursNotice" class="text-sm text-green-700">{{ hoursNotice }}</span>
+        </div>
+      </form>
+
+      <!-- Holidays / special days -->
+      <form class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5" @submit.prevent="saveSpecial">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-stone-900">Holidays &amp; special days</h2>
+            <p class="mt-1 text-xs text-stone-400">
+              Override your weekly hours on specific dates. These win over the schedule above.
+            </p>
+          </div>
+          <button
+            type="button"
+            class="shrink-0 rounded-xl border border-stone-200 px-3 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-100"
+            @click="addSpecialDay"
+          >
+            + Add date
+          </button>
+        </div>
+
+        <p v-if="!specialHours.length" class="mt-4 text-sm text-stone-400">
+          No special days set. Add one for a holiday or one-off closure.
+        </p>
+
+        <ul v-else class="mt-4 space-y-3">
+          <li
+            v-for="(day, i) in specialHours"
+            :key="i"
+            class="rounded-xl border border-stone-100 p-3"
+          >
+            <div class="flex flex-wrap items-center gap-3">
+              <div>
+                <input
+                  v-model="day.date"
+                  type="date"
+                  class="rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+                />
+                <p v-if="specialError(i, 'date')" class="mt-1 text-xs text-red-600">
+                  {{ specialError(i, 'date') }}
+                </p>
+              </div>
+
+              <input
+                v-model="day.label"
+                type="text"
+                placeholder="Label (e.g. Christmas)"
+                class="min-w-40 flex-1 rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+              />
+
+              <label class="flex items-center gap-1.5 text-xs text-stone-500">
+                <input v-model="day.is_closed" type="checkbox" class="rounded border-stone-300" />
+                Closed
+              </label>
+
+              <button
+                type="button"
+                class="ml-auto rounded-lg px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50"
+                @click="removeSpecialDay(i)"
+              >
+                Remove
+              </button>
+            </div>
+
+            <div v-if="!day.is_closed" class="mt-2 flex flex-wrap items-center gap-3">
+              <input
+                v-model="day.open_time"
+                type="time"
+                class="rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+              />
+              <span class="text-stone-400">–</span>
+              <input
+                v-model="day.close_time"
+                type="time"
+                class="rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+              />
+              <span
+                v-if="specialError(i, 'open_time') || specialError(i, 'close_time')"
+                class="text-xs text-red-600"
+              >
+                {{ specialError(i, 'open_time') || specialError(i, 'close_time') }}
+              </span>
+            </div>
+          </li>
+        </ul>
+
+        <div class="mt-4 flex items-center gap-3">
+          <button
+            type="submit"
+            :disabled="savingSpecial"
+            class="rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-60"
+          >
+            {{ savingSpecial ? 'Saving…' : 'Save special days' }}
+          </button>
+          <span v-if="specialNotice" class="text-sm text-green-700">{{ specialNotice }}</span>
         </div>
       </form>
     </div>

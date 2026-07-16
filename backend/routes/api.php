@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Dashboard\OrderItemController;
 use App\Http\Controllers\Api\Dashboard\ProductController;
 use App\Http\Controllers\Api\Dashboard\ProductImageController;
 use App\Http\Controllers\Api\Dashboard\SettingsController;
+use App\Http\Controllers\Api\Dashboard\SpecialHoursController;
 use App\Http\Controllers\Api\Dashboard\TableController;
 use App\Http\Controllers\Api\Public\MenuController;
 use App\Http\Controllers\Api\Public\OrderController as PublicOrderController;
@@ -71,6 +72,9 @@ Route::prefix('dashboard')->middleware('auth:sanctum')->group(function () {
 
         Route::get('business-hours', [BusinessHoursController::class, 'index']);
         Route::put('business-hours', [BusinessHoursController::class, 'update']);
+
+        Route::get('special-hours', [SpecialHoursController::class, 'index']);
+        Route::put('special-hours', [SpecialHoursController::class, 'update']);
     });
 
     // Operational settings.

@@ -32,6 +32,16 @@ export async function updateBusinessHours(hours) {
   return data.data
 }
 
+export async function getSpecialHours() {
+  const { data } = await http.get('/dashboard/special-hours')
+  return data.data
+}
+
+export async function updateSpecialHours(specialHours) {
+  const { data } = await http.put('/dashboard/special-hours', { special_hours: specialHours })
+  return data.data
+}
+
 export async function getCategories() {
   const { data } = await http.get('/dashboard/categories')
   return data.data

@@ -74,6 +74,17 @@ class Restaurant extends Model
     }
 
     /**
+     * Date-specific opening-hour overrides (holidays / special days), which
+     * take precedence over {@see self::businessHours()} for their date.
+     *
+     * @return HasMany<SpecialHour, $this>
+     */
+    public function specialHours(): HasMany
+    {
+        return $this->hasMany(SpecialHour::class)->orderBy('date');
+    }
+
+    /**
      * The users (staff) attached to this restaurant.
      *
      * @return BelongsToMany<User, $this>

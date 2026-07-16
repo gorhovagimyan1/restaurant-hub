@@ -22,7 +22,11 @@ class MenuController extends Controller
     {
         abort_unless($restaurant->is_active, 404);
 
-        $restaurant->load('businessHours');
+        $restaurant->load([
+            'businessHours',
+            // Only forthcoming overrides matter to a customer viewing the menu.
+            'specialHours' => fn ($query) => $query->whereDate('date', '>=', now()),
+        ]);
 
         $menu = $restaurant->menus()
             ->where('is_active', true)
