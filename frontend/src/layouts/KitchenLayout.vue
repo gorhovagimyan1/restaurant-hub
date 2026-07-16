@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { RouterView, useRouter } from 'vue-router'
+import { RouterView, RouterLink, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import http from '@/services/http'
@@ -45,7 +45,12 @@ async function logout() {
         </div>
       </div>
       <div class="flex items-center gap-3 text-sm">
-        <span class="hidden text-stone-400 sm:inline">{{ user?.full_name }}</span>
+        <RouterLink
+          :to="{ name: 'profile' }"
+          class="hidden text-stone-400 hover:text-amber-400 sm:inline"
+        >
+          {{ user?.full_name }}
+        </RouterLink>
         <button
           class="rounded-lg border border-stone-600 px-3 py-1.5 font-medium text-stone-300 hover:bg-stone-800"
           @click="logout"

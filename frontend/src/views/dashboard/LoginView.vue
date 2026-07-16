@@ -48,7 +48,15 @@ function fillDemo(role) {
           />
         </div>
         <div>
-          <label class="mb-1 block text-sm font-medium text-stone-700">Password</label>
+          <div class="mb-1 flex items-center justify-between">
+            <label class="block text-sm font-medium text-stone-700">Password</label>
+            <RouterLink
+              :to="{ name: 'forgot-password' }"
+              class="text-xs text-stone-400 hover:text-amber-600"
+            >
+              Forgot password?
+            </RouterLink>
+          </div>
           <input
             v-model="password"
             type="password"

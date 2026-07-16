@@ -90,7 +90,12 @@ async function logout() {
         </a>
       </nav>
       <div class="border-t border-stone-200 p-3">
-        <p class="px-3 text-xs text-stone-400">{{ user?.full_name }}</p>
+        <RouterLink
+          :to="{ name: 'profile' }"
+          class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100"
+        >
+          👤 {{ user?.full_name || 'My Profile' }}
+        </RouterLink>
         <button
           class="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-stone-600 hover:bg-stone-100"
           @click="logout"

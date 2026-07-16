@@ -98,16 +98,16 @@ Project Status: 🟢 Development Started
 
 ---
 
-# Sprint 4 - Authentication Module 🟡
+# Sprint 4 - Authentication Module ✅
 
 * [x] Login
 * [x] Logout
-* [ ] Forgot Password
-* [ ] Reset Password
-* [ ] Change Password
-* [ ] User Profile
+* [x] Forgot Password
+* [x] Reset Password
+* [x] Change Password
+* [x] User Profile
 * [x] Current User API
-* [ ] Role Based Redirect (redirects to dashboard; not yet role-branching)
+* [x] Role Based Redirect
 
 
 ---

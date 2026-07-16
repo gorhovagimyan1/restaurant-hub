@@ -64,6 +64,32 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null
   }
 
+  // Request a password reset email. Returns the API's (deliberately vague)
+  // confirmation message.
+  async function forgotPassword(email) {
+    const { data } = await http.post('/auth/forgot-password', { email })
+    return data.message
+  }
+
+  // Complete a password reset with the token from the emailed link.
+  async function resetPassword(payload) {
+    const { data } = await http.post('/auth/reset-password', payload)
+    return data.message
+  }
+
+  // Update the signed-in user's profile details.
+  async function updateProfile(payload) {
+    const { data } = await http.put('/auth/profile', payload)
+    user.value = data.data
+    return user.value
+  }
+
+  // Change the signed-in user's password (revokes other sessions server-side).
+  async function changePassword(payload) {
+    const { data } = await http.put('/auth/password', payload)
+    return data.message
+  }
+
   return {
     token,
     user,
@@ -77,5 +103,9 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     fetchMe,
     logout,
+    forgotPassword,
+    resetPassword,
+    updateProfile,
+    changePassword,
   }
 })

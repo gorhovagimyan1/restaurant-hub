@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { TOKEN_KEY } from '@/services/http'
 import { activeDiningSlug } from '@/stores/dining'
+import { useAuthStore } from '@/stores/auth'
 import CustomerLayout from '@/layouts/CustomerLayout.vue'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import KitchenLayout from '@/layouts/KitchenLayout.vue'
@@ -25,6 +26,24 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: () => import('@/views/dashboard/LoginView.vue'),
+    },
+    {
+      path: '/forgot-password',
+      name: 'forgot-password',
+      component: () => import('@/views/dashboard/ForgotPasswordView.vue'),
+    },
+    {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: () => import('@/views/dashboard/ResetPasswordView.vue'),
+    },
+    {
+      // Standalone so both managerial and kitchen staff can reach it without
+      // tripping the DashboardLayout's kitchen-only redirect.
+      path: '/profile',
+      name: 'profile',
+      component: () => import('@/views/dashboard/ProfileView.vue'),
+      meta: { requiresAuth: true },
     },
     {
       path: '/dashboard',
@@ -111,7 +130,9 @@ router.beforeEach((to) => {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
   if (to.name === 'login' && hasToken) {
-    return { name: 'dashboard-menu' }
+    // Send already-authenticated users to their role's home (kitchen staff to
+    // the kitchen display, everyone else to the owner dashboard).
+    return useAuthStore().homeRoute
   }
 
   // The customer menu portal only opens for a table whose QR was scanned.

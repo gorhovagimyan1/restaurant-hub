@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\Auth\PasswordResetController;
+use App\Http\Controllers\Api\Auth\ProfileController;
 use App\Http\Controllers\Api\Dashboard\CategoryController;
 use App\Http\Controllers\Api\Dashboard\DashboardController;
 use App\Http\Controllers\Api\Dashboard\OrderController;
@@ -38,9 +40,17 @@ Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
 
+    // Guest password recovery.
+    Route::post('forgot-password', [PasswordResetController::class, 'forgot']);
+    Route::post('reset-password', [PasswordResetController::class, 'reset']);
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::get('me', [AuthController::class, 'me']);
+
+        // Authenticated profile management.
+        Route::put('profile', [ProfileController::class, 'update']);
+        Route::put('password', [ProfileController::class, 'changePassword']);
     });
 });
 
