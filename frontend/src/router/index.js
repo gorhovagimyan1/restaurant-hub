@@ -75,6 +75,11 @@ const router = createRouter({
           name: 'dashboard-team',
           component: () => import('@/views/dashboard/EmployeesManager.vue'),
         },
+        {
+          path: 'settings',
+          name: 'dashboard-settings',
+          component: () => import('@/views/dashboard/RestaurantSettings.vue'),
+        },
       ],
     },
     {

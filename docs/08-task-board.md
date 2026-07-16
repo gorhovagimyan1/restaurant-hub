@@ -129,10 +129,10 @@ Project Status: 🟢 Development Started
 # Sprint 6 - Restaurant Management 🟡
 
 * [ ] Restaurant Dashboard
-* [ ] Restaurant CRUD
-* [ ] Restaurant Profile
-* [ ] Restaurant Settings
-* [ ] Business Hours
+* [ ] Restaurant CRUD (platform-admin; owner self-registration pending)
+* [x] Restaurant Profile
+* [x] Restaurant Settings
+* [ ] Business Hours (no schema yet)
 * [x] Employee Management
 * [x] Invite Employees (email set-password link)
 * [x] Assign Roles
