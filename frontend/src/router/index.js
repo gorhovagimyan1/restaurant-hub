@@ -70,6 +70,11 @@ const router = createRouter({
           name: 'dashboard-tables',
           component: () => import('@/views/dashboard/TablesManager.vue'),
         },
+        {
+          path: 'team',
+          name: 'dashboard-team',
+          component: () => import('@/views/dashboard/EmployeesManager.vue'),
+        },
       ],
     },
     {

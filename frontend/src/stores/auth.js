@@ -15,6 +15,10 @@ export const useAuthStore = defineStore('auth', () => {
     return roles.value.includes(role)
   }
 
+  function can(permission) {
+    return permissions.value.includes(permission)
+  }
+
   // Kitchen/front-of-house staff who should land on the kitchen display rather
   // than the owner dashboard (which they lack permissions for).
   const isKitchenOnly = computed(() => {
@@ -98,6 +102,7 @@ export const useAuthStore = defineStore('auth', () => {
     roles,
     permissions,
     hasRole,
+    can,
     isKitchenOnly,
     homeRoute,
     login,

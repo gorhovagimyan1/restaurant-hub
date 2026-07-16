@@ -81,6 +81,14 @@ async function logout() {
         >
           🔳 Tables & QR
         </RouterLink>
+        <RouterLink
+          v-if="auth.can('employees.manage')"
+          :to="{ name: 'dashboard-team' }"
+          class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-stone-600 hover:bg-stone-100"
+          active-class="!bg-amber-100 !text-amber-700"
+        >
+          👥 Team
+        </RouterLink>
         <a
           :href="restaurant ? `/r/${restaurant.slug}` : '/'"
           target="_blank"

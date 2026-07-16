@@ -33,4 +33,30 @@ enum Role: string
     {
         return array_column(self::cases(), 'value');
     }
+
+    /**
+     * Roles an owner/manager may assign to staff they invite. Deliberately
+     * excludes platform (super-admin) and ownership roles, which are not
+     * grantable through employee management.
+     *
+     * @return array<int, self>
+     */
+    public static function staffAssignable(): array
+    {
+        return [
+            self::RestaurantManager,
+            self::Waiter,
+            self::KitchenStaff,
+        ];
+    }
+
+    /**
+     * The string values of {@see self::staffAssignable()}.
+     *
+     * @return array<int, string>
+     */
+    public static function staffAssignableValues(): array
+    {
+        return array_map(fn (self $role) => $role->value, self::staffAssignable());
+    }
 }

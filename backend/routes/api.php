@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Auth\PasswordResetController;
 use App\Http\Controllers\Api\Auth\ProfileController;
 use App\Http\Controllers\Api\Dashboard\CategoryController;
 use App\Http\Controllers\Api\Dashboard\DashboardController;
+use App\Http\Controllers\Api\Dashboard\EmployeeController;
 use App\Http\Controllers\Api\Dashboard\OrderController;
 use App\Http\Controllers\Api\Dashboard\OrderItemController;
 use App\Http\Controllers\Api\Dashboard\ProductController;
@@ -61,6 +62,14 @@ Route::prefix('auth')->group(function () {
  */
 Route::prefix('dashboard')->middleware('auth:sanctum')->group(function () {
     Route::get('restaurant', [DashboardController::class, 'restaurant']);
+
+    // Staff management (owners/managers).
+    Route::middleware('can:employees.manage')->group(function () {
+        Route::get('employees', [EmployeeController::class, 'index']);
+        Route::post('employees', [EmployeeController::class, 'store']);
+        Route::put('employees/{employee}', [EmployeeController::class, 'update']);
+        Route::delete('employees/{employee}', [EmployeeController::class, 'destroy']);
+    });
 
     Route::middleware('can:categories.manage')->group(function () {
         Route::get('categories', [CategoryController::class, 'index']);
