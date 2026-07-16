@@ -28,7 +28,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Where a freshly-authenticated user should be sent.
   const homeRoute = computed(() =>
-    isKitchenOnly.value ? { name: 'kitchen' } : { name: 'dashboard-menu' },
+    isKitchenOnly.value ? { name: 'kitchen' } : { name: 'dashboard-overview' },
   )
 
   function setToken(value) {

@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\Dashboard\DashboardController;
 use App\Http\Controllers\Api\Dashboard\EmployeeController;
 use App\Http\Controllers\Api\Dashboard\OrderController;
 use App\Http\Controllers\Api\Dashboard\OrderItemController;
+use App\Http\Controllers\Api\Dashboard\OverviewController;
 use App\Http\Controllers\Api\Dashboard\ProductController;
 use App\Http\Controllers\Api\Dashboard\ProductImageController;
 use App\Http\Controllers\Api\Dashboard\SettingsController;
@@ -66,6 +67,11 @@ Route::prefix('auth')->group(function () {
  */
 Route::prefix('dashboard')->middleware('auth:sanctum')->group(function () {
     Route::get('restaurant', [DashboardController::class, 'restaurant']);
+
+    // At-a-glance overview (owners/managers with reporting access).
+    Route::middleware('can:reports.view')->group(function () {
+        Route::get('overview', [OverviewController::class, 'index']);
+    });
 
     // Restaurant profile & opening hours (owners/managers).
     Route::middleware('can:restaurant.manage')->group(function () {
@@ -126,7 +132,6 @@ Route::prefix('dashboard')->middleware('auth:sanctum')->group(function () {
         // Acknowledge (clear) a table's waiter call.
         Route::post('tables/{table}/ack-call', [TableController::class, 'acknowledgeCall']);
     });
-
 
     // Table + QR management (owners/managers).
     Route::middleware('can:tables.manage')->group(function () {

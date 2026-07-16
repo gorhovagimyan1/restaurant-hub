@@ -128,7 +128,7 @@ Project Status: 🟢 Development Started
 
 # Sprint 6 - Restaurant Management 🟡
 
-* [ ] Restaurant Dashboard
+* [x] Restaurant Dashboard
 * [ ] Restaurant CRUD (platform-admin; owner self-registration pending)
 * [x] Restaurant Profile
 * [x] Restaurant Settings

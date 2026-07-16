@@ -2,6 +2,11 @@ import http from './http'
 
 // All endpoints are scoped server-side to the authenticated user's restaurant.
 
+export async function getOverview() {
+  const { data } = await http.get('/dashboard/overview')
+  return data.data
+}
+
 export async function getRestaurant() {
   const { data } = await http.get('/dashboard/restaurant')
   return data.data
