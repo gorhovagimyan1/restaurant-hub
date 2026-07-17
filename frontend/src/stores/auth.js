@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import http, { TOKEN_KEY } from '@/services/http'
+import { useDashboardStore } from '@/stores/dashboard'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem(TOKEN_KEY))
@@ -44,6 +45,8 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true
     try {
       const { data } = await http.post('/auth/login', credentials)
+      // Drop any previous account's tenant data before adopting the new one.
+      useDashboardStore().reset()
       setToken(data.data.token)
       user.value = data.data.user
       return data.data.user
@@ -56,6 +59,7 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true
     try {
       const { data } = await http.post('/auth/register', payload)
+      useDashboardStore().reset()
       setToken(data.data.token)
       user.value = data.data.user
       return data.data.user
@@ -78,6 +82,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
     setToken(null)
     user.value = null
+    useDashboardStore().reset()
   }
 
   // Request a password reset email. Returns the API's (deliberately vague)

@@ -22,6 +22,17 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
   }
 
+  // Clear all tenant-scoped state. Called when the authenticated account
+  // changes so one owner never sees another's cached menu.
+  function reset() {
+    restaurant.value = null
+    categories.value = []
+    products.value = []
+    selectedCategoryId.value = null
+    loadingCategories.value = false
+    loadingProducts.value = false
+  }
+
   async function loadCategories() {
     loadingCategories.value = true
     try {
@@ -90,6 +101,7 @@ export const useDashboardStore = defineStore('dashboard', () => {
     loadingCategories,
     loadingProducts,
     init,
+    reset,
     loadCategories,
     selectCategory,
     loadProducts,
