@@ -82,21 +82,21 @@ function print() {
 
     <p class="mt-2 truncate text-xs text-stone-400" :title="orderUrl">{{ orderUrl }}</p>
 
-    <div class="mt-3 flex gap-2">
+    <div class="mt-3 flex items-center gap-2">
       <button
-        class="flex-1 rounded-full bg-brand-500 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-600"
+        class="min-w-0 flex-1 truncate rounded-full bg-brand-500 px-2 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-600"
         @click="print"
       >
         Print
       </button>
       <button
-        class="flex-1 rounded-full border border-stone-200 py-1.5 text-xs font-semibold text-stone-600 transition hover:bg-stone-100"
+        class="min-w-0 flex-1 truncate rounded-full border border-stone-200 px-2 py-1.5 text-xs font-semibold text-stone-600 transition hover:bg-stone-100"
         @click="download"
       >
         Download
       </button>
       <button
-        class="rounded-full border border-stone-200 px-3 py-1.5 text-xs font-semibold text-stone-400 transition hover:bg-red-50 hover:text-red-500"
+        class="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-stone-200 text-stone-400 transition hover:bg-red-50 hover:text-red-500"
         title="Delete table"
         @click="emit('delete', table)"
       >

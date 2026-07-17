@@ -107,7 +107,7 @@ onMounted(load)
 
     <div
       v-else
-      class="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+      class="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
     >
       <TableQrCard v-for="table in tables" :key="table.id" :table="table" @delete="remove" />
     </div>
