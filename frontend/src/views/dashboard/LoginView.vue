@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import AuthShell from '@/components/auth/AuthShell.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -28,67 +29,60 @@ function fillDemo(role) {
   email.value = role === 'kitchen' ? 'kitchen@thegoldenfork.test' : 'owner@thegoldenfork.test'
   password.value = 'password'
 }
+
+const inputClass =
+  'w-full rounded-xl border border-stone-200 bg-stone-50 px-3.5 py-2.5 text-sm text-stone-900 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100'
 </script>
 
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-stone-100 px-4">
-    <div class="w-full max-w-sm rounded-2xl bg-white p-8 shadow-sm ring-1 ring-black/5">
-      <h1 class="text-2xl font-bold text-stone-900">Restaurant Hub</h1>
-      <p class="mt-1 text-sm text-stone-500">Sign in to manage your menu.</p>
-
-      <form class="mt-6 space-y-4" @submit.prevent="submit">
-        <div>
-          <label class="mb-1 block text-sm font-medium text-stone-700">Email</label>
-          <input
-            v-model="email"
-            type="email"
-            required
-            autocomplete="username"
-            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
-          />
+  <AuthShell title="Welcome back" subtitle="Sign in to manage your restaurant.">
+    <form class="space-y-4" @submit.prevent="submit">
+      <div>
+        <label class="mb-1.5 block text-sm font-medium text-stone-700">Email</label>
+        <input v-model="email" type="email" required autocomplete="username" :class="inputClass" />
+      </div>
+      <div>
+        <div class="mb-1.5 flex items-center justify-between">
+          <label class="block text-sm font-medium text-stone-700">Password</label>
+          <RouterLink :to="{ name: 'forgot-password' }" class="text-xs font-medium text-brand-600 hover:text-brand-700">
+            Forgot password?
+          </RouterLink>
         </div>
-        <div>
-          <div class="mb-1 flex items-center justify-between">
-            <label class="block text-sm font-medium text-stone-700">Password</label>
-            <RouterLink
-              :to="{ name: 'forgot-password' }"
-              class="text-xs text-stone-400 hover:text-amber-600"
-            >
-              Forgot password?
-            </RouterLink>
-          </div>
-          <input
-            v-model="password"
-            type="password"
-            required
-            autocomplete="current-password"
-            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
-          />
-        </div>
-
-        <p v-if="error" class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{{ error }}</p>
-
-        <button
-          type="submit"
-          :disabled="auth.loading"
-          class="w-full rounded-lg bg-amber-500 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-60"
-        >
-          {{ auth.loading ? 'Signing in…' : 'Sign in' }}
-        </button>
-      </form>
-
-      <div class="mt-4 flex justify-center gap-4 text-xs text-stone-400">
-        <button class="hover:text-amber-600" @click="fillDemo('owner')">Demo owner</button>
-        <span class="text-stone-300">·</span>
-        <button class="hover:text-amber-600" @click="fillDemo('kitchen')">Demo kitchen</button>
+        <input
+          v-model="password"
+          type="password"
+          required
+          autocomplete="current-password"
+          :class="inputClass"
+        />
       </div>
 
-      <p class="mt-4 text-center text-xs text-stone-400">
-        New here?
-        <RouterLink :to="{ name: 'register' }" class="font-medium text-amber-600 hover:underline">
-          Create your restaurant
-        </RouterLink>
-      </p>
+      <p v-if="error" class="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{{ error }}</p>
+
+      <button
+        type="submit"
+        :disabled="auth.loading"
+        class="btn-brand w-full rounded-xl py-3 text-sm font-semibold transition hover:-translate-y-0.5 disabled:opacity-60"
+      >
+        {{ auth.loading ? 'Signing in…' : 'Sign in' }}
+      </button>
+    </form>
+
+    <div class="mt-5 flex items-center justify-center gap-3 text-xs text-stone-400">
+      <button class="rounded-lg px-2 py-1 font-medium hover:bg-stone-100 hover:text-brand-600" @click="fillDemo('owner')">
+        Demo owner
+      </button>
+      <span class="text-stone-300">·</span>
+      <button class="rounded-lg px-2 py-1 font-medium hover:bg-stone-100 hover:text-brand-600" @click="fillDemo('kitchen')">
+        Demo kitchen
+      </button>
     </div>
-  </div>
+
+    <p class="mt-6 text-center text-sm text-stone-500">
+      New here?
+      <RouterLink :to="{ name: 'register' }" class="font-semibold text-brand-600 hover:underline">
+        Create your restaurant
+      </RouterLink>
+    </p>
+  </AuthShell>
 </template>

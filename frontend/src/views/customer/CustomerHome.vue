@@ -75,7 +75,7 @@ function openMenu() {
             </p>
             <div class="mt-4 flex flex-wrap items-center gap-3">
               <button
-                class="rounded-full bg-amber-500 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-amber-500/30 transition hover:bg-amber-600"
+                class="btn-brand rounded-full px-6 py-2.5 text-sm font-semibold transition hover:-translate-y-0.5"
                 @click="openMenu"
               >
                 View full menu

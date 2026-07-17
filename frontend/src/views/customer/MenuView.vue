@@ -68,7 +68,7 @@ onBeforeUnmount(() => observer?.disconnect())
           class="shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition"
           :class="
             activeId === category.id
-              ? 'bg-amber-500 text-white shadow-sm'
+              ? 'bg-brand-500 text-white shadow-sm'
               : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
           "
           @click="scrollToCategory(category.id)"

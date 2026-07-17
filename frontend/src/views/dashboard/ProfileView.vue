@@ -78,7 +78,7 @@ async function savePassword() {
   <div class="min-h-screen bg-stone-100 text-stone-800">
     <header class="border-b border-stone-200 bg-white px-5 py-3">
       <div class="mx-auto flex max-w-2xl items-center justify-between">
-        <RouterLink :to="auth.homeRoute" class="text-sm text-stone-500 hover:text-amber-600">
+        <RouterLink :to="auth.homeRoute" class="text-sm text-stone-500 hover:text-brand-600">
           ← Back
         </RouterLink>
         <span class="font-bold">My Profile</span>
@@ -102,7 +102,7 @@ async function savePassword() {
                 v-model="profile.first_name"
                 type="text"
                 required
-                class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+                class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
               />
               <p v-if="profileErrors.first_name" class="mt-1 text-xs text-red-600">
                 {{ profileErrors.first_name[0] }}
@@ -114,7 +114,7 @@ async function savePassword() {
                 v-model="profile.last_name"
                 type="text"
                 required
-                class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+                class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
               />
               <p v-if="profileErrors.last_name" class="mt-1 text-xs text-red-600">
                 {{ profileErrors.last_name[0] }}
@@ -127,7 +127,7 @@ async function savePassword() {
               v-model="profile.email"
               type="email"
               required
-              class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+              class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
             />
             <p v-if="profileErrors.email" class="mt-1 text-xs text-red-600">
               {{ profileErrors.email[0] }}
@@ -138,7 +138,7 @@ async function savePassword() {
             <input
               v-model="profile.phone"
               type="text"
-              class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+              class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
             />
             <p v-if="profileErrors.phone" class="mt-1 text-xs text-red-600">
               {{ profileErrors.phone[0] }}
@@ -155,7 +155,7 @@ async function savePassword() {
           <button
             type="submit"
             :disabled="savingProfile"
-            class="rounded-lg bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-60"
+            class="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
           >
             {{ savingProfile ? 'Saving…' : 'Save changes' }}
           </button>
@@ -177,7 +177,7 @@ async function savePassword() {
               type="password"
               required
               autocomplete="current-password"
-              class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+              class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
             />
             <p v-if="pwErrors.current_password" class="mt-1 text-xs text-red-600">
               {{ pwErrors.current_password[0] }}
@@ -190,7 +190,7 @@ async function savePassword() {
               type="password"
               required
               autocomplete="new-password"
-              class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+              class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
             />
             <p v-if="pwErrors.password" class="mt-1 text-xs text-red-600">
               {{ pwErrors.password[0] }}
@@ -203,7 +203,7 @@ async function savePassword() {
               type="password"
               required
               autocomplete="new-password"
-              class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+              class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
             />
           </div>
 
@@ -217,7 +217,7 @@ async function savePassword() {
           <button
             type="submit"
             :disabled="savingPassword"
-            class="rounded-lg bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-60"
+            class="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
           >
             {{ savingPassword ? 'Updating…' : 'Change password' }}
           </button>

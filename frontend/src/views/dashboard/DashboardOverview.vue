@@ -13,11 +13,11 @@ const error = ref(null)
 const currency = computed(() => data.value?.currency || 'AMD')
 
 const statusColors = {
-  pending: 'bg-amber-100 text-amber-700',
-  accepted: 'bg-blue-100 text-blue-700',
+  pending: 'bg-slate-200 text-slate-700',
+  accepted: 'bg-sky-100 text-sky-700',
   preparing: 'bg-indigo-100 text-indigo-700',
-  ready: 'bg-green-100 text-green-700',
-  served: 'bg-stone-100 text-stone-600',
+  ready: 'bg-brand-100 text-brand-700',
+  served: 'bg-teal-100 text-teal-700',
   completed: 'bg-stone-100 text-stone-500',
   cancelled: 'bg-red-100 text-red-600',
 }
@@ -27,10 +27,10 @@ const tiles = computed(() => {
   const d = data.value
   if (!d) return []
   return [
-    { label: "Today's revenue", value: formatPrice(d.today.revenue, currency.value), hint: `${d.today.completed} completed` },
-    { label: "Today's orders", value: d.today.orders, hint: `avg ${formatPrice(d.today.avg_order, currency.value)}` },
-    { label: 'Active orders', value: d.live.active_orders, hint: `${d.live.pending} pending · ${d.live.ready} ready`, to: 'dashboard-orders' },
-    { label: 'Occupied tables', value: `${d.tables.occupied}/${d.tables.total}`, hint: `${d.tables.available} free`, to: 'dashboard-tables' },
+    { label: "Today's revenue", value: formatPrice(d.today.revenue, currency.value), hint: `${d.today.completed} completed`, icon: '💰', featured: true },
+    { label: "Today's orders", value: d.today.orders, hint: `avg ${formatPrice(d.today.avg_order, currency.value)}`, icon: '🧾' },
+    { label: 'Active orders', value: d.live.active_orders, hint: `${d.live.pending} pending · ${d.live.ready} ready`, icon: '🔥', to: 'dashboard-orders' },
+    { label: 'Occupied tables', value: `${d.tables.occupied}/${d.tables.total}`, hint: `${d.tables.available} free`, icon: '🍽️', to: 'dashboard-tables' },
   ]
 })
 
@@ -92,13 +92,32 @@ onMounted(load)
           v-for="tile in tiles"
           :key="tile.label"
           type="button"
-          class="rounded-2xl bg-white p-4 text-left shadow-sm ring-1 ring-black/5 transition"
-          :class="tile.to ? 'hover:ring-amber-300' : 'cursor-default'"
+          class="group relative overflow-hidden rounded-2xl p-5 text-left shadow-sm transition"
+          :class="[
+            tile.featured
+              ? 'bg-gradient-to-br from-brand-600 via-brand-500 to-accent-500 text-white shadow-brand-500/25'
+              : 'bg-white ring-1 ring-black/5 text-stone-900',
+            tile.to ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md' : 'cursor-default',
+          ]"
           @click="go(tile.to)"
         >
-          <p class="text-xs font-medium uppercase tracking-wide text-stone-400">{{ tile.label }}</p>
-          <p class="mt-1 text-2xl font-bold text-stone-900">{{ tile.value }}</p>
-          <p class="mt-1 text-xs text-stone-400">{{ tile.hint }}</p>
+          <div class="flex items-start justify-between">
+            <p
+              class="text-xs font-medium uppercase tracking-wide"
+              :class="tile.featured ? 'text-white/80' : 'text-stone-400'"
+            >
+              {{ tile.label }}
+            </p>
+            <span class="text-lg opacity-80">{{ tile.icon }}</span>
+          </div>
+          <p class="mt-2 text-3xl font-extrabold tracking-tight">{{ tile.value }}</p>
+          <p class="mt-1 text-xs" :class="tile.featured ? 'text-white/75' : 'text-stone-400'">
+            {{ tile.hint }}
+          </p>
+          <div
+            v-if="tile.featured"
+            class="pointer-events-none absolute -bottom-8 -right-8 h-28 w-28 rounded-full bg-white/15 blur-2xl"
+          ></div>
         </button>
       </div>
 
@@ -106,11 +125,11 @@ onMounted(load)
       <button
         v-if="serviceTotal"
         type="button"
-        class="flex w-full items-center gap-3 rounded-2xl bg-amber-50 px-4 py-3 text-left ring-1 ring-amber-200 transition hover:bg-amber-100"
+        class="flex w-full items-center gap-3 rounded-2xl bg-brand-50 px-4 py-3 text-left ring-1 ring-brand-200 transition hover:bg-brand-100"
         @click="go('dashboard-orders')"
       >
         <span class="text-xl">🔔</span>
-        <span class="text-sm font-medium text-amber-800">
+        <span class="text-sm font-medium text-brand-800">
           {{ data.service.waiter_calls }} waiter call{{ data.service.waiter_calls === 1 ? '' : 's' }}
           · {{ data.service.bill_requests }} bill request{{ data.service.bill_requests === 1 ? '' : 's' }}
           waiting
@@ -122,7 +141,7 @@ onMounted(load)
         <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
           <div class="mb-3 flex items-center justify-between">
             <h2 class="font-bold text-stone-900">Recent orders</h2>
-            <button class="text-xs text-amber-600 hover:underline" @click="go('dashboard-orders')">
+            <button class="text-xs text-brand-600 hover:underline" @click="go('dashboard-orders')">
               View all
             </button>
           </div>

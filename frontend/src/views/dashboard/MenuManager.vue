@@ -60,7 +60,7 @@ async function toggleAvailability(product) {
         <div class="mb-3 flex items-center justify-between">
           <h2 class="font-semibold text-stone-800">Categories</h2>
           <button
-            class="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600"
+            class="rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-600"
             @click="categoryModal = { category: null }"
           >
             + New
@@ -73,7 +73,7 @@ async function toggleAvailability(product) {
             class="group flex items-center justify-between rounded-lg border-l-4 px-3 py-2 text-sm transition"
             :class="
               selectedCategoryId === category.id
-                ? 'border-amber-500 bg-amber-100 font-semibold text-amber-900'
+                ? 'border-brand-500 bg-brand-100 font-semibold text-brand-900'
                 : 'border-transparent text-stone-700 hover:bg-stone-50'
             "
           >
@@ -101,7 +101,7 @@ async function toggleAvailability(product) {
           </h2>
           <button
             v-if="selectedCategory"
-            class="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600"
+            class="rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-600"
             @click="productModal = { product: null }"
           >
             + New product
@@ -122,7 +122,7 @@ async function toggleAvailability(product) {
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-2">
                 <span class="truncate font-medium text-stone-800">{{ product.name }}</span>
-                <span v-if="product.is_featured" class="text-amber-500" title="Chef's pick">★</span>
+                <span v-if="product.is_featured" class="text-brand-500" title="Chef's pick">★</span>
               </div>
               <p class="truncate text-xs text-stone-400">{{ product.description }}</p>
             </div>

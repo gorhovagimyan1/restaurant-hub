@@ -126,7 +126,7 @@ onMounted(load)
             v-model="form.first_name"
             type="text"
             required
-            class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
           />
           <p v-if="formErrors.first_name" class="mt-1 text-xs text-red-600">
             {{ formErrors.first_name[0] }}
@@ -138,7 +138,7 @@ onMounted(load)
             v-model="form.last_name"
             type="text"
             required
-            class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
           />
           <p v-if="formErrors.last_name" class="mt-1 text-xs text-red-600">
             {{ formErrors.last_name[0] }}
@@ -150,7 +150,7 @@ onMounted(load)
             v-model="form.email"
             type="email"
             required
-            class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
           />
           <p v-if="formErrors.email" class="mt-1 text-xs text-red-600">
             {{ formErrors.email[0] }}
@@ -161,14 +161,14 @@ onMounted(load)
           <input
             v-model="form.phone"
             type="text"
-            class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
           />
         </div>
         <div>
           <label class="block text-xs font-medium text-stone-500">Role</label>
           <select
             v-model="form.role"
-            class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
           >
             <option v-for="r in ASSIGNABLE_ROLES" :key="r.value" :value="r.value">
               {{ r.label }}
@@ -179,7 +179,7 @@ onMounted(load)
           <button
             type="submit"
             :disabled="inviting"
-            class="w-full rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-60"
+            class="w-full rounded-xl bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
           >
             {{ inviting ? 'Sending…' : 'Send invite' }}
           </button>
@@ -236,7 +236,7 @@ onMounted(load)
           <select
             v-else
             :value="employee.role"
-            class="rounded-lg border border-stone-200 px-2.5 py-1 text-xs outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            class="rounded-lg border border-stone-200 px-2.5 py-1 text-xs outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
             @change="changeRole(employee, $event.target.value)"
           >
             <option v-for="r in ASSIGNABLE_ROLES" :key="r.value" :value="r.value">

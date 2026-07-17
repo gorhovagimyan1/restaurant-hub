@@ -119,7 +119,7 @@ onMounted(load)
         </div>
         <button
           v-else
-          class="mt-3 w-full rounded-full bg-amber-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600 disabled:opacity-60"
+          class="mt-3 w-full rounded-full bg-brand-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-60"
           :disabled="requesting"
           @click="askForBill"
         >

@@ -29,7 +29,7 @@ const elapsed = computed(() => {
 <template>
   <article
     class="rounded-2xl bg-white p-4 shadow-sm ring-1 transition"
-    :class="fresh ? 'ring-2 ring-amber-400 animate-pulse-once' : 'ring-black/5'"
+    :class="fresh ? 'ring-2 ring-brand-400 animate-pulse-once' : 'ring-black/5'"
   >
     <header class="flex items-start justify-between gap-2">
       <div>
@@ -46,7 +46,7 @@ const elapsed = computed(() => {
         <span class="text-stone-700">
           <span class="font-semibold text-stone-900">{{ item.quantity }}×</span>
           {{ item.product_name }}
-          <span v-if="item.notes" class="block text-xs italic text-amber-600">“{{ item.notes }}”</span>
+          <span v-if="item.notes" class="block text-xs italic text-brand-600">“{{ item.notes }}”</span>
         </span>
         <span
           v-if="item.status"

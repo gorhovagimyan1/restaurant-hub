@@ -38,53 +38,58 @@ async function logout() {
 </script>
 
 <template>
-  <div class="flex min-h-screen bg-stone-100 text-stone-800">
+  <div class="flex min-h-screen bg-stone-50 text-stone-800">
     <!-- Sidebar -->
     <aside class="hidden w-60 shrink-0 flex-col border-r border-stone-200 bg-white sm:flex">
-      <div class="border-b border-stone-200 px-5 py-4">
-        <p class="text-xs font-semibold uppercase tracking-wide text-amber-600">Restaurant Hub</p>
-        <p class="mt-1 truncate font-bold text-stone-900">{{ restaurant?.name || '—' }}</p>
+      <div class="flex items-center gap-3 border-b border-stone-200/70 px-5 py-4">
+        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-lg text-white shadow-sm">
+          🍴
+        </span>
+        <div class="min-w-0">
+          <p class="text-[11px] font-semibold uppercase tracking-wide text-brand-600">Restaurant Hub</p>
+          <p class="truncate font-bold text-stone-900">{{ restaurant?.name || '—' }}</p>
+        </div>
       </div>
       <nav class="flex-1 space-y-1 p-3 text-sm">
         <RouterLink
           :to="{ name: 'dashboard-overview' }"
           class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-stone-600 hover:bg-stone-100"
-          exact-active-class="!bg-amber-100 !text-amber-700"
+          exact-active-class="!bg-brand-100 !text-brand-700"
         >
           📊 Overview
         </RouterLink>
         <RouterLink
           :to="{ name: 'dashboard-orders' }"
           class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-stone-600 hover:bg-stone-100"
-          exact-active-class="!bg-amber-100 !text-amber-700"
+          exact-active-class="!bg-brand-100 !text-brand-700"
         >
           🧾 Live Orders
         </RouterLink>
         <RouterLink
           :to="{ name: 'dashboard-orders-history' }"
           class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-stone-600 hover:bg-stone-100"
-          active-class="!bg-amber-100 !text-amber-700"
+          active-class="!bg-brand-100 !text-brand-700"
         >
           📋 All Orders
         </RouterLink>
         <RouterLink
           :to="{ name: 'kitchen' }"
           class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-stone-600 hover:bg-stone-100"
-          active-class="!bg-amber-100 !text-amber-700"
+          active-class="!bg-brand-100 !text-brand-700"
         >
           👨‍🍳 Kitchen Display
         </RouterLink>
         <RouterLink
           :to="{ name: 'dashboard-menu' }"
           class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-stone-600 hover:bg-stone-100"
-          exact-active-class="!bg-amber-100 !text-amber-700"
+          exact-active-class="!bg-brand-100 !text-brand-700"
         >
           🍽️ Menu Management
         </RouterLink>
         <RouterLink
           :to="{ name: 'dashboard-tables' }"
           class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-stone-600 hover:bg-stone-100"
-          active-class="!bg-amber-100 !text-amber-700"
+          active-class="!bg-brand-100 !text-brand-700"
         >
           🔳 Tables & QR
         </RouterLink>
@@ -92,7 +97,7 @@ async function logout() {
           v-if="auth.can('employees.manage')"
           :to="{ name: 'dashboard-team' }"
           class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-stone-600 hover:bg-stone-100"
-          active-class="!bg-amber-100 !text-amber-700"
+          active-class="!bg-brand-100 !text-brand-700"
         >
           👥 Team
         </RouterLink>
@@ -100,7 +105,7 @@ async function logout() {
           v-if="auth.can('restaurant.manage')"
           :to="{ name: 'dashboard-settings' }"
           class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-stone-600 hover:bg-stone-100"
-          active-class="!bg-amber-100 !text-amber-700"
+          active-class="!bg-brand-100 !text-brand-700"
         >
           ⚙️ Settings
         </RouterLink>

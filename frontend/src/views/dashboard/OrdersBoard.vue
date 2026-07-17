@@ -125,7 +125,7 @@ onBeforeUnmount(() => store.stop())
           v-for="table in openTables"
           :key="table.id"
           class="rounded-2xl bg-white p-4 shadow-sm ring-1 transition"
-          :class="table.billRequested ? 'ring-2 ring-amber-400' : 'ring-black/5'"
+          :class="table.billRequested ? 'ring-2 ring-brand-400' : 'ring-black/5'"
         >
           <div class="flex items-start justify-between">
             <div>
@@ -136,7 +136,7 @@ onBeforeUnmount(() => store.stop())
             </div>
             <span
               v-if="table.billRequested"
-              class="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700"
+              class="rounded-full bg-brand-100 px-2.5 py-1 text-xs font-semibold text-brand-700"
             >
               💰 Bill requested
             </span>

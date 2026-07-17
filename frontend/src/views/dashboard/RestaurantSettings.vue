@@ -307,7 +307,7 @@ async function saveSettings() {
 }
 
 const inputClass =
-  'mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100'
+  'mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100'
 </script>
 
 <template>
@@ -404,7 +404,7 @@ const inputClass =
           <button
             type="submit"
             :disabled="savingProfile"
-            class="rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-60"
+            class="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
           >
             {{ savingProfile ? 'Saving…' : 'Save profile' }}
           </button>
@@ -467,7 +467,7 @@ const inputClass =
               role="switch"
               :aria-checked="settings[t.key]"
               class="relative inline-flex h-6 w-11 shrink-0 rounded-full transition"
-              :class="settings[t.key] ? 'bg-amber-500' : 'bg-stone-300'"
+              :class="settings[t.key] ? 'bg-brand-500' : 'bg-stone-300'"
               @click="settings[t.key] = !settings[t.key]"
             >
               <span
@@ -482,7 +482,7 @@ const inputClass =
           <button
             type="submit"
             :disabled="savingSettings"
-            class="rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-60"
+            class="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
           >
             {{ savingSettings ? 'Saving…' : 'Save settings' }}
           </button>
@@ -512,13 +512,13 @@ const inputClass =
               <input
                 v-model="day.open_time"
                 type="time"
-                class="rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+                class="rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
               />
               <span class="text-stone-400">–</span>
               <input
                 v-model="day.close_time"
                 type="time"
-                class="rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+                class="rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
               />
               <span
                 v-if="hoursError(i, 'open_time') || hoursError(i, 'close_time')"
@@ -535,7 +535,7 @@ const inputClass =
           <button
             type="submit"
             :disabled="savingHours"
-            class="rounded-xl bg-amber-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-60"
+            class="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
           >
             {{ savingHours ? 'Saving…' : 'Save hours' }}
           </button>
@@ -554,7 +554,7 @@ const inputClass =
           </div>
           <button
             type="button"
-            class="shrink-0 rounded-xl bg-amber-500 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-amber-600"
+            class="shrink-0 rounded-xl bg-brand-500 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-brand-600"
             @click="openAddSpecial"
           >
             + Add date
@@ -619,7 +619,7 @@ const inputClass =
             <input
               v-model="draft.date"
               type="date"
-              class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+              class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
             />
           </div>
 
@@ -629,7 +629,7 @@ const inputClass =
               v-model="draft.label"
               type="text"
               placeholder="e.g. Christmas Day"
-              class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+              class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
             />
           </div>
 
@@ -644,7 +644,7 @@ const inputClass =
               <input
                 v-model="draft.open_time"
                 type="time"
-                class="mt-1 rounded-xl border border-stone-200 px-3 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+                class="mt-1 rounded-xl border border-stone-200 px-3 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
               />
             </div>
             <div>
@@ -652,7 +652,7 @@ const inputClass =
               <input
                 v-model="draft.close_time"
                 type="time"
-                class="mt-1 rounded-xl border border-stone-200 px-3 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+                class="mt-1 rounded-xl border border-stone-200 px-3 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
               />
             </div>
           </div>
@@ -673,7 +673,7 @@ const inputClass =
           <button
             type="button"
             :disabled="savingSpecial"
-            class="rounded-xl bg-amber-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-60"
+            class="rounded-xl bg-brand-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
             @click="confirmSpecial"
           >
             {{ savingSpecial ? 'Saving…' : editingIndex === null ? 'Add' : 'Save' }}

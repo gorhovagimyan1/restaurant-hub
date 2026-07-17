@@ -111,15 +111,15 @@ function onPlaced(result) {
             <RouterLink
               :to="{ name: 'restaurant-home', params: { slug } }"
               class="rounded-full px-3 py-1.5 text-stone-600 hover:bg-stone-100"
-              active-class="!bg-amber-100 !text-amber-700"
-              exact-active-class="!bg-amber-100 !text-amber-700"
+              active-class="!bg-brand-100 !text-brand-700"
+              exact-active-class="!bg-brand-100 !text-brand-700"
             >
               Home
             </RouterLink>
             <RouterLink
               :to="{ name: 'restaurant-menu', params: { slug } }"
               class="rounded-full px-3 py-1.5 text-stone-600 hover:bg-stone-100"
-              active-class="!bg-amber-100 !text-amber-700"
+              active-class="!bg-brand-100 !text-brand-700"
             >
               Menu
             </RouterLink>
@@ -141,7 +141,7 @@ function onPlaced(result) {
           </button>
           <span
             v-if="tableName"
-            class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700"
+            class="rounded-full bg-brand-100 px-3 py-1 text-xs font-semibold text-brand-700"
           >
             {{ tableName }}
           </span>
@@ -154,7 +154,7 @@ function onPlaced(result) {
       <div v-if="loading && !ready" class="flex h-[60vh] items-center justify-center">
         <div class="flex flex-col items-center gap-3 text-stone-400">
           <span
-            class="h-8 w-8 animate-spin rounded-full border-2 border-stone-200 border-t-amber-500"
+            class="h-8 w-8 animate-spin rounded-full border-2 border-stone-200 border-t-brand-500"
           />
           <span class="text-sm">Loading menu…</span>
         </div>
@@ -166,7 +166,7 @@ function onPlaced(result) {
         <h2 class="mt-4 text-lg font-semibold text-stone-800">Menu unavailable</h2>
         <p class="mt-1 text-sm text-stone-500">{{ error }}</p>
         <button
-          class="mt-6 rounded-full bg-amber-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600"
+          class="mt-6 rounded-full bg-brand-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600"
           @click="retry"
         >
           Try again
@@ -184,7 +184,7 @@ function onPlaced(result) {
           {{ restaurant.address }}<span v-if="restaurant.city">, {{ restaurant.city }}</span>
         </p>
         <p v-if="restaurant.phone" class="mt-1">
-          <a :href="`tel:${restaurant.phone}`" class="hover:text-amber-600">{{ restaurant.phone }}</a>
+          <a :href="`tel:${restaurant.phone}`" class="hover:text-brand-600">{{ restaurant.phone }}</a>
         </p>
         <p class="mt-4 text-xs text-stone-400">Powered by Restaurant Hub</p>
       </div>
@@ -197,7 +197,7 @@ function onPlaced(result) {
     >
       <div class="mx-auto max-w-3xl px-4 py-3">
         <button
-          class="flex w-full items-center justify-between rounded-full bg-amber-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600"
+          class="flex w-full items-center justify-between rounded-full bg-brand-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600"
           @click="cartOpen = true"
         >
           <span class="flex items-center gap-2">
@@ -245,7 +245,7 @@ function onPlaced(result) {
           </p>
         </div>
         <button
-          class="mt-5 w-full rounded-full bg-amber-500 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600"
+          class="mt-5 w-full rounded-full bg-brand-500 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600"
           @click="placedOrder = null"
         >
           Order more

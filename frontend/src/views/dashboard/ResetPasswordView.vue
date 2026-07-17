@@ -56,7 +56,7 @@ async function submit() {
             type="email"
             required
             autocomplete="username"
-            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
           />
         </div>
         <div>
@@ -66,7 +66,7 @@ async function submit() {
             type="password"
             required
             autocomplete="new-password"
-            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
           />
         </div>
         <div>
@@ -76,7 +76,7 @@ async function submit() {
             type="password"
             required
             autocomplete="new-password"
-            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
+            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
           />
         </div>
 
@@ -90,14 +90,14 @@ async function submit() {
         <button
           type="submit"
           :disabled="submitting"
-          class="w-full rounded-lg bg-amber-500 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-60"
+          class="w-full rounded-lg bg-brand-500 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
         >
           {{ submitting ? 'Resetting…' : 'Reset password' }}
         </button>
       </form>
 
       <div class="mt-4 text-center text-xs text-stone-400">
-        <RouterLink :to="{ name: 'login' }" class="hover:text-amber-600">
+        <RouterLink :to="{ name: 'login' }" class="hover:text-brand-600">
           Back to sign in
         </RouterLink>
       </div>

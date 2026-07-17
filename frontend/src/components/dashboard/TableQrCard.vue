@@ -68,7 +68,7 @@ function print() {
       <h3 class="font-bold text-stone-900">{{ table.name }}</h3>
       <span
         class="rounded-full px-2 py-0.5 text-xs font-medium"
-        :class="table.status === 'occupied' ? 'bg-amber-100 text-amber-700' : 'bg-stone-100 text-stone-500'"
+        :class="table.status === 'occupied' ? 'bg-brand-100 text-brand-700' : 'bg-stone-100 text-stone-500'"
       >
         {{ table.status }}
       </span>
@@ -83,7 +83,7 @@ function print() {
 
     <div class="mt-3 flex gap-2">
       <button
-        class="flex-1 rounded-full bg-amber-500 py-1.5 text-xs font-semibold text-white transition hover:bg-amber-600"
+        class="flex-1 rounded-full bg-brand-500 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-600"
         @click="print"
       >
         Print

@@ -47,7 +47,7 @@ async function logout() {
       <div class="flex items-center gap-3 text-sm">
         <RouterLink
           :to="{ name: 'profile' }"
-          class="hidden text-stone-400 hover:text-amber-400 sm:inline"
+          class="hidden text-stone-400 hover:text-brand-400 sm:inline"
         >
           {{ user?.full_name }}
         </RouterLink>

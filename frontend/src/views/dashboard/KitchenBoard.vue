@@ -33,7 +33,7 @@ function urgencyClass(order) {
   if (!created) return 'ring-1 ring-stone-700'
   const mins = (Date.now() - new Date(created).getTime()) / 60000
   if (mins >= 15) return 'ring-2 ring-red-500'
-  if (mins >= 8) return 'ring-2 ring-amber-500'
+  if (mins >= 8) return 'ring-2 ring-brand-500'
   return 'ring-1 ring-stone-700'
 }
 
@@ -158,9 +158,9 @@ onBeforeUnmount(() => store.stop())
           >
             <div class="min-w-0">
               <p class="text-base font-semibold leading-snug text-white">
-                <span class="text-amber-400">{{ item.quantity }}×</span> {{ item.product_name }}
+                <span class="text-brand-400">{{ item.quantity }}×</span> {{ item.product_name }}
               </p>
-              <p v-if="item.notes" class="text-sm font-medium italic text-amber-300">“{{ item.notes }}”</p>
+              <p v-if="item.notes" class="text-sm font-medium italic text-brand-300">“{{ item.notes }}”</p>
             </div>
 
             <button

@@ -56,7 +56,7 @@ watch(
       <p class="mt-1 text-sm text-stone-500">{{ error }}</p>
     </div>
     <div v-else class="flex flex-col items-center gap-3 text-stone-400">
-      <span class="h-8 w-8 animate-spin rounded-full border-2 border-stone-200 border-t-amber-500" />
+      <span class="h-8 w-8 animate-spin rounded-full border-2 border-stone-200 border-t-brand-500" />
       <span class="text-sm">Opening menu…</span>
     </div>
   </div>

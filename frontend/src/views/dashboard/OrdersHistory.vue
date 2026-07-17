@@ -89,11 +89,11 @@ onMounted(load)
           v-model="search"
           type="search"
           placeholder="Search order #, table, name…"
-          class="w-56 rounded-full border border-stone-200 px-4 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          class="w-56 rounded-full border border-stone-200 px-4 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
         />
         <select
           v-model="status"
-          class="rounded-full border border-stone-200 px-3 py-2 text-sm outline-none focus:border-amber-400"
+          class="rounded-full border border-stone-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
         >
           <option value="">All statuses</option>
           <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
@@ -142,7 +142,7 @@ onMounted(load)
               <li v-for="item in order.items" :key="item.id" class="flex items-center justify-between gap-3">
                 <span class="text-stone-700">
                   <span class="font-semibold text-stone-900">{{ item.quantity }}×</span> {{ item.product_name }}
-                  <span v-if="item.notes" class="italic text-amber-600"> · “{{ item.notes }}”</span>
+                  <span v-if="item.notes" class="italic text-brand-600"> · “{{ item.notes }}”</span>
                 </span>
                 <span class="flex items-center gap-3">
                   <span

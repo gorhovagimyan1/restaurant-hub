@@ -72,7 +72,7 @@ onMounted(load)
           v-model="newName"
           type="text"
           placeholder="e.g. Table 9 / Patio 2"
-          class="mt-1 rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          class="mt-1 rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
         />
       </div>
       <div>
@@ -82,12 +82,12 @@ onMounted(load)
           type="number"
           min="1"
           max="50"
-          class="mt-1 w-24 rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+          class="mt-1 w-24 rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
         />
       </div>
       <button
         type="submit"
-        class="rounded-full bg-amber-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600 disabled:opacity-60"
+        class="rounded-full bg-brand-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-60"
         :disabled="creating"
       >
         {{ creating ? 'Adding…' : '+ Add table' }}
