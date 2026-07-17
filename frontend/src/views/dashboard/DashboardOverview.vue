@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { Wallet, ReceiptText, Flame, Armchair, BellRing, RefreshCw } from 'lucide-vue-next'
 import { getOverview } from '@/services/dashboard'
 import { formatPrice } from '@/utils/format'
 
@@ -27,10 +28,10 @@ const tiles = computed(() => {
   const d = data.value
   if (!d) return []
   return [
-    { label: "Today's revenue", value: formatPrice(d.today.revenue, currency.value), hint: `${d.today.completed} completed`, icon: '💰', featured: true },
-    { label: "Today's orders", value: d.today.orders, hint: `avg ${formatPrice(d.today.avg_order, currency.value)}`, icon: '🧾' },
-    { label: 'Active orders', value: d.live.active_orders, hint: `${d.live.pending} pending · ${d.live.ready} ready`, icon: '🔥', to: 'dashboard-orders' },
-    { label: 'Occupied tables', value: `${d.tables.occupied}/${d.tables.total}`, hint: `${d.tables.available} free`, icon: '🍽️', to: 'dashboard-tables' },
+    { label: "Today's revenue", value: formatPrice(d.today.revenue, currency.value), hint: `${d.today.completed} completed`, icon: Wallet, featured: true },
+    { label: "Today's orders", value: d.today.orders, hint: `avg ${formatPrice(d.today.avg_order, currency.value)}`, icon: ReceiptText },
+    { label: 'Active orders', value: d.live.active_orders, hint: `${d.live.pending} pending · ${d.live.ready} ready`, icon: Flame, to: 'dashboard-orders' },
+    { label: 'Occupied tables', value: `${d.tables.occupied}/${d.tables.total}`, hint: `${d.tables.available} free`, icon: Armchair, to: 'dashboard-tables' },
   ]
 })
 
@@ -74,10 +75,11 @@ onMounted(load)
         <p class="text-sm text-stone-500">Today at a glance.</p>
       </div>
       <button
-        class="rounded-xl border border-stone-200 px-3 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-100 disabled:opacity-60"
+        class="flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-sm font-medium text-stone-600 transition hover:bg-stone-100 disabled:opacity-60"
         :disabled="loading"
         @click="load"
       >
+        <RefreshCw :size="16" :class="loading && 'animate-spin'" />
         {{ loading ? 'Refreshing…' : 'Refresh' }}
       </button>
     </header>
@@ -108,7 +110,12 @@ onMounted(load)
             >
               {{ tile.label }}
             </p>
-            <span class="text-lg opacity-80">{{ tile.icon }}</span>
+            <span
+              class="flex h-9 w-9 items-center justify-center rounded-xl"
+              :class="tile.featured ? 'bg-white/20 text-white' : 'bg-brand-50 text-brand-600'"
+            >
+              <component :is="tile.icon" :size="18" />
+            </span>
           </div>
           <p class="mt-2 text-3xl font-extrabold tracking-tight">{{ tile.value }}</p>
           <p class="mt-1 text-xs" :class="tile.featured ? 'text-white/75' : 'text-stone-400'">
@@ -128,7 +135,7 @@ onMounted(load)
         class="flex w-full items-center gap-3 rounded-2xl bg-brand-50 px-4 py-3 text-left ring-1 ring-brand-200 transition hover:bg-brand-100"
         @click="go('dashboard-orders')"
       >
-        <span class="text-xl">🔔</span>
+        <BellRing :size="20" class="shrink-0 text-brand-600" />
         <span class="text-sm font-medium text-brand-800">
           {{ data.service.waiter_calls }} waiter call{{ data.service.waiter_calls === 1 ? '' : 's' }}
           · {{ data.service.bill_requests }} bill request{{ data.service.bill_requests === 1 ? '' : 's' }}

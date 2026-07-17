@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { useMenuStore } from '@/stores/menu'
 import { useDiningStore } from '@/stores/dining'
 import { useCartStore } from '@/stores/cart'
+import { X, Star } from 'lucide-vue-next'
 import AppImage from '@/components/ui/AppImage.vue'
 import { formatPrice } from '@/utils/format'
 
@@ -59,11 +60,11 @@ onBeforeUnmount(() => {
         >
           <!-- Close -->
           <button
-            class="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-lg text-white backdrop-blur transition hover:bg-black/60"
+            class="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur transition hover:bg-black/60"
             aria-label="Close"
             @click="close"
           >
-            ✕
+            <X :size="18" />
           </button>
 
           <!-- Image -->
@@ -87,9 +88,9 @@ onBeforeUnmount(() => {
             <div class="mt-2 flex flex-wrap items-center gap-2 text-xs">
               <span
                 v-if="selectedProduct.is_featured"
-                class="rounded-full bg-brand-100 px-2 py-0.5 font-semibold text-brand-700"
+                class="inline-flex items-center gap-1 rounded-full bg-brand-100 px-2 py-0.5 font-semibold text-brand-700"
               >
-                ★ Chef's pick
+                <Star :size="11" class="fill-brand-500 text-brand-500" /> Chef's pick
               </span>
               <span v-if="selectedProduct.preparation_time" class="text-stone-400">
                 ⏱ {{ selectedProduct.preparation_time }} min

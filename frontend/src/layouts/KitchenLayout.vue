@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { RouterView, RouterLink, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
+import { ChefHat } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import http from '@/services/http'
 
@@ -38,7 +39,7 @@ async function logout() {
   <div class="flex min-h-screen flex-col bg-stone-900 text-stone-100">
     <header class="flex items-center justify-between border-b border-stone-700 px-5 py-3">
       <div class="flex items-center gap-3">
-        <span class="text-xl">👨‍🍳</span>
+        <ChefHat :size="22" class="text-brand-400" />
         <div>
           <p class="text-sm font-bold leading-tight">Kitchen Display</p>
           <p class="text-xs text-stone-400">{{ restaurantName || '—' }}</p>

@@ -1,5 +1,6 @@
 <script setup>
 import { storeToRefs } from 'pinia'
+import { Star } from 'lucide-vue-next'
 import AppImage from '@/components/ui/AppImage.vue'
 import { formatPrice } from '@/utils/format'
 import { useDiningStore } from '@/stores/dining'
@@ -35,7 +36,7 @@ const { allowOrders } = storeToRefs(dining)
       <div class="min-w-0">
         <div class="flex items-center gap-2">
           <h3 class="truncate font-semibold text-stone-800">{{ product.name }}</h3>
-          <span v-if="product.is_featured" class="text-brand-500" title="Chef's pick">★</span>
+          <Star v-if="product.is_featured" :size="14" class="shrink-0 fill-brand-500 text-brand-500" title="Chef's pick" />
         </div>
         <p class="mt-1 line-clamp-2 text-sm text-stone-500">{{ product.description }}</p>
         <div class="mt-1.5 flex items-center gap-3 text-xs text-stone-400">

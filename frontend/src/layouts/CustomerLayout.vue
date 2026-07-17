@@ -9,6 +9,7 @@ import AppImage from '@/components/ui/AppImage.vue'
 import ProductModal from '@/components/menu/ProductModal.vue'
 import CartSheet from '@/components/order/CartSheet.vue'
 import BillSheet from '@/components/order/BillSheet.vue'
+import { BellRing, ReceiptText, UtensilsCrossed, Check } from 'lucide-vue-next'
 import { callWaiter } from '@/services/orders'
 import { formatPrice } from '@/utils/format'
 
@@ -44,7 +45,7 @@ async function summonWaiter() {
   waiterCalling.value = true
   try {
     await callWaiter(diningToken.value, diningSessionToken.value)
-    toast.value = 'A waiter is on the way 🙋'
+    toast.value = 'A waiter is on the way'
   } catch (err) {
     toast.value = err?.response?.data?.message || 'Could not call a waiter. Please try again.'
   } finally {
@@ -130,14 +131,14 @@ function onPlaced(result) {
             :disabled="waiterCalling"
             @click="summonWaiter"
           >
-            🙋 Waiter
+            <BellRing :size="14" /> Waiter
           </button>
           <button
             v-if="diningActive"
             class="flex items-center gap-1 rounded-full border border-stone-200 px-3 py-1 text-xs font-semibold text-stone-600 transition hover:bg-stone-100"
             @click="billOpen = true"
           >
-            🧾 Bill
+            <ReceiptText :size="14" /> Bill
           </button>
           <span
             v-if="tableName"
@@ -162,7 +163,7 @@ function onPlaced(result) {
 
       <!-- Error -->
       <div v-else-if="error && !ready" class="mx-auto max-w-md px-4 py-24 text-center">
-        <p class="text-4xl">🍽️</p>
+        <UtensilsCrossed :size="44" class="mx-auto text-stone-300" />
         <h2 class="mt-4 text-lg font-semibold text-stone-800">Menu unavailable</h2>
         <p class="mt-1 text-sm text-stone-500">{{ error }}</p>
         <button
@@ -232,7 +233,7 @@ function onPlaced(result) {
       @click.self="placedOrder = null"
     >
       <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-xl">
-        <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-100 text-3xl text-emerald-600">✓</div>
+        <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-brand-100 text-brand-600"><Check :size="32" :stroke-width="2.5" /></div>
         <h2 class="mt-4 text-xl font-bold text-stone-900">Order sent!</h2>
         <p class="mt-1 text-sm text-stone-500">
           {{ tableName }} · your order is on its way to the kitchen.

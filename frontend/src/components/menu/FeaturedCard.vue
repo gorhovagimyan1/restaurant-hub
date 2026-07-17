@@ -1,4 +1,5 @@
 <script setup>
+import { Star } from 'lucide-vue-next'
 import AppImage from '@/components/ui/AppImage.vue'
 import { formatPrice } from '@/utils/format'
 
@@ -18,9 +19,9 @@ defineEmits(['select'])
     <div class="relative h-36 w-full">
       <AppImage :src="product.image" :alt="product.name" class="h-full w-full object-cover" />
       <span
-        class="absolute left-3 top-3 rounded-full bg-brand-500/95 px-2 py-0.5 text-[11px] font-semibold text-white shadow"
+        class="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-brand-500/95 px-2 py-0.5 text-[11px] font-semibold text-white shadow"
       >
-        ★ Chef's pick
+        <Star :size="11" class="fill-white" /> Chef's pick
       </span>
     </div>
     <div class="flex flex-1 flex-col p-4">

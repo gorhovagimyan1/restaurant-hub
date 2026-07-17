@@ -1,4 +1,6 @@
 <script setup>
+import { UtensilsCrossed, BookOpen, QrCode, LineChart } from 'lucide-vue-next'
+
 defineProps({
   // Small heading shown above the slotted form on the right panel.
   title: { type: String, default: '' },
@@ -6,9 +8,9 @@ defineProps({
 })
 
 const features = [
-  { icon: '🍽️', text: 'Menus, categories & dishes in one place' },
-  { icon: '📱', text: 'QR ordering straight to the kitchen' },
-  { icon: '📊', text: 'Live orders, tables & daily takings' },
+  { icon: BookOpen, text: 'Menus, categories & dishes in one place' },
+  { icon: QrCode, text: 'QR ordering straight to the kitchen' },
+  { icon: LineChart, text: 'Live orders, tables & daily takings' },
 ]
 </script>
 
@@ -25,8 +27,8 @@ const features = [
       </div>
 
       <div class="relative flex items-center gap-3">
-        <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15 text-xl ring-1 ring-white/25 backdrop-blur">
-          🍴
+        <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/25 backdrop-blur">
+          <UtensilsCrossed :size="22" />
         </span>
         <span class="text-lg font-bold tracking-tight">Restaurant Hub</span>
       </div>
@@ -37,8 +39,8 @@ const features = [
         </h2>
         <ul class="mt-8 space-y-3">
           <li v-for="f in features" :key="f.text" class="flex items-center gap-3 text-white/90">
-            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-white/15 text-sm ring-1 ring-white/20">
-              {{ f.icon }}
+            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/20">
+              <component :is="f.icon" :size="18" />
             </span>
             <span class="text-sm">{{ f.text }}</span>
           </li>
@@ -53,8 +55,8 @@ const features = [
       <div class="w-full max-w-sm">
         <!-- Compact brand mark for mobile where the panel is hidden. -->
         <div class="mb-8 flex items-center gap-2 lg:hidden">
-          <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-lg text-white">
-            🍴
+          <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-white">
+            <UtensilsCrossed :size="18" />
           </span>
           <span class="font-bold tracking-tight text-stone-900">Restaurant Hub</span>
         </div>

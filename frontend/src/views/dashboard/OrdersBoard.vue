@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { storeToRefs } from 'pinia'
+import { Bell, BellOff, ReceiptText, CookingPot } from 'lucide-vue-next'
 import { useOrdersStore } from '@/stores/orders'
 import OrderCard from '@/components/dashboard/OrderCard.vue'
 import ServiceCallsBanner from '@/components/dashboard/ServiceCallsBanner.vue'
@@ -99,7 +100,8 @@ onBeforeUnmount(() => store.stop())
           class="flex items-center gap-1.5 rounded-full border border-stone-200 px-3 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-100"
           @click="soundOn = !soundOn"
         >
-          {{ soundOn ? '🔔 Sound on' : '🔕 Sound off' }}
+          <component :is="soundOn ? Bell : BellOff" :size="15" />
+          {{ soundOn ? 'Sound on' : 'Sound off' }}
         </button>
         <button
           class="rounded-full border border-stone-200 px-3 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-100"
@@ -136,9 +138,9 @@ onBeforeUnmount(() => store.stop())
             </div>
             <span
               v-if="table.billRequested"
-              class="rounded-full bg-brand-100 px-2.5 py-1 text-xs font-semibold text-brand-700"
+              class="inline-flex items-center gap-1 rounded-full bg-brand-100 px-2.5 py-1 text-xs font-semibold text-brand-700"
             >
-              💰 Bill requested
+              <ReceiptText :size="12" /> Bill requested
             </span>
           </div>
 
@@ -176,7 +178,7 @@ onBeforeUnmount(() => store.stop())
         v-if="!loading && kitchen.length === 0"
         class="rounded-2xl border border-dashed border-stone-200 bg-white/50 px-6 py-16 text-center"
       >
-        <p class="text-4xl">🍳</p>
+        <CookingPot :size="40" class="mx-auto text-stone-300" />
         <h3 class="mt-3 font-semibold text-stone-700">Nothing cooking</h3>
         <p class="mt-1 text-sm text-stone-500">New orders from scanned tables appear here instantly.</p>
       </div>

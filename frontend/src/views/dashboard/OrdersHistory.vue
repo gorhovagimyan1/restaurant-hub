@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { User, StickyNote } from 'lucide-vue-next'
 import { fetchOrderHistory } from '@/services/orders'
 import { statusMeta, itemStatusMeta, ORDER_STATUS } from '@/utils/orderStatus'
 import { formatPrice } from '@/utils/format'
@@ -157,8 +158,8 @@ onMounted(load)
               </li>
             </ul>
             <div class="mt-2 flex flex-wrap gap-x-6 gap-y-1 border-t border-stone-200 pt-2 text-xs text-stone-500">
-              <span v-if="order.customer_name">👤 {{ order.customer_name }}</span>
-              <span v-if="order.notes">📝 {{ order.notes }}</span>
+              <span v-if="order.customer_name" class="inline-flex items-center gap-1"><User :size="12" /> {{ order.customer_name }}</span>
+              <span v-if="order.notes" class="inline-flex items-center gap-1"><StickyNote :size="12" /> {{ order.notes }}</span>
               <span v-if="order.service_charge">Service {{ formatPrice(order.service_charge) }}</span>
               <span v-if="order.tax">Tax {{ formatPrice(order.tax) }}</span>
             </div>

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
+import { Plus, Pencil, Trash2, Star } from 'lucide-vue-next'
 import { useDashboardStore } from '@/stores/dashboard'
 import { formatPrice } from '@/utils/format'
 import AppImage from '@/components/ui/AppImage.vue'
@@ -60,10 +61,10 @@ async function toggleAvailability(product) {
         <div class="mb-3 flex items-center justify-between">
           <h2 class="font-semibold text-stone-800">Categories</h2>
           <button
-            class="rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-600"
+            class="flex items-center gap-1 rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-600"
             @click="categoryModal = { category: null }"
           >
-            + New
+            <Plus :size="14" /> New
           </button>
         </div>
         <ul class="space-y-1">
@@ -83,8 +84,8 @@ async function toggleAvailability(product) {
               <span v-if="!category.is_active" class="ml-1 text-xs text-red-400">hidden</span>
             </button>
             <span class="flex shrink-0 items-center gap-1 opacity-0 transition group-hover:opacity-100">
-              <button class="rounded p-1 hover:bg-stone-200" title="Edit" @click="categoryModal = { category }">✎</button>
-              <button class="rounded p-1 hover:bg-red-100" title="Delete" @click="confirmDeleteCategory(category)">🗑</button>
+              <button class="rounded-md p-1.5 text-stone-500 hover:bg-stone-200" title="Edit" @click="categoryModal = { category }"><Pencil :size="14" /></button>
+              <button class="rounded-md p-1.5 text-stone-500 hover:bg-red-100 hover:text-red-500" title="Delete" @click="confirmDeleteCategory(category)"><Trash2 :size="14" /></button>
             </span>
           </li>
           <li v-if="!categories.length" class="px-3 py-6 text-center text-sm text-stone-400">
@@ -101,10 +102,10 @@ async function toggleAvailability(product) {
           </h2>
           <button
             v-if="selectedCategory"
-            class="rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-600"
+            class="flex items-center gap-1 rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-600"
             @click="productModal = { product: null }"
           >
-            + New product
+            <Plus :size="14" /> New product
           </button>
         </div>
 
@@ -122,7 +123,7 @@ async function toggleAvailability(product) {
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-2">
                 <span class="truncate font-medium text-stone-800">{{ product.name }}</span>
-                <span v-if="product.is_featured" class="text-brand-500" title="Chef's pick">★</span>
+                <Star v-if="product.is_featured" :size="14" class="shrink-0 fill-brand-500 text-brand-500" title="Chef's pick" />
               </div>
               <p class="truncate text-xs text-stone-400">{{ product.description }}</p>
             </div>
@@ -138,8 +139,8 @@ async function toggleAvailability(product) {
               {{ product.is_available ? 'Available' : 'Sold out' }}
             </button>
             <span class="flex shrink-0 items-center gap-1">
-              <button class="rounded p-1 hover:bg-stone-200" title="Edit" @click="productModal = { product }">✎</button>
-              <button class="rounded p-1 hover:bg-red-100" title="Delete" @click="confirmDeleteProduct(product)">🗑</button>
+              <button class="rounded-md p-1.5 text-stone-500 hover:bg-stone-200" title="Edit" @click="productModal = { product }"><Pencil :size="14" /></button>
+              <button class="rounded-md p-1.5 text-stone-500 hover:bg-red-100 hover:text-red-500" title="Delete" @click="confirmDeleteProduct(product)"><Trash2 :size="14" /></button>
             </span>
           </li>
           <li v-if="!products.length" class="py-10 text-center text-sm text-stone-400">

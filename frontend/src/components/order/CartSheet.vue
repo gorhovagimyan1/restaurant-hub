@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
+import { X } from 'lucide-vue-next'
 import { useCartStore } from '@/stores/cart'
 import AppImage from '@/components/ui/AppImage.vue'
 import { formatPrice } from '@/utils/format'
@@ -48,7 +49,7 @@ async function place() {
           <h2 class="font-bold text-stone-900">Your order</h2>
           <p v-if="tableName" class="text-xs text-stone-500">{{ tableName }}</p>
         </div>
-        <button class="text-stone-400 hover:text-stone-600" aria-label="Close" @click="emit('close')">✕</button>
+        <button class="text-stone-400 hover:text-stone-600" aria-label="Close" @click="emit('close')"><X :size="20" /></button>
       </header>
 
       <div class="min-h-0 flex-1 overflow-y-auto px-5">

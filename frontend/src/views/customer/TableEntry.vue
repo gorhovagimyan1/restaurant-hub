@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ScanLine } from 'lucide-vue-next'
 import { resolveTable, openSession } from '@/services/orders'
 import { useDiningStore } from '@/stores/dining'
 import { useCartStore } from '@/stores/cart'
@@ -51,7 +52,7 @@ watch(
 <template>
   <div class="flex min-h-screen items-center justify-center bg-stone-50 px-4 text-center">
     <div v-if="error" class="max-w-md">
-      <p class="text-4xl">📷</p>
+      <ScanLine :size="44" class="mx-auto text-stone-300" />
       <h2 class="mt-4 text-lg font-semibold text-stone-800">Table not found</h2>
       <p class="mt-1 text-sm text-stone-500">{{ error }}</p>
     </div>

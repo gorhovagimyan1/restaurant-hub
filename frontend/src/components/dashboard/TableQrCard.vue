@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watchEffect } from 'vue'
 import QRCode from 'qrcode'
+import { X } from 'lucide-vue-next'
 
 const props = defineProps({
   table: { type: Object, required: true },
@@ -99,7 +100,7 @@ function print() {
         title="Delete table"
         @click="emit('delete', table)"
       >
-        ✕
+        <X :size="14" />
       </button>
     </div>
   </article>

@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { X, Check } from 'lucide-vue-next'
 import { fetchBill, requestBill } from '@/services/orders'
 import { statusMeta } from '@/utils/orderStatus'
 import { formatPrice } from '@/utils/format'
@@ -58,7 +59,7 @@ onMounted(load)
           <h2 class="font-bold text-stone-900">Your bill</h2>
           <p v-if="bill?.table" class="text-xs text-stone-500">{{ bill.table.name }}</p>
         </div>
-        <button class="text-stone-400 hover:text-stone-600" aria-label="Close" @click="emit('close')">✕</button>
+        <button class="text-stone-400 hover:text-stone-600" aria-label="Close" @click="emit('close')"><X :size="20" /></button>
       </header>
 
       <div class="min-h-0 flex-1 overflow-y-auto px-5 py-4">
@@ -113,9 +114,9 @@ onMounted(load)
 
         <div
           v-if="requested"
-          class="mt-3 rounded-full bg-emerald-50 py-2.5 text-center text-sm font-semibold text-emerald-600"
+          class="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-brand-50 py-2.5 text-center text-sm font-semibold text-brand-600"
         >
-          ✓ A waiter is on the way with your bill
+          <Check :size="15" /> A waiter is on the way with your bill
         </div>
         <button
           v-else
