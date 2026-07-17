@@ -94,24 +94,24 @@ function onPlaced(result) {
       <div class="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">
         <RouterLink
           :to="{ name: 'restaurant-home', params: { slug } }"
-          class="flex items-center gap-2"
+          class="flex min-w-0 flex-1 items-center gap-2"
         >
           <AppImage
             v-if="restaurant?.logo"
             :src="restaurant.logo"
             :alt="restaurant.name"
-            class="h-8 w-8 rounded-full object-cover ring-1 ring-stone-200"
+            class="h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-stone-200"
           />
-          <span class="text-lg font-bold tracking-tight text-stone-900">
+          <span class="truncate text-base font-bold tracking-tight text-stone-900 sm:text-lg">
             {{ restaurant?.name || 'Menu' }}
           </span>
         </RouterLink>
 
-        <div class="flex items-center gap-2">
+        <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <nav class="flex items-center gap-1 text-sm font-medium">
             <RouterLink
               :to="{ name: 'restaurant-home', params: { slug } }"
-              class="rounded-full px-3 py-1.5 text-stone-600 hover:bg-stone-100"
+              class="hidden rounded-full px-2.5 py-1.5 text-stone-600 hover:bg-stone-100 sm:block sm:px-3"
               active-class="!bg-brand-100 !text-brand-700"
               exact-active-class="!bg-brand-100 !text-brand-700"
             >
@@ -119,7 +119,7 @@ function onPlaced(result) {
             </RouterLink>
             <RouterLink
               :to="{ name: 'restaurant-menu', params: { slug } }"
-              class="rounded-full px-3 py-1.5 text-stone-600 hover:bg-stone-100"
+              class="rounded-full px-2.5 py-1.5 text-stone-600 hover:bg-stone-100 sm:px-3"
               active-class="!bg-brand-100 !text-brand-700"
             >
               Menu
@@ -127,22 +127,24 @@ function onPlaced(result) {
           </nav>
           <button
             v-if="canCallWaiter"
-            class="flex items-center gap-1 rounded-full border border-stone-200 px-3 py-1 text-xs font-semibold text-stone-600 transition hover:bg-stone-100 disabled:opacity-50"
+            class="flex items-center gap-1 rounded-full border border-stone-200 px-2.5 py-1.5 text-xs font-semibold text-stone-600 transition hover:bg-stone-100 disabled:opacity-50"
             :disabled="waiterCalling"
+            aria-label="Call waiter"
             @click="summonWaiter"
           >
-            <BellRing :size="14" /> Waiter
+            <BellRing :size="15" /> <span class="hidden sm:inline">Waiter</span>
           </button>
           <button
             v-if="diningActive"
-            class="flex items-center gap-1 rounded-full border border-stone-200 px-3 py-1 text-xs font-semibold text-stone-600 transition hover:bg-stone-100"
+            class="flex items-center gap-1 rounded-full border border-stone-200 px-2.5 py-1.5 text-xs font-semibold text-stone-600 transition hover:bg-stone-100"
+            aria-label="Request bill"
             @click="billOpen = true"
           >
-            <ReceiptText :size="14" /> Bill
+            <ReceiptText :size="15" /> <span class="hidden sm:inline">Bill</span>
           </button>
           <span
             v-if="tableName"
-            class="rounded-full bg-brand-100 px-3 py-1 text-xs font-semibold text-brand-700"
+            class="shrink-0 rounded-full bg-brand-100 px-2.5 py-1 text-xs font-semibold text-brand-700 sm:px-3"
           >
             {{ tableName }}
           </span>
