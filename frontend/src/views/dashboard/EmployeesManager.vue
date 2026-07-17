@@ -224,52 +224,55 @@ onMounted(load)
             <p class="truncate text-xs text-stone-400">{{ employee.email }}</p>
           </div>
 
-          <!-- Owner / self: read-only role badge -->
-          <span
-            v-if="!isManageable(employee)"
-            class="rounded-lg bg-stone-100 px-2.5 py-1 text-xs font-medium text-stone-600"
-          >
-            {{ employee.role === 'restaurant-owner' ? 'Owner' : roleLabel(employee.role) }}
-          </span>
+          <!-- Controls: inline on desktop, own line on mobile -->
+          <div class="flex w-full items-center gap-2 sm:w-auto">
+            <!-- Owner / self: read-only role badge -->
+            <span
+              v-if="!isManageable(employee)"
+              class="rounded-lg bg-stone-100 px-2.5 py-1 text-xs font-medium text-stone-600"
+            >
+              {{ employee.role === 'restaurant-owner' ? 'Owner' : roleLabel(employee.role) }}
+            </span>
 
-          <!-- Manageable staff: editable role -->
-          <select
-            v-else
-            :value="employee.role"
-            class="rounded-lg border border-stone-200 px-2.5 py-1 text-xs outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
-            @change="changeRole(employee, $event.target.value)"
-          >
-            <option v-for="r in ASSIGNABLE_ROLES" :key="r.value" :value="r.value">
-              {{ r.label }}
-            </option>
-          </select>
+            <!-- Manageable staff: editable role -->
+            <select
+              v-else
+              :value="employee.role"
+              class="rounded-lg border border-stone-200 px-2.5 py-1 text-xs outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+              @change="changeRole(employee, $event.target.value)"
+            >
+              <option v-for="r in ASSIGNABLE_ROLES" :key="r.value" :value="r.value">
+                {{ r.label }}
+              </option>
+            </select>
 
-          <button
-            v-if="isManageable(employee)"
-            class="rounded-lg px-2.5 py-1 text-xs font-medium transition"
-            :class="
-              employee.is_active
-                ? 'bg-green-50 text-green-700 hover:bg-green-100'
-                : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
-            "
-            @click="toggleActive(employee)"
-          >
-            {{ employee.is_active ? 'Active' : 'Inactive' }}
-          </button>
-          <span
-            v-else
-            class="rounded-lg bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700"
-          >
-            Active
-          </span>
+            <button
+              v-if="isManageable(employee)"
+              class="rounded-lg px-2.5 py-1 text-xs font-medium transition"
+              :class="
+                employee.is_active
+                  ? 'bg-green-50 text-green-700 hover:bg-green-100'
+                  : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+              "
+              @click="toggleActive(employee)"
+            >
+              {{ employee.is_active ? 'Active' : 'Inactive' }}
+            </button>
+            <span
+              v-else
+              class="rounded-lg bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700"
+            >
+              Active
+            </span>
 
-          <button
-            v-if="isManageable(employee)"
-            class="rounded-lg px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50"
-            @click="remove(employee)"
-          >
-            Remove
-          </button>
+            <button
+              v-if="isManageable(employee)"
+              class="ml-auto rounded-lg px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50 sm:ml-0"
+              @click="remove(employee)"
+            >
+              Remove
+            </button>
+          </div>
         </li>
       </ul>
     </div>

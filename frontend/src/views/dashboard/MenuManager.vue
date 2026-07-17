@@ -116,7 +116,7 @@ async function toggleAvailability(product) {
         </div>
 
         <ul v-else class="divide-y divide-stone-100">
-          <li v-for="product in products" :key="product.id" class="flex items-center gap-3 py-3">
+          <li v-for="product in products" :key="product.id" class="flex flex-wrap items-center gap-x-3 gap-y-2 py-3">
             <div class="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-stone-100">
               <AppImage :src="product.image" :alt="product.name" class="h-full w-full object-cover" />
             </div>
@@ -127,21 +127,24 @@ async function toggleAvailability(product) {
               </div>
               <p class="truncate text-xs text-stone-400">{{ product.description }}</p>
             </div>
-            <span class="shrink-0 text-sm font-semibold text-stone-700">
-              {{ formatPrice(product.price, currency()) }}
-            </span>
-            <button
-              class="shrink-0 rounded-full px-2 py-1 text-xs font-semibold"
-              :class="product.is_available ? 'bg-green-100 text-green-700' : 'bg-stone-200 text-stone-500'"
-              :title="product.is_available ? 'Available — click to hide' : 'Sold out — click to enable'"
-              @click="toggleAvailability(product)"
-            >
-              {{ product.is_available ? 'Available' : 'Sold out' }}
-            </button>
-            <span class="flex shrink-0 items-center gap-1">
-              <button class="rounded-md p-1.5 text-stone-500 hover:bg-stone-200" title="Edit" @click="productModal = { product }"><Pencil :size="14" /></button>
-              <button class="rounded-md p-1.5 text-stone-500 hover:bg-red-100 hover:text-red-500" title="Delete" @click="confirmDeleteProduct(product)"><Trash2 :size="14" /></button>
-            </span>
+            <!-- Price + status + actions: inline on desktop, own line on mobile -->
+            <div class="flex w-full items-center gap-2 pl-[68px] sm:w-auto sm:pl-0">
+              <span class="shrink-0 text-sm font-semibold text-stone-700">
+                {{ formatPrice(product.price, currency()) }}
+              </span>
+              <button
+                class="shrink-0 rounded-full px-2 py-1 text-xs font-semibold"
+                :class="product.is_available ? 'bg-green-100 text-green-700' : 'bg-stone-200 text-stone-500'"
+                :title="product.is_available ? 'Available — click to hide' : 'Sold out — click to enable'"
+                @click="toggleAvailability(product)"
+              >
+                {{ product.is_available ? 'Available' : 'Sold out' }}
+              </button>
+              <span class="ml-auto flex shrink-0 items-center gap-1 sm:ml-0">
+                <button class="rounded-md p-1.5 text-stone-500 hover:bg-stone-200" title="Edit" @click="productModal = { product }"><Pencil :size="14" /></button>
+                <button class="rounded-md p-1.5 text-stone-500 hover:bg-red-100 hover:text-red-500" title="Delete" @click="confirmDeleteProduct(product)"><Trash2 :size="14" /></button>
+              </span>
+            </div>
           </li>
           <li v-if="!products.length" class="py-10 text-center text-sm text-stone-400">
             No products in this category yet.

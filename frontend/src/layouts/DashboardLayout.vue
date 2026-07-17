@@ -1,6 +1,6 @@
 <script setup>
-import { computed, onMounted } from 'vue'
-import { RouterView, RouterLink, useRouter } from 'vue-router'
+import { computed, ref, watch, onMounted } from 'vue'
+import { RouterView, RouterLink, useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import {
   LayoutDashboard,
@@ -15,15 +15,22 @@ import {
   UtensilsCrossed,
   CircleUserRound,
   LogOut,
+  Menu as MenuIcon,
+  X,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import { useDashboardStore } from '@/stores/dashboard'
 
+const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const dashboard = useDashboardStore()
 const { restaurant } = storeToRefs(dashboard)
 const { user } = storeToRefs(auth)
+
+// Mobile slide-in navigation.
+const navOpen = ref(false)
+watch(() => route.fullPath, () => (navOpen.value = false))
 
 const nav = computed(() =>
   [
@@ -70,16 +77,29 @@ async function logout() {
 
 <template>
   <div class="flex min-h-screen bg-stone-50 text-stone-800">
-    <!-- Sidebar -->
-    <aside class="hidden w-64 shrink-0 flex-col border-r border-stone-200 bg-white sm:flex">
+    <!-- Mobile drawer backdrop -->
+    <div
+      v-if="navOpen"
+      class="fixed inset-0 z-40 bg-black/40 sm:hidden"
+      @click="navOpen = false"
+    ></div>
+
+    <!-- Sidebar: static on desktop, slide-in drawer on mobile -->
+    <aside
+      class="fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col border-r border-stone-200 bg-white transition-transform duration-200 sm:static sm:z-auto sm:translate-x-0"
+      :class="navOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full'"
+    >
       <div class="flex items-center gap-3 border-b border-stone-200/70 px-5 py-4">
         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-white shadow-sm shadow-brand-500/30">
           <UtensilsCrossed :size="20" :stroke-width="2.25" />
         </span>
-        <div class="min-w-0">
+        <div class="min-w-0 flex-1">
           <p class="text-[11px] font-semibold uppercase tracking-wide text-brand-600">Restaurant Hub</p>
           <p class="truncate font-bold text-stone-900">{{ restaurant?.name || '—' }}</p>
         </div>
+        <button class="rounded-lg p-1 text-stone-400 hover:bg-stone-100 sm:hidden" @click="navOpen = false">
+          <X :size="20" />
+        </button>
       </div>
 
       <nav class="flex-1 space-y-1 p-3">
@@ -119,8 +139,15 @@ async function logout() {
 
     <!-- Main -->
     <div class="flex min-w-0 flex-1 flex-col">
-      <header class="flex items-center justify-between border-b border-stone-200 bg-white px-5 py-3 sm:hidden">
-        <span class="font-bold">{{ restaurant?.name || 'Dashboard' }}</span>
+      <header class="sticky top-0 z-30 flex items-center gap-3 border-b border-stone-200 bg-white/90 px-4 py-3 backdrop-blur sm:hidden">
+        <button
+          class="rounded-lg p-1.5 text-stone-600 hover:bg-stone-100"
+          aria-label="Open menu"
+          @click="navOpen = true"
+        >
+          <MenuIcon :size="22" />
+        </button>
+        <span class="min-w-0 flex-1 truncate font-bold">{{ restaurant?.name || 'Dashboard' }}</span>
         <button class="flex items-center gap-1.5 text-sm text-stone-500" @click="logout">
           <LogOut :size="16" /> Sign out
         </button>
