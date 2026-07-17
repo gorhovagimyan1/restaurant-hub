@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { User, StickyNote } from 'lucide-vue-next'
+import { User, StickyNote, ChevronDown, ChevronRight } from 'lucide-vue-next'
 import { fetchOrderHistory } from '@/services/orders'
 import { statusMeta, itemStatusMeta, ORDER_STATUS } from '@/utils/orderStatus'
 import { formatPrice } from '@/utils/format'
@@ -120,21 +120,47 @@ onMounted(load)
       <ul v-else class="divide-y divide-stone-100">
         <li v-for="order in orders" :key="order.id">
           <button
-            class="grid w-full grid-cols-2 items-center gap-2 px-4 py-3 text-left hover:bg-stone-50 sm:grid-cols-12"
+            class="w-full px-4 py-3 text-left hover:bg-stone-50"
             @click="toggle(order.id)"
           >
-            <span class="col-span-1 font-semibold text-stone-800 sm:col-span-3">
-              {{ order.order_number }}
-              <span class="ml-1 text-xs text-stone-400">{{ expanded.has(order.id) ? '▾' : '▸' }}</span>
-            </span>
-            <span class="col-span-1 text-sm text-stone-600 sm:col-span-2">{{ order.table?.name || '—' }}</span>
-            <span class="col-span-1 text-sm text-stone-500 sm:col-span-3">{{ formatWhen(order.created_at) }}</span>
-            <span class="col-span-1 text-right font-semibold text-stone-800 sm:col-span-2">{{ formatPrice(order.total) }}</span>
-            <span class="col-span-1 flex justify-end sm:col-span-2">
-              <span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="statusMeta(order.status).badge">
-                {{ statusMeta(order.status).label }}
+            <!-- Mobile: stacked -->
+            <div class="sm:hidden">
+              <div class="flex items-center gap-2">
+                <component
+                  :is="expanded.has(order.id) ? ChevronDown : ChevronRight"
+                  :size="16"
+                  class="shrink-0 text-stone-400"
+                />
+                <span class="min-w-0 flex-1 truncate font-semibold text-stone-800">{{ order.order_number }}</span>
+                <span class="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold" :class="statusMeta(order.status).badge">
+                  {{ statusMeta(order.status).label }}
+                </span>
+              </div>
+              <div class="mt-1 flex items-center justify-between pl-6 text-sm">
+                <span class="truncate text-stone-500">{{ order.table?.name || '—' }} · {{ formatWhen(order.created_at) }}</span>
+                <span class="shrink-0 pl-2 font-semibold text-stone-800">{{ formatPrice(order.total) }}</span>
+              </div>
+            </div>
+
+            <!-- Desktop: table grid -->
+            <div class="hidden grid-cols-12 items-center gap-2 sm:grid">
+              <span class="col-span-3 flex items-center gap-1.5 font-semibold text-stone-800">
+                <component
+                  :is="expanded.has(order.id) ? ChevronDown : ChevronRight"
+                  :size="14"
+                  class="shrink-0 text-stone-400"
+                />
+                <span class="truncate">{{ order.order_number }}</span>
               </span>
-            </span>
+              <span class="col-span-2 text-sm text-stone-600">{{ order.table?.name || '—' }}</span>
+              <span class="col-span-3 text-sm text-stone-500">{{ formatWhen(order.created_at) }}</span>
+              <span class="col-span-2 text-right font-semibold text-stone-800">{{ formatPrice(order.total) }}</span>
+              <span class="col-span-2 flex justify-end">
+                <span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="statusMeta(order.status).badge">
+                  {{ statusMeta(order.status).label }}
+                </span>
+              </span>
+            </div>
           </button>
 
           <!-- Expanded item detail -->
