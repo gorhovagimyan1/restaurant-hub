@@ -75,7 +75,7 @@ function print() {
       </span>
     </div>
 
-    <div class="mt-3 grid aspect-square place-items-center rounded-xl bg-stone-50 p-3">
+    <div class="mx-auto mt-3 grid aspect-square w-full max-w-[220px] place-items-center rounded-xl bg-stone-50 p-3">
       <img v-if="dataUrl" :src="dataUrl" :alt="`QR for ${table.name}`" class="h-full w-full object-contain" />
       <span v-else class="text-xs text-stone-400">No QR</span>
     </div>

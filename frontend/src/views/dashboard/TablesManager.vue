@@ -63,16 +63,16 @@ onMounted(load)
 
     <!-- Add table -->
     <form
-      class="mb-6 flex flex-wrap items-end gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5"
+      class="mb-6 flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5 sm:flex-row sm:flex-wrap sm:items-end"
       @submit.prevent="add"
     >
-      <div>
+      <div class="w-full sm:w-auto sm:flex-1">
         <label class="block text-xs font-medium text-stone-500">Table name</label>
         <input
           v-model="newName"
           type="text"
           placeholder="e.g. Table 9 / Patio 2"
-          class="mt-1 rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+          class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 sm:w-64"
         />
       </div>
       <div>
@@ -82,12 +82,12 @@ onMounted(load)
           type="number"
           min="1"
           max="50"
-          class="mt-1 w-24 rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+          class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 sm:w-24"
         />
       </div>
       <button
         type="submit"
-        class="rounded-full bg-brand-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-60"
+        class="w-full rounded-full bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-60 sm:w-auto sm:py-2"
         :disabled="creating"
       >
         {{ creating ? 'Adding…' : '+ Add table' }}
@@ -105,7 +105,10 @@ onMounted(load)
       No tables yet — add your first one above.
     </div>
 
-    <div v-else class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+    <div
+      v-else
+      class="grid grid-cols-1 gap-4 min-[480px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+    >
       <TableQrCard v-for="table in tables" :key="table.id" :table="table" @delete="remove" />
     </div>
   </div>
