@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import http, { TOKEN_KEY } from '@/services/http'
+import { useDashboardStore } from '@/stores/dashboard'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref(localStorage.getItem(TOKEN_KEY))
@@ -15,6 +16,10 @@ export const useAuthStore = defineStore('auth', () => {
     return roles.value.includes(role)
   }
 
+  function can(permission) {
+    return permissions.value.includes(permission)
+  }
+
   // Kitchen/front-of-house staff who should land on the kitchen display rather
   // than the owner dashboard (which they lack permissions for).
   const isKitchenOnly = computed(() => {
@@ -24,7 +29,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Where a freshly-authenticated user should be sent.
   const homeRoute = computed(() =>
-    isKitchenOnly.value ? { name: 'kitchen' } : { name: 'dashboard-menu' },
+    isKitchenOnly.value ? { name: 'kitchen' } : { name: 'dashboard-overview' },
   )
 
   function setToken(value) {
@@ -40,6 +45,21 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true
     try {
       const { data } = await http.post('/auth/login', credentials)
+      // Drop any previous account's tenant data before adopting the new one.
+      useDashboardStore().reset()
+      setToken(data.data.token)
+      user.value = data.data.user
+      return data.data.user
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function register(payload) {
+    loading.value = true
+    try {
+      const { data } = await http.post('/auth/register', payload)
+      useDashboardStore().reset()
       setToken(data.data.token)
       user.value = data.data.user
       return data.data.user
@@ -62,6 +82,33 @@ export const useAuthStore = defineStore('auth', () => {
     }
     setToken(null)
     user.value = null
+    useDashboardStore().reset()
+  }
+
+  // Request a password reset email. Returns the API's (deliberately vague)
+  // confirmation message.
+  async function forgotPassword(email) {
+    const { data } = await http.post('/auth/forgot-password', { email })
+    return data.message
+  }
+
+  // Complete a password reset with the token from the emailed link.
+  async function resetPassword(payload) {
+    const { data } = await http.post('/auth/reset-password', payload)
+    return data.message
+  }
+
+  // Update the signed-in user's profile details.
+  async function updateProfile(payload) {
+    const { data } = await http.put('/auth/profile', payload)
+    user.value = data.data
+    return user.value
+  }
+
+  // Change the signed-in user's password (revokes other sessions server-side).
+  async function changePassword(payload) {
+    const { data } = await http.put('/auth/password', payload)
+    return data.message
   }
 
   return {
@@ -72,10 +119,16 @@ export const useAuthStore = defineStore('auth', () => {
     roles,
     permissions,
     hasRole,
+    can,
     isKitchenOnly,
     homeRoute,
     login,
+    register,
     fetchMe,
     logout,
+    forgotPassword,
+    resetPassword,
+    updateProfile,
+    changePassword,
   }
 })

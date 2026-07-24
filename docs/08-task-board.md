@@ -98,16 +98,16 @@ Project Status: 🟢 Development Started
 
 ---
 
-# Sprint 4 - Authentication Module 🟡
+# Sprint 4 - Authentication Module ✅
 
 * [x] Login
 * [x] Logout
-* [ ] Forgot Password
-* [ ] Reset Password
-* [ ] Change Password
-* [ ] User Profile
+* [x] Forgot Password
+* [x] Reset Password
+* [x] Change Password
+* [x] User Profile
 * [x] Current User API
-* [ ] Role Based Redirect (redirects to dashboard; not yet role-branching)
+* [x] Role Based Redirect
 
 
 ---
@@ -126,16 +126,17 @@ Project Status: 🟢 Development Started
 
 ---
 
-# Sprint 6 - Restaurant Management
+# Sprint 6 - Restaurant Management 🟡
 
-* [ ] Restaurant Dashboard
-* [ ] Restaurant CRUD
-* [ ] Restaurant Profile
-* [ ] Restaurant Settings
-* [ ] Business Hours
-* [ ] Employee Management
-* [ ] Invite Employees
-* [ ] Assign Roles
+* [x] Restaurant Dashboard
+* [x] Owner self-registration (provisions restaurant + settings on sign-up)
+* [ ] Restaurant CRUD (platform-admin: manage all restaurants — Sprint 5)
+* [x] Restaurant Profile
+* [x] Restaurant Settings
+* [x] Business Hours
+* [x] Employee Management
+* [x] Invite Employees (email set-password link)
+* [x] Assign Roles
 
 ---
 

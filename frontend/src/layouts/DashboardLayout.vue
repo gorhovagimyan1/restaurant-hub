@@ -1,15 +1,53 @@
 <script setup>
-import { onMounted } from 'vue'
-import { RouterView, RouterLink, useRouter } from 'vue-router'
+import { computed, ref, watch, onMounted } from 'vue'
+import { RouterView, RouterLink, useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
+import {
+  LayoutDashboard,
+  ReceiptText,
+  ClipboardList,
+  ChefHat,
+  BookOpen,
+  QrCode,
+  Users,
+  Settings,
+  ExternalLink,
+  UtensilsCrossed,
+  CircleUserRound,
+  LogOut,
+  Menu as MenuIcon,
+  X,
+} from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import { useDashboardStore } from '@/stores/dashboard'
 
+const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const dashboard = useDashboardStore()
 const { restaurant } = storeToRefs(dashboard)
 const { user } = storeToRefs(auth)
+
+// Mobile slide-in navigation.
+const navOpen = ref(false)
+watch(() => route.fullPath, () => (navOpen.value = false))
+
+const nav = computed(() =>
+  [
+    { name: 'dashboard-overview', label: 'Overview', icon: LayoutDashboard, exact: true },
+    { name: 'dashboard-orders', label: 'Live Orders', icon: ReceiptText, exact: true },
+    { name: 'dashboard-orders-history', label: 'All Orders', icon: ClipboardList },
+    { name: 'kitchen', label: 'Kitchen Display', icon: ChefHat },
+    { name: 'dashboard-menu', label: 'Menu Management', icon: BookOpen, exact: true },
+    { name: 'dashboard-tables', label: 'Tables & QR', icon: QrCode },
+    { name: 'dashboard-team', label: 'Team', icon: Users, show: auth.can('employees.manage') },
+    { name: 'dashboard-settings', label: 'Settings', icon: Settings, show: auth.can('restaurant.manage') },
+  ].filter((i) => i.show !== false),
+)
+
+const linkClass =
+  'flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-stone-600 transition hover:bg-stone-100'
+const activeClass = 'bg-brand-50 text-brand-700 font-semibold ring-1 ring-brand-100'
 
 onMounted(async () => {
   if (!user.value) {
@@ -38,73 +76,81 @@ async function logout() {
 </script>
 
 <template>
-  <div class="flex min-h-screen bg-stone-100 text-stone-800">
-    <!-- Sidebar -->
-    <aside class="hidden w-60 shrink-0 flex-col border-r border-stone-200 bg-white sm:flex">
-      <div class="border-b border-stone-200 px-5 py-4">
-        <p class="text-xs font-semibold uppercase tracking-wide text-amber-600">Restaurant Hub</p>
-        <p class="mt-1 truncate font-bold text-stone-900">{{ restaurant?.name || '—' }}</p>
+  <div class="flex min-h-screen bg-stone-50 text-stone-800">
+    <!-- Mobile drawer backdrop -->
+    <div
+      v-if="navOpen"
+      class="fixed inset-0 z-40 bg-black/40 sm:hidden"
+      @click="navOpen = false"
+    ></div>
+
+    <!-- Sidebar: static on desktop, slide-in drawer on mobile -->
+    <aside
+      class="fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col border-r border-stone-200 bg-white transition-transform duration-200 sm:static sm:z-auto sm:translate-x-0"
+      :class="navOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full'"
+    >
+      <div class="flex items-center gap-3 border-b border-stone-200/70 px-5 py-4">
+        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-white shadow-sm shadow-brand-500/30">
+          <UtensilsCrossed :size="20" :stroke-width="2.25" />
+        </span>
+        <div class="min-w-0 flex-1">
+          <p class="text-[11px] font-semibold uppercase tracking-wide text-brand-600">Restaurant Hub</p>
+          <p class="truncate font-bold text-stone-900">{{ restaurant?.name || '—' }}</p>
+        </div>
+        <button class="rounded-lg p-1 text-stone-400 hover:bg-stone-100 sm:hidden" @click="navOpen = false">
+          <X :size="20" />
+        </button>
       </div>
-      <nav class="flex-1 space-y-1 p-3 text-sm">
+
+      <nav class="flex-1 space-y-1 p-3">
         <RouterLink
-          :to="{ name: 'dashboard-orders' }"
-          class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-stone-600 hover:bg-stone-100"
-          exact-active-class="!bg-amber-100 !text-amber-700"
+          v-for="item in nav"
+          :key="item.name"
+          :to="{ name: item.name }"
+          :class="linkClass"
+          :active-class="item.exact ? undefined : activeClass"
+          :exact-active-class="item.exact ? activeClass : undefined"
         >
-          🧾 Live Orders
+          <component :is="item.icon" :size="18" class="shrink-0" />
+          {{ item.label }}
         </RouterLink>
-        <RouterLink
-          :to="{ name: 'dashboard-orders-history' }"
-          class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-stone-600 hover:bg-stone-100"
-          active-class="!bg-amber-100 !text-amber-700"
-        >
-          📋 All Orders
-        </RouterLink>
-        <RouterLink
-          :to="{ name: 'kitchen' }"
-          class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-stone-600 hover:bg-stone-100"
-          active-class="!bg-amber-100 !text-amber-700"
-        >
-          👨‍🍳 Kitchen Display
-        </RouterLink>
-        <RouterLink
-          :to="{ name: 'dashboard-menu' }"
-          class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-stone-600 hover:bg-stone-100"
-          exact-active-class="!bg-amber-100 !text-amber-700"
-        >
-          🍽️ Menu Management
-        </RouterLink>
-        <RouterLink
-          :to="{ name: 'dashboard-tables' }"
-          class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-stone-600 hover:bg-stone-100"
-          active-class="!bg-amber-100 !text-amber-700"
-        >
-          🔳 Tables & QR
-        </RouterLink>
+
         <a
           :href="restaurant ? `/r/${restaurant.slug}` : '/'"
           target="_blank"
-          class="flex items-center gap-2 rounded-lg px-3 py-2 font-medium text-stone-600 hover:bg-stone-100"
+          :class="linkClass"
         >
-          👁️ View Customer Menu
+          <ExternalLink :size="18" class="shrink-0" />
+          View Customer Menu
         </a>
       </nav>
-      <div class="border-t border-stone-200 p-3">
-        <p class="px-3 text-xs text-stone-400">{{ user?.full_name }}</p>
-        <button
-          class="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-stone-600 hover:bg-stone-100"
-          @click="logout"
-        >
-          ⏻ Sign out
+
+      <div class="border-t border-stone-200/70 p-3">
+        <RouterLink :to="{ name: 'profile' }" :class="linkClass">
+          <CircleUserRound :size="18" class="shrink-0" />
+          <span class="truncate">{{ user?.full_name || 'My Profile' }}</span>
+        </RouterLink>
+        <button :class="[linkClass, 'mt-1 w-full text-left']" @click="logout">
+          <LogOut :size="18" class="shrink-0" />
+          Sign out
         </button>
       </div>
     </aside>
 
     <!-- Main -->
     <div class="flex min-w-0 flex-1 flex-col">
-      <header class="flex items-center justify-between border-b border-stone-200 bg-white px-5 py-3 sm:hidden">
-        <span class="font-bold">{{ restaurant?.name || 'Dashboard' }}</span>
-        <button class="text-sm text-stone-500" @click="logout">Sign out</button>
+      <header class="sticky top-0 z-30 flex items-center gap-3 border-b border-stone-200 bg-white/90 px-4 py-3 backdrop-blur sm:hidden">
+        <button
+          class="rounded-lg p-1.5 text-stone-600 hover:bg-stone-100"
+          aria-label="Open menu"
+          @click="navOpen = true"
+        >
+          <MenuIcon :size="22" />
+        </button>
+        <span class="min-w-0 flex-1 truncate font-bold">{{ restaurant?.name || 'Dashboard' }}</span>
+        <button class="flex items-center gap-1.5 text-sm text-stone-500" @click="logout">
+          <LogOut :size="16" /> Sign out
+        </button>
       </header>
       <main class="flex-1 overflow-y-auto p-5">
         <RouterView />

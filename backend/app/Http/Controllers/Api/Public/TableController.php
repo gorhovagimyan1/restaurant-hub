@@ -48,12 +48,9 @@ class TableController extends Controller
         abort_unless($table->restaurant->is_active, 404);
 
         $session = DB::transaction(function () use ($table) {
-            // Lock any existing open session so concurrent scans join it rather
-            // than race to create a second (which the unique lock would reject).
             $existing = $table->openSession()->lockForUpdate()->first();
 
             if ($existing) {
-                // Re-joining an existing visit still counts as activity.
                 $existing->touchActivity();
 
                 return $existing;
@@ -112,8 +109,16 @@ class TableController extends Controller
      */
     public function requestBill(Request $request, TableQrCode $tableQrCode): JsonResponse
     {
-        $table = $tableQrCode->table()->firstOrFail();
+        $table = $tableQrCode->table()->with('restaurant.settings')->firstOrFail();
         $this->requireOpenSession($table, $request->input('session_token'));
+
+        $settings = $table->restaurant->settings;
+
+        abort_if(
+            $settings && ! $settings->enable_bill_request,
+            422,
+            'Requesting the bill is not available right now.',
+        );
 
         if ($table->bill_requested_at === null) {
             $table->update(['bill_requested_at' => now()]);

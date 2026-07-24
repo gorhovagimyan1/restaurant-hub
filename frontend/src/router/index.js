@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { TOKEN_KEY } from '@/services/http'
 import { activeDiningSlug } from '@/stores/dining'
+import { useAuthStore } from '@/stores/auth'
 import CustomerLayout from '@/layouts/CustomerLayout.vue'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import KitchenLayout from '@/layouts/KitchenLayout.vue'
@@ -27,12 +28,40 @@ const router = createRouter({
       component: () => import('@/views/dashboard/LoginView.vue'),
     },
     {
+      path: '/register',
+      name: 'register',
+      component: () => import('@/views/dashboard/RegisterView.vue'),
+    },
+    {
+      path: '/forgot-password',
+      name: 'forgot-password',
+      component: () => import('@/views/dashboard/ForgotPasswordView.vue'),
+    },
+    {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: () => import('@/views/dashboard/ResetPasswordView.vue'),
+    },
+    {
+      // Standalone so both managerial and kitchen staff can reach it without
+      // tripping the DashboardLayout's kitchen-only redirect.
+      path: '/profile',
+      name: 'profile',
+      component: () => import('@/views/dashboard/ProfileView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/dashboard',
       component: DashboardLayout,
       meta: { requiresAuth: true },
       children: [
         {
           path: '',
+          name: 'dashboard-overview',
+          component: () => import('@/views/dashboard/DashboardOverview.vue'),
+        },
+        {
+          path: 'menu',
           name: 'dashboard-menu',
           component: () => import('@/views/dashboard/MenuManager.vue'),
         },
@@ -50,6 +79,16 @@ const router = createRouter({
           path: 'tables',
           name: 'dashboard-tables',
           component: () => import('@/views/dashboard/TablesManager.vue'),
+        },
+        {
+          path: 'team',
+          name: 'dashboard-team',
+          component: () => import('@/views/dashboard/EmployeesManager.vue'),
+        },
+        {
+          path: 'settings',
+          name: 'dashboard-settings',
+          component: () => import('@/views/dashboard/RestaurantSettings.vue'),
         },
       ],
     },
@@ -110,14 +149,20 @@ router.beforeEach((to) => {
   if (to.meta.requiresAuth && !hasToken) {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
-  if (to.name === 'login' && hasToken) {
-    return { name: 'dashboard-menu' }
+  if ((to.name === 'login' || to.name === 'register') && hasToken) {
+    // Send already-authenticated users to their role's home (kitchen staff to
+    // the kitchen display, everyone else to the owner dashboard).
+    return useAuthStore().homeRoute
   }
 
-  // The customer menu portal only opens for a table whose QR was scanned.
+  // The customer menu portal normally only opens for a table whose QR was
+  // scanned. Authenticated staff/owner/super-admin (the only users who hold a
+  // token — customers are anonymous) may instead open it as a browse-only
+  // preview: no dining session, so the ordering UI stays hidden.
   if (to.meta.requiresDining) {
     const slug = activeDiningSlug()
-    if (!slug || slug !== to.params.slug) {
+    const hasDiningSession = slug && slug === to.params.slug
+    if (!hasDiningSession && !hasToken) {
       return { name: 'scan-required' }
     }
   }

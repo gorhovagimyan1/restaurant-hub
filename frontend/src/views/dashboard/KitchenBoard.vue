@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { storeToRefs } from 'pinia'
+import { Bell, BellOff, CookingPot, Check } from 'lucide-vue-next'
 import { useOrdersStore } from '@/stores/orders'
 import ServiceCallsBanner from '@/components/dashboard/ServiceCallsBanner.vue'
 import { nextItemStep } from '@/utils/orderStatus'
@@ -33,7 +34,7 @@ function urgencyClass(order) {
   if (!created) return 'ring-1 ring-stone-700'
   const mins = (Date.now() - new Date(created).getTime()) / 60000
   if (mins >= 15) return 'ring-2 ring-red-500'
-  if (mins >= 8) return 'ring-2 ring-amber-500'
+  if (mins >= 8) return 'ring-2 ring-brand-500'
   return 'ring-1 ring-stone-700'
 }
 
@@ -108,10 +109,11 @@ onBeforeUnmount(() => store.stop())
         <span v-if="loading" class="text-stone-500">· refreshing…</span>
       </p>
       <button
-        class="rounded-full border border-stone-600 px-3 py-1.5 text-sm font-medium text-stone-300 hover:bg-stone-800"
+        class="flex items-center gap-1.5 rounded-full border border-stone-600 px-3 py-1.5 text-sm font-medium text-stone-300 hover:bg-stone-800"
         @click="soundOn = !soundOn"
       >
-        {{ soundOn ? '🔔 Sound on' : '🔕 Sound off' }}
+        <component :is="soundOn ? Bell : BellOff" :size="15" />
+        {{ soundOn ? 'Sound on' : 'Sound off' }}
       </button>
     </div>
 
@@ -124,7 +126,7 @@ onBeforeUnmount(() => store.stop())
       v-if="!loading && !tickets.length"
       class="mt-6 rounded-2xl border border-dashed border-stone-700 px-6 py-20 text-center"
     >
-      <p class="text-5xl">🍳</p>
+      <CookingPot :size="48" class="mx-auto text-stone-600" />
       <h3 class="mt-3 text-lg font-semibold text-stone-200">No tickets right now</h3>
       <p class="mt-1 text-sm text-stone-400">New orders appear here the moment a customer sends them.</p>
     </div>
@@ -158,9 +160,9 @@ onBeforeUnmount(() => store.stop())
           >
             <div class="min-w-0">
               <p class="text-base font-semibold leading-snug text-white">
-                <span class="text-amber-400">{{ item.quantity }}×</span> {{ item.product_name }}
+                <span class="text-brand-400">{{ item.quantity }}×</span> {{ item.product_name }}
               </p>
-              <p v-if="item.notes" class="text-sm font-medium italic text-amber-300">“{{ item.notes }}”</p>
+              <p v-if="item.notes" class="text-sm font-medium italic text-brand-300">“{{ item.notes }}”</p>
             </div>
 
             <button
@@ -171,7 +173,7 @@ onBeforeUnmount(() => store.stop())
             >
               {{ step(item.status).action }}
             </button>
-            <span v-else class="shrink-0 text-xs font-semibold text-teal-400">✓ Delivered</span>
+            <span v-else class="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-teal-400"><Check :size="13" /> Delivered</span>
           </li>
         </ul>
 

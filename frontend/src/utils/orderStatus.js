@@ -3,7 +3,7 @@
  * label, badge classes, and the natural "next step" a staff member advances to.
  */
 export const ORDER_STATUS = {
-  pending: { label: 'New', badge: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' },
+  pending: { label: 'New', badge: 'bg-slate-200 text-slate-700', dot: 'bg-slate-500' },
   accepted: { label: 'Accepted', badge: 'bg-sky-100 text-sky-700', dot: 'bg-sky-500' },
   preparing: { label: 'Preparing', badge: 'bg-indigo-100 text-indigo-700', dot: 'bg-indigo-500' },
   ready: { label: 'Ready', badge: 'bg-emerald-100 text-emerald-700', dot: 'bg-emerald-500' },
@@ -55,7 +55,7 @@ export const ITEM_STATUS = {
 
 // The single action that moves an item forward, with a button colour.
 const ITEM_FLOW = {
-  pending: { next: 'preparing', action: 'Start', btn: 'bg-amber-500 hover:bg-amber-600' },
+  pending: { next: 'preparing', action: 'Start', btn: 'bg-stone-800 hover:bg-stone-900' },
   preparing: { next: 'ready', action: 'Ready', btn: 'bg-emerald-500 hover:bg-emerald-600' },
   ready: { next: 'served', action: 'Deliver', btn: 'bg-sky-500 hover:bg-sky-600' },
 }

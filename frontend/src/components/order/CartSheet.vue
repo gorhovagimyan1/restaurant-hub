@@ -1,11 +1,12 @@
 <script setup>
 import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
+import { X } from 'lucide-vue-next'
 import { useCartStore } from '@/stores/cart'
 import AppImage from '@/components/ui/AppImage.vue'
 import { formatPrice } from '@/utils/format'
 
-const props = defineProps({
+defineProps({
   tableName: { type: String, default: '' },
 })
 
@@ -48,7 +49,7 @@ async function place() {
           <h2 class="font-bold text-stone-900">Your order</h2>
           <p v-if="tableName" class="text-xs text-stone-500">{{ tableName }}</p>
         </div>
-        <button class="text-stone-400 hover:text-stone-600" aria-label="Close" @click="emit('close')">✕</button>
+        <button class="text-stone-400 hover:text-stone-600" aria-label="Close" @click="emit('close')"><X :size="20" /></button>
       </header>
 
       <div class="min-h-0 flex-1 overflow-y-auto px-5">
@@ -93,13 +94,13 @@ async function place() {
             v-model="customerName"
             type="text"
             placeholder="Your name (optional)"
-            class="w-full rounded-xl border border-stone-200 px-3.5 py-2.5 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            class="w-full rounded-xl border border-stone-200 px-3.5 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
           />
           <textarea
             v-model="notes"
             rows="2"
             placeholder="Notes for the kitchen (optional)"
-            class="w-full resize-none rounded-xl border border-stone-200 px-3.5 py-2.5 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+            class="w-full resize-none rounded-xl border border-stone-200 px-3.5 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
           />
         </div>
       </div>
@@ -127,7 +128,7 @@ async function place() {
         <p v-if="error" class="mt-3 text-center text-sm text-red-500">{{ error }}</p>
 
         <button
-          class="mt-3 w-full rounded-full bg-amber-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600 disabled:opacity-60"
+          class="mt-3 w-full rounded-full bg-brand-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-60"
           :disabled="submitting"
           @click="place"
         >

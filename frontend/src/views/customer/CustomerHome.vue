@@ -14,6 +14,20 @@ const { restaurant, categories, featured, currency, totalProducts } = storeToRef
 
 const slug = computed(() => route.params.slug)
 
+// Open/closed status resolved server-side (weekly hours + holiday overrides).
+const status = computed(() => restaurant.value?.open_status || null)
+
+const statusText = computed(() => {
+  const s = status.value
+  if (!s) return null
+  if (s.open) return s.closes_at ? `Open now · until ${s.closes_at}` : 'Open now'
+  const today = s.today
+  if (today && !today.is_closed && today.open_time) {
+    return `Closed · opens ${today.open_time}`
+  }
+  return today?.label ? `Closed · ${today.label}` : 'Closed today'
+})
+
 function openCategory(category) {
   router.push({ name: 'restaurant-menu', params: { slug: slug.value }, hash: `#cat-${category.id}` })
 }
@@ -42,6 +56,17 @@ function openMenu() {
               :alt="restaurant.name"
               class="mb-3 h-16 w-16 rounded-2xl object-cover ring-2 ring-white/80"
             />
+            <span
+              v-if="statusText"
+              class="mb-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold backdrop-blur"
+              :class="status?.open ? 'bg-green-500/90 text-white' : 'bg-black/50 text-white/90'"
+            >
+              <span
+                class="h-1.5 w-1.5 rounded-full"
+                :class="status?.open ? 'bg-white' : 'bg-red-400'"
+              />
+              {{ statusText }}
+            </span>
             <h1 class="text-3xl font-bold text-white drop-shadow sm:text-4xl">
               {{ restaurant.name }}
             </h1>
@@ -50,7 +75,7 @@ function openMenu() {
             </p>
             <div class="mt-4 flex flex-wrap items-center gap-3">
               <button
-                class="rounded-full bg-amber-500 px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-amber-500/30 transition hover:bg-amber-600"
+                class="btn-brand rounded-full px-6 py-2.5 text-sm font-semibold transition hover:-translate-y-0.5"
                 @click="openMenu"
               >
                 View full menu

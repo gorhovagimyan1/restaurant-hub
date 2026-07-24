@@ -5,10 +5,12 @@ import { storeToRefs } from 'pinia'
 import { useMenuStore } from '@/stores/menu'
 import { useDiningStore } from '@/stores/dining'
 import { useCartStore } from '@/stores/cart'
+import { useAuthStore } from '@/stores/auth'
 import AppImage from '@/components/ui/AppImage.vue'
 import ProductModal from '@/components/menu/ProductModal.vue'
 import CartSheet from '@/components/order/CartSheet.vue'
 import BillSheet from '@/components/order/BillSheet.vue'
+import { BellRing, ReceiptText, UtensilsCrossed, Check, Eye } from 'lucide-vue-next'
 import { callWaiter } from '@/services/orders'
 import { formatPrice } from '@/utils/format'
 
@@ -16,6 +18,7 @@ const route = useRoute()
 const store = useMenuStore()
 const dining = useDiningStore()
 const cart = useCartStore()
+const auth = useAuthStore()
 const { restaurant, loading, error } = storeToRefs(store)
 const {
   tableName,
@@ -34,7 +37,15 @@ const cartOpen = ref(false)
 const billOpen = ref(false)
 const placedOrder = ref(null)
 
+// Staff/owner/super-admin reach this portal without a scanned-QR session — a
+// browse-only preview of what customers see. Ordering, cart, bill and waiter
+// call all stay hidden because there is no dining session behind them.
+const isPreview = computed(() => auth.isAuthenticated && !diningActive.value)
+
 const canCallWaiter = computed(() => diningActive.value && ordering.value?.enable_waiter_call !== false)
+// Viewing the running bill stays available either way; only asking staff for it
+// is gated, matching the server-side check.
+const canRequestBill = computed(() => ordering.value?.enable_bill_request !== false)
 const waiterCalling = ref(false)
 const toast = ref(null)
 let toastTimer = null
@@ -44,7 +55,7 @@ async function summonWaiter() {
   waiterCalling.value = true
   try {
     await callWaiter(diningToken.value, diningSessionToken.value)
-    toast.value = 'A waiter is on the way 🙋'
+    toast.value = 'A waiter is on the way'
   } catch (err) {
     toast.value = err?.response?.data?.message || 'Could not call a waiter. Please try again.'
   } finally {
@@ -93,68 +104,85 @@ function onPlaced(result) {
       <div class="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">
         <RouterLink
           :to="{ name: 'restaurant-home', params: { slug } }"
-          class="flex items-center gap-2"
+          class="flex min-w-0 flex-1 items-center gap-2"
         >
           <AppImage
             v-if="restaurant?.logo"
             :src="restaurant.logo"
             :alt="restaurant.name"
-            class="h-8 w-8 rounded-full object-cover ring-1 ring-stone-200"
+            class="h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-stone-200"
           />
-          <span class="text-lg font-bold tracking-tight text-stone-900">
+          <span class="truncate text-base font-bold tracking-tight text-stone-900 sm:text-lg">
             {{ restaurant?.name || 'Menu' }}
           </span>
         </RouterLink>
 
-        <div class="flex items-center gap-2">
+        <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <nav class="flex items-center gap-1 text-sm font-medium">
             <RouterLink
               :to="{ name: 'restaurant-home', params: { slug } }"
-              class="rounded-full px-3 py-1.5 text-stone-600 hover:bg-stone-100"
-              active-class="!bg-amber-100 !text-amber-700"
-              exact-active-class="!bg-amber-100 !text-amber-700"
+              class="hidden rounded-full px-2.5 py-1.5 text-stone-600 hover:bg-stone-100 sm:block sm:px-3"
+              active-class="!bg-brand-100 !text-brand-700"
+              exact-active-class="!bg-brand-100 !text-brand-700"
             >
               Home
             </RouterLink>
             <RouterLink
               :to="{ name: 'restaurant-menu', params: { slug } }"
-              class="rounded-full px-3 py-1.5 text-stone-600 hover:bg-stone-100"
-              active-class="!bg-amber-100 !text-amber-700"
+              class="rounded-full px-2.5 py-1.5 text-stone-600 hover:bg-stone-100 sm:px-3"
+              active-class="!bg-brand-100 !text-brand-700"
             >
               Menu
             </RouterLink>
           </nav>
           <button
             v-if="canCallWaiter"
-            class="flex items-center gap-1 rounded-full border border-stone-200 px-3 py-1 text-xs font-semibold text-stone-600 transition hover:bg-stone-100 disabled:opacity-50"
+            class="flex items-center gap-1 rounded-full border border-stone-200 px-2.5 py-1.5 text-xs font-semibold text-stone-600 transition hover:bg-stone-100 disabled:opacity-50"
             :disabled="waiterCalling"
+            aria-label="Call waiter"
             @click="summonWaiter"
           >
-            🙋 Waiter
+            <BellRing :size="15" /> <span class="hidden sm:inline">Waiter</span>
           </button>
           <button
             v-if="diningActive"
-            class="flex items-center gap-1 rounded-full border border-stone-200 px-3 py-1 text-xs font-semibold text-stone-600 transition hover:bg-stone-100"
+            class="flex items-center gap-1 rounded-full border border-stone-200 px-2.5 py-1.5 text-xs font-semibold text-stone-600 transition hover:bg-stone-100"
+            aria-label="Request bill"
             @click="billOpen = true"
           >
-            🧾 Bill
+            <ReceiptText :size="15" /> <span class="hidden sm:inline">Bill</span>
           </button>
           <span
             v-if="tableName"
-            class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700"
+            class="shrink-0 rounded-full bg-brand-100 px-2.5 py-1 text-xs font-semibold text-brand-700 sm:px-3"
           >
             {{ tableName }}
+          </span>
+          <span
+            v-else-if="isPreview"
+            class="flex shrink-0 items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700 sm:px-3"
+          >
+            <Eye :size="13" /> Preview
           </span>
         </div>
       </div>
     </header>
+
+    <!-- Staff preview notice: this portal is normally reached by scanning a
+         table QR; here it is opened from the dashboard, so ordering is off. -->
+    <div
+      v-if="isPreview"
+      class="border-b border-amber-200 bg-amber-50 px-4 py-2 text-center text-xs font-medium text-amber-800"
+    >
+      Staff preview — this is what customers see after scanning a table QR. Ordering is disabled here.
+    </div>
 
     <main class="flex-1" :class="{ 'pb-24': allowOrders && count > 0 }">
       <!-- Loading -->
       <div v-if="loading && !ready" class="flex h-[60vh] items-center justify-center">
         <div class="flex flex-col items-center gap-3 text-stone-400">
           <span
-            class="h-8 w-8 animate-spin rounded-full border-2 border-stone-200 border-t-amber-500"
+            class="h-8 w-8 animate-spin rounded-full border-2 border-stone-200 border-t-brand-500"
           />
           <span class="text-sm">Loading menu…</span>
         </div>
@@ -162,11 +190,11 @@ function onPlaced(result) {
 
       <!-- Error -->
       <div v-else-if="error && !ready" class="mx-auto max-w-md px-4 py-24 text-center">
-        <p class="text-4xl">🍽️</p>
+        <UtensilsCrossed :size="44" class="mx-auto text-stone-300" />
         <h2 class="mt-4 text-lg font-semibold text-stone-800">Menu unavailable</h2>
         <p class="mt-1 text-sm text-stone-500">{{ error }}</p>
         <button
-          class="mt-6 rounded-full bg-amber-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600"
+          class="mt-6 rounded-full bg-brand-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600"
           @click="retry"
         >
           Try again
@@ -184,7 +212,7 @@ function onPlaced(result) {
           {{ restaurant.address }}<span v-if="restaurant.city">, {{ restaurant.city }}</span>
         </p>
         <p v-if="restaurant.phone" class="mt-1">
-          <a :href="`tel:${restaurant.phone}`" class="hover:text-amber-600">{{ restaurant.phone }}</a>
+          <a :href="`tel:${restaurant.phone}`" class="hover:text-brand-600">{{ restaurant.phone }}</a>
         </p>
         <p class="mt-4 text-xs text-stone-400">Powered by Restaurant Hub</p>
       </div>
@@ -197,7 +225,7 @@ function onPlaced(result) {
     >
       <div class="mx-auto max-w-3xl px-4 py-3">
         <button
-          class="flex w-full items-center justify-between rounded-full bg-amber-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-600"
+          class="flex w-full items-center justify-between rounded-full bg-brand-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600"
           @click="cartOpen = true"
         >
           <span class="flex items-center gap-2">
@@ -222,6 +250,7 @@ function onPlaced(result) {
       v-if="billOpen && diningToken && diningSessionToken"
       :token="diningToken"
       :session-token="diningSessionToken"
+      :can-request="canRequestBill"
       @close="billOpen = false"
     />
 
@@ -232,7 +261,7 @@ function onPlaced(result) {
       @click.self="placedOrder = null"
     >
       <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-xl">
-        <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-emerald-100 text-3xl text-emerald-600">✓</div>
+        <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-brand-100 text-brand-600"><Check :size="32" :stroke-width="2.5" /></div>
         <h2 class="mt-4 text-xl font-bold text-stone-900">Order sent!</h2>
         <p class="mt-1 text-sm text-stone-500">
           {{ tableName }} · your order is on its way to the kitchen.
@@ -245,7 +274,7 @@ function onPlaced(result) {
           </p>
         </div>
         <button
-          class="mt-5 w-full rounded-full bg-amber-500 py-2.5 text-sm font-semibold text-white transition hover:bg-amber-600"
+          class="mt-5 w-full rounded-full bg-brand-500 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600"
           @click="placedOrder = null"
         >
           Order more

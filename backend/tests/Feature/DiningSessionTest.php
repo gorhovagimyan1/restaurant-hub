@@ -150,6 +150,27 @@ class DiningSessionTest extends TestCase
             ->assertOk();
     }
 
+    public function test_bill_request_respects_the_restaurant_setting(): void
+    {
+        $token = $this->postJson("/api/public/tables/{$this->qr->token}/session")
+            ->json('data.session_token');
+
+        $this->postJson("/api/public/tables/{$this->qr->token}/bill/request", ['session_token' => $token])
+            ->assertOk();
+        $this->assertNotNull($this->table->fresh()->bill_requested_at);
+
+        $this->restaurant->settings->update(['enable_bill_request' => false]);
+        $this->table->update(['bill_requested_at' => null]);
+
+        $this->postJson("/api/public/tables/{$this->qr->token}/bill/request", ['session_token' => $token])
+            ->assertStatus(422);
+        $this->assertNull($this->table->fresh()->bill_requested_at);
+
+        // Reviewing the running total stays available either way.
+        $this->getJson("/api/public/tables/{$this->qr->token}/bill?session_token={$token}")
+            ->assertOk();
+    }
+
     public function test_settling_the_bill_closes_the_session_and_blocks_further_orders(): void
     {
         $this->seed(RolesAndPermissionsSeeder::class);

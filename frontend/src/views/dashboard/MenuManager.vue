@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
+import { Plus, Pencil, Trash2, Star } from 'lucide-vue-next'
 import { useDashboardStore } from '@/stores/dashboard'
 import { formatPrice } from '@/utils/format'
 import AppImage from '@/components/ui/AppImage.vue'
@@ -60,10 +61,10 @@ async function toggleAvailability(product) {
         <div class="mb-3 flex items-center justify-between">
           <h2 class="font-semibold text-stone-800">Categories</h2>
           <button
-            class="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600"
+            class="flex items-center gap-1 rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-600"
             @click="categoryModal = { category: null }"
           >
-            + New
+            <Plus :size="14" /> New
           </button>
         </div>
         <ul class="space-y-1">
@@ -73,7 +74,7 @@ async function toggleAvailability(product) {
             class="group flex items-center justify-between rounded-lg border-l-4 px-3 py-2 text-sm transition"
             :class="
               selectedCategoryId === category.id
-                ? 'border-amber-500 bg-amber-100 font-semibold text-amber-900'
+                ? 'border-brand-500 bg-brand-100 font-semibold text-brand-900'
                 : 'border-transparent text-stone-700 hover:bg-stone-50'
             "
           >
@@ -83,8 +84,8 @@ async function toggleAvailability(product) {
               <span v-if="!category.is_active" class="ml-1 text-xs text-red-400">hidden</span>
             </button>
             <span class="flex shrink-0 items-center gap-1 opacity-0 transition group-hover:opacity-100">
-              <button class="rounded p-1 hover:bg-stone-200" title="Edit" @click="categoryModal = { category }">✎</button>
-              <button class="rounded p-1 hover:bg-red-100" title="Delete" @click="confirmDeleteCategory(category)">🗑</button>
+              <button class="rounded-md p-1.5 text-stone-500 hover:bg-stone-200" title="Edit" @click="categoryModal = { category }"><Pencil :size="14" /></button>
+              <button class="rounded-md p-1.5 text-stone-500 hover:bg-red-100 hover:text-red-500" title="Delete" @click="confirmDeleteCategory(category)"><Trash2 :size="14" /></button>
             </span>
           </li>
           <li v-if="!categories.length" class="px-3 py-6 text-center text-sm text-stone-400">
@@ -101,10 +102,10 @@ async function toggleAvailability(product) {
           </h2>
           <button
             v-if="selectedCategory"
-            class="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600"
+            class="flex items-center gap-1 rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-600"
             @click="productModal = { product: null }"
           >
-            + New product
+            <Plus :size="14" /> New product
           </button>
         </div>
 
@@ -115,32 +116,35 @@ async function toggleAvailability(product) {
         </div>
 
         <ul v-else class="divide-y divide-stone-100">
-          <li v-for="product in products" :key="product.id" class="flex items-center gap-3 py-3">
+          <li v-for="product in products" :key="product.id" class="flex flex-wrap items-center gap-x-3 gap-y-2 py-3">
             <div class="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-stone-100">
               <AppImage :src="product.image" :alt="product.name" class="h-full w-full object-cover" />
             </div>
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-2">
                 <span class="truncate font-medium text-stone-800">{{ product.name }}</span>
-                <span v-if="product.is_featured" class="text-amber-500" title="Chef's pick">★</span>
+                <Star v-if="product.is_featured" :size="14" class="shrink-0 fill-brand-500 text-brand-500" title="Chef's pick" />
               </div>
               <p class="truncate text-xs text-stone-400">{{ product.description }}</p>
             </div>
-            <span class="shrink-0 text-sm font-semibold text-stone-700">
-              {{ formatPrice(product.price, currency()) }}
-            </span>
-            <button
-              class="shrink-0 rounded-full px-2 py-1 text-xs font-semibold"
-              :class="product.is_available ? 'bg-green-100 text-green-700' : 'bg-stone-200 text-stone-500'"
-              :title="product.is_available ? 'Available — click to hide' : 'Sold out — click to enable'"
-              @click="toggleAvailability(product)"
-            >
-              {{ product.is_available ? 'Available' : 'Sold out' }}
-            </button>
-            <span class="flex shrink-0 items-center gap-1">
-              <button class="rounded p-1 hover:bg-stone-200" title="Edit" @click="productModal = { product }">✎</button>
-              <button class="rounded p-1 hover:bg-red-100" title="Delete" @click="confirmDeleteProduct(product)">🗑</button>
-            </span>
+            <!-- Price + status + actions: inline on desktop, own line on mobile -->
+            <div class="flex w-full items-center gap-2 pl-[68px] sm:w-auto sm:pl-0">
+              <span class="shrink-0 text-sm font-semibold text-stone-700">
+                {{ formatPrice(product.price, currency()) }}
+              </span>
+              <button
+                class="shrink-0 rounded-full px-2 py-1 text-xs font-semibold"
+                :class="product.is_available ? 'bg-green-100 text-green-700' : 'bg-stone-200 text-stone-500'"
+                :title="product.is_available ? 'Available — click to hide' : 'Sold out — click to enable'"
+                @click="toggleAvailability(product)"
+              >
+                {{ product.is_available ? 'Available' : 'Sold out' }}
+              </button>
+              <span class="ml-auto flex shrink-0 items-center gap-1 sm:ml-0">
+                <button class="rounded-md p-1.5 text-stone-500 hover:bg-stone-200" title="Edit" @click="productModal = { product }"><Pencil :size="14" /></button>
+                <button class="rounded-md p-1.5 text-stone-500 hover:bg-red-100 hover:text-red-500" title="Delete" @click="confirmDeleteProduct(product)"><Trash2 :size="14" /></button>
+              </span>
+            </div>
           </li>
           <li v-if="!products.length" class="py-10 text-center text-sm text-stone-400">
             No products in this category yet.

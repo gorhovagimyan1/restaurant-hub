@@ -1,12 +1,19 @@
 <?php
 
 use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\Auth\PasswordResetController;
+use App\Http\Controllers\Api\Auth\ProfileController;
+use App\Http\Controllers\Api\Dashboard\BusinessHoursController;
 use App\Http\Controllers\Api\Dashboard\CategoryController;
 use App\Http\Controllers\Api\Dashboard\DashboardController;
+use App\Http\Controllers\Api\Dashboard\EmployeeController;
 use App\Http\Controllers\Api\Dashboard\OrderController;
 use App\Http\Controllers\Api\Dashboard\OrderItemController;
+use App\Http\Controllers\Api\Dashboard\OverviewController;
 use App\Http\Controllers\Api\Dashboard\ProductController;
 use App\Http\Controllers\Api\Dashboard\ProductImageController;
+use App\Http\Controllers\Api\Dashboard\SettingsController;
+use App\Http\Controllers\Api\Dashboard\SpecialHoursController;
 use App\Http\Controllers\Api\Dashboard\TableController;
 use App\Http\Controllers\Api\Public\MenuController;
 use App\Http\Controllers\Api\Public\OrderController as PublicOrderController;
@@ -19,6 +26,7 @@ use Illuminate\Support\Facades\Route;
  */
 Route::prefix('public')->group(function () {
     Route::get('restaurants/{restaurant:slug}/menu', [MenuController::class, 'show']);
+    Route::get('restaurants/{restaurant:slug}/status', [MenuController::class, 'status']);
 
     // QR flow: resolve a scanned table token, open the visit's dining session,
     // then place a guest order for it.
@@ -38,9 +46,17 @@ Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
 
+    // Guest password recovery.
+    Route::post('forgot-password', [PasswordResetController::class, 'forgot']);
+    Route::post('reset-password', [PasswordResetController::class, 'reset']);
+
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
         Route::get('me', [AuthController::class, 'me']);
+
+        // Authenticated profile management.
+        Route::put('profile', [ProfileController::class, 'update']);
+        Route::put('password', [ProfileController::class, 'changePassword']);
     });
 });
 
@@ -51,6 +67,36 @@ Route::prefix('auth')->group(function () {
  */
 Route::prefix('dashboard')->middleware('auth:sanctum')->group(function () {
     Route::get('restaurant', [DashboardController::class, 'restaurant']);
+
+    // At-a-glance overview (owners/managers with reporting access).
+    Route::middleware('can:reports.view')->group(function () {
+        Route::get('overview', [OverviewController::class, 'index']);
+    });
+
+    // Restaurant profile & opening hours (owners/managers).
+    Route::middleware('can:restaurant.manage')->group(function () {
+        Route::put('restaurant', [DashboardController::class, 'updateRestaurant']);
+
+        Route::get('business-hours', [BusinessHoursController::class, 'index']);
+        Route::put('business-hours', [BusinessHoursController::class, 'update']);
+
+        Route::get('special-hours', [SpecialHoursController::class, 'index']);
+        Route::put('special-hours', [SpecialHoursController::class, 'update']);
+    });
+
+    // Operational settings.
+    Route::middleware('can:settings.manage')->group(function () {
+        Route::get('settings', [SettingsController::class, 'show']);
+        Route::put('settings', [SettingsController::class, 'update']);
+    });
+
+    // Staff management (owners/managers).
+    Route::middleware('can:employees.manage')->group(function () {
+        Route::get('employees', [EmployeeController::class, 'index']);
+        Route::post('employees', [EmployeeController::class, 'store']);
+        Route::put('employees/{employee}', [EmployeeController::class, 'update']);
+        Route::delete('employees/{employee}', [EmployeeController::class, 'destroy']);
+    });
 
     Route::middleware('can:categories.manage')->group(function () {
         Route::get('categories', [CategoryController::class, 'index']);
@@ -86,7 +132,6 @@ Route::prefix('dashboard')->middleware('auth:sanctum')->group(function () {
         // Acknowledge (clear) a table's waiter call.
         Route::post('tables/{table}/ack-call', [TableController::class, 'acknowledgeCall']);
     });
-
 
     // Table + QR management (owners/managers).
     Route::middleware('can:tables.manage')->group(function () {

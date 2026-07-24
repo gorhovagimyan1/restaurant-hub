@@ -1,5 +1,6 @@
 <script setup>
 import { storeToRefs } from 'pinia'
+import { Star } from 'lucide-vue-next'
 import AppImage from '@/components/ui/AppImage.vue'
 import { formatPrice } from '@/utils/format'
 import { useDiningStore } from '@/stores/dining'
@@ -35,7 +36,7 @@ const { allowOrders } = storeToRefs(dining)
       <div class="min-w-0">
         <div class="flex items-center gap-2">
           <h3 class="truncate font-semibold text-stone-800">{{ product.name }}</h3>
-          <span v-if="product.is_featured" class="text-amber-500" title="Chef's pick">★</span>
+          <Star v-if="product.is_featured" :size="14" class="shrink-0 fill-brand-500 text-brand-500" title="Chef's pick" />
         </div>
         <p class="mt-1 line-clamp-2 text-sm text-stone-500">{{ product.description }}</p>
         <div class="mt-1.5 flex items-center gap-3 text-xs text-stone-400">
@@ -51,11 +52,11 @@ const { allowOrders } = storeToRefs(dining)
         <template v-if="allowOrders && product.is_available">
           <div
             v-if="cart.quantityOf(product.id) > 0"
-            class="inline-flex items-center gap-2 rounded-full bg-amber-500 px-1.5 py-1 text-white shadow-sm"
+            class="inline-flex items-center gap-2 rounded-full bg-brand-500 px-1.5 py-1 text-white shadow-sm"
             @click.stop
           >
             <button
-              class="grid h-6 w-6 place-items-center rounded-full text-lg leading-none transition hover:bg-amber-600"
+              class="grid h-6 w-6 place-items-center rounded-full text-lg leading-none transition hover:bg-brand-600"
               aria-label="Remove one"
               @click="cart.decrement(product.id)"
             >
@@ -65,7 +66,7 @@ const { allowOrders } = storeToRefs(dining)
               {{ cart.quantityOf(product.id) }}
             </span>
             <button
-              class="grid h-6 w-6 place-items-center rounded-full text-lg leading-none transition hover:bg-amber-600"
+              class="grid h-6 w-6 place-items-center rounded-full text-lg leading-none transition hover:bg-brand-600"
               aria-label="Add one"
               @click="cart.add(product)"
             >
@@ -74,7 +75,7 @@ const { allowOrders } = storeToRefs(dining)
           </div>
           <button
             v-else
-            class="rounded-full border border-amber-500 px-3.5 py-1 text-sm font-semibold text-amber-600 transition hover:bg-amber-50"
+            class="rounded-full border border-brand-500 px-3.5 py-1 text-sm font-semibold text-brand-600 transition hover:bg-brand-50"
             @click.stop="cart.add(product)"
           >
             + Add

@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources\Public;
 
+use App\Http\Resources\Dashboard\BusinessHourResource;
+use App\Http\Resources\Dashboard\SpecialHourResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -31,6 +33,13 @@ class RestaurantResource extends JsonResource
             'city' => $this->city,
             'country' => $this->country,
             'currency' => $this->currency,
+            'business_hours' => BusinessHourResource::collection(
+                $this->whenLoaded('businessHours'),
+            ),
+            'special_hours' => SpecialHourResource::collection(
+                $this->whenLoaded('specialHours'),
+            ),
+            'open_status' => $this->openStatus(),
         ];
     }
 }

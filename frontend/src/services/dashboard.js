@@ -2,8 +2,48 @@ import http from './http'
 
 // All endpoints are scoped server-side to the authenticated user's restaurant.
 
+export async function getOverview() {
+  const { data } = await http.get('/dashboard/overview')
+  return data.data
+}
+
 export async function getRestaurant() {
   const { data } = await http.get('/dashboard/restaurant')
+  return data.data
+}
+
+export async function updateRestaurant(payload) {
+  const { data } = await http.put('/dashboard/restaurant', payload)
+  return data.data
+}
+
+export async function getSettings() {
+  const { data } = await http.get('/dashboard/settings')
+  return data.data
+}
+
+export async function updateSettings(payload) {
+  const { data } = await http.put('/dashboard/settings', payload)
+  return data.data
+}
+
+export async function getBusinessHours() {
+  const { data } = await http.get('/dashboard/business-hours')
+  return data.data
+}
+
+export async function updateBusinessHours(hours) {
+  const { data } = await http.put('/dashboard/business-hours', { hours })
+  return data.data
+}
+
+export async function getSpecialHours() {
+  const { data } = await http.get('/dashboard/special-hours')
+  return data.data
+}
+
+export async function updateSpecialHours(specialHours) {
+  const { data } = await http.put('/dashboard/special-hours', { special_hours: specialHours })
   return data.data
 }
 

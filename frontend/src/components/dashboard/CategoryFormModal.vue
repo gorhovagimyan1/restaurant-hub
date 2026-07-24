@@ -53,7 +53,7 @@ async function submit() {
           <input
             v-model="form.name"
             required
-            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-amber-500"
+            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
           />
         </div>
         <div>
@@ -61,7 +61,7 @@ async function submit() {
           <textarea
             v-model="form.description"
             rows="2"
-            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-amber-500"
+            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
           />
         </div>
         <div>
@@ -69,7 +69,7 @@ async function submit() {
           <input
             v-model="form.image"
             placeholder="https://…"
-            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-amber-500"
+            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
           />
         </div>
         <label class="flex items-center gap-2 text-sm text-stone-700">
@@ -90,7 +90,7 @@ async function submit() {
           <button
             type="submit"
             :disabled="saving"
-            class="rounded-lg bg-amber-500 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-600 disabled:opacity-60"
+            class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-60"
           >
             {{ saving ? 'Saving…' : 'Save' }}
           </button>
