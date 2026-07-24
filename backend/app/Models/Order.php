@@ -124,7 +124,10 @@ class Order extends Model
             default => OrderStatus::Pending,
         };
 
-        if ($this->status !== $new) {
+        // Only ever forwards — the same rule staff-driven changes follow. Without
+        // this, cancelling the one item that was underway on an accepted order
+        // would drop it back to "pending" and it would resurface as new work.
+        if ($this->status !== $new && $this->status->canTransitionTo($new)) {
             $this->status = $new;
             $this->save();
         }

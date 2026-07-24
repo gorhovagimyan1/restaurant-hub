@@ -8,6 +8,9 @@ import { formatPrice } from '@/utils/format'
 const props = defineProps({
   token: { type: String, required: true },
   sessionToken: { type: String, required: true },
+  // The restaurant can switch off "request bill" — guests can still review the
+  // running total, they just ask a waiter in person instead.
+  canRequest: { type: Boolean, default: true },
 })
 
 const emit = defineEmits(['close'])
@@ -119,7 +122,7 @@ onMounted(load)
           <Check :size="15" /> A waiter is on the way with your bill
         </div>
         <button
-          v-else
+          v-else-if="canRequest"
           class="mt-3 w-full rounded-full bg-brand-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-60"
           :disabled="requesting"
           @click="askForBill"

@@ -155,10 +155,14 @@ router.beforeEach((to) => {
     return useAuthStore().homeRoute
   }
 
-  // The customer menu portal only opens for a table whose QR was scanned.
+  // The customer menu portal normally only opens for a table whose QR was
+  // scanned. Authenticated staff/owner/super-admin (the only users who hold a
+  // token — customers are anonymous) may instead open it as a browse-only
+  // preview: no dining session, so the ordering UI stays hidden.
   if (to.meta.requiresDining) {
     const slug = activeDiningSlug()
-    if (!slug || slug !== to.params.slug) {
+    const hasDiningSession = slug && slug === to.params.slug
+    if (!hasDiningSession && !hasToken) {
       return { name: 'scan-required' }
     }
   }

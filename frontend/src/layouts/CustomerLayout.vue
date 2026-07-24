@@ -5,11 +5,12 @@ import { storeToRefs } from 'pinia'
 import { useMenuStore } from '@/stores/menu'
 import { useDiningStore } from '@/stores/dining'
 import { useCartStore } from '@/stores/cart'
+import { useAuthStore } from '@/stores/auth'
 import AppImage from '@/components/ui/AppImage.vue'
 import ProductModal from '@/components/menu/ProductModal.vue'
 import CartSheet from '@/components/order/CartSheet.vue'
 import BillSheet from '@/components/order/BillSheet.vue'
-import { BellRing, ReceiptText, UtensilsCrossed, Check } from 'lucide-vue-next'
+import { BellRing, ReceiptText, UtensilsCrossed, Check, Eye } from 'lucide-vue-next'
 import { callWaiter } from '@/services/orders'
 import { formatPrice } from '@/utils/format'
 
@@ -17,6 +18,7 @@ const route = useRoute()
 const store = useMenuStore()
 const dining = useDiningStore()
 const cart = useCartStore()
+const auth = useAuthStore()
 const { restaurant, loading, error } = storeToRefs(store)
 const {
   tableName,
@@ -35,7 +37,15 @@ const cartOpen = ref(false)
 const billOpen = ref(false)
 const placedOrder = ref(null)
 
+// Staff/owner/super-admin reach this portal without a scanned-QR session — a
+// browse-only preview of what customers see. Ordering, cart, bill and waiter
+// call all stay hidden because there is no dining session behind them.
+const isPreview = computed(() => auth.isAuthenticated && !diningActive.value)
+
 const canCallWaiter = computed(() => diningActive.value && ordering.value?.enable_waiter_call !== false)
+// Viewing the running bill stays available either way; only asking staff for it
+// is gated, matching the server-side check.
+const canRequestBill = computed(() => ordering.value?.enable_bill_request !== false)
 const waiterCalling = ref(false)
 const toast = ref(null)
 let toastTimer = null
@@ -148,9 +158,24 @@ function onPlaced(result) {
           >
             {{ tableName }}
           </span>
+          <span
+            v-else-if="isPreview"
+            class="flex shrink-0 items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700 sm:px-3"
+          >
+            <Eye :size="13" /> Preview
+          </span>
         </div>
       </div>
     </header>
+
+    <!-- Staff preview notice: this portal is normally reached by scanning a
+         table QR; here it is opened from the dashboard, so ordering is off. -->
+    <div
+      v-if="isPreview"
+      class="border-b border-amber-200 bg-amber-50 px-4 py-2 text-center text-xs font-medium text-amber-800"
+    >
+      Staff preview — this is what customers see after scanning a table QR. Ordering is disabled here.
+    </div>
 
     <main class="flex-1" :class="{ 'pb-24': allowOrders && count > 0 }">
       <!-- Loading -->
@@ -225,6 +250,7 @@ function onPlaced(result) {
       v-if="billOpen && diningToken && diningSessionToken"
       :token="diningToken"
       :session-token="diningSessionToken"
+      :can-request="canRequestBill"
       @close="billOpen = false"
     />
 

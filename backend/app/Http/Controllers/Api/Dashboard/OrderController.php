@@ -95,6 +95,24 @@ class OrderController extends Controller
 
         $status = OrderStatus::from($request->validated('status'));
 
+        // The service only runs forwards, and a settled or cancelled order is
+        // closed for good — reopening one would quietly distort the day's
+        // takings, which are summed from completed orders.
+        abort_unless(
+            $order->status->canTransitionTo($status),
+            422,
+            "An order that is {$order->status->value} cannot be marked {$status->value}.",
+        );
+
+        // Re-applying the current status is a no-op, so a double-tap on the
+        // board doesn't re-cascade or re-stamp anything.
+        if ($status === $order->status) {
+            return ApiResponse::success(
+                new OrderResource($order->load(['items', 'table'])),
+                'Order status unchanged.',
+            );
+        }
+
         $this->cascadeToItems($order, $status);
 
         $order->status = $status;

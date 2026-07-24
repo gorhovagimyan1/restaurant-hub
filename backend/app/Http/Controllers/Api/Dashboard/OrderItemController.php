@@ -24,9 +24,16 @@ class OrderItemController extends Controller
         $restaurant = $this->currentRestaurant($request);
         $this->guardTenant($restaurant, $orderItem);
 
-        $orderItem->update([
-            'status' => OrderItemStatus::from($request->validated('status')),
-        ]);
+        $status = OrderItemStatus::from($request->validated('status'));
+
+        // Items advance forwards only, and a cancelled line stays cancelled.
+        abort_unless(
+            $orderItem->status->canTransitionTo($status),
+            422,
+            "An item that is {$orderItem->status->value} cannot be marked {$status->value}.",
+        );
+
+        $orderItem->update(['status' => $status]);
 
         $order = $orderItem->order;
         $order->syncStatusFromItems();

@@ -19,6 +19,13 @@ Restaurants manage menus, products, tables, employees, and orders through a web 
 - Pinia
 - Tailwind CSS
 
+## Documentation
+
+System design lives in [`docs/`](docs/). Start with
+[`docs/flows/`](docs/flows/00-index.md) — one document per actor (customer,
+waiter, kitchen, owner, platform admin) and per lifecycle (order, bill, payment,
+notification), written against the current implementation.
+
 ## Status
 
 🚧 Planning & Architecture
