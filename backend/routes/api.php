@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\PlatformOverviewController;
+use App\Http\Controllers\Api\Admin\RestaurantController as AdminRestaurantController;
+use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\PasswordResetController;
 use App\Http\Controllers\Api\Auth\ProfileController;
@@ -139,4 +142,24 @@ Route::prefix('dashboard')->middleware('auth:sanctum')->group(function () {
         Route::post('tables', [TableController::class, 'store']);
         Route::delete('tables/{table}', [TableController::class, 'destroy']);
     });
+});
+
+/*
+ * Platform administration — cross-tenant management for super-admins only.
+ * Owners hold every permission for their own restaurant, so these routes are
+ * gated by role (super-admin) rather than by permission.
+ */
+Route::prefix('admin')->middleware(['auth:sanctum', 'super-admin'])->group(function () {
+    // Platform-wide snapshot.
+    Route::get('overview', [PlatformOverviewController::class, 'index']);
+
+    // Manage every restaurant on the platform.
+    Route::get('restaurants', [AdminRestaurantController::class, 'index']);
+    Route::get('restaurants/{restaurant}', [AdminRestaurantController::class, 'show']);
+    Route::patch('restaurants/{restaurant}/status', [AdminRestaurantController::class, 'updateStatus']);
+    Route::delete('restaurants/{restaurant}', [AdminRestaurantController::class, 'destroy']);
+
+    // Manage every user account on the platform.
+    Route::get('users', [AdminUserController::class, 'index']);
+    Route::patch('users/{user}/status', [AdminUserController::class, 'updateStatus']);
 });

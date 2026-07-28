@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth'
 import CustomerLayout from '@/layouts/CustomerLayout.vue'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import KitchenLayout from '@/layouts/KitchenLayout.vue'
+import PlatformAdminLayout from '@/layouts/PlatformAdminLayout.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -93,6 +94,29 @@ const router = createRouter({
       ],
     },
     {
+      // Platform administration — cross-tenant management for super-admins.
+      path: '/admin',
+      component: PlatformAdminLayout,
+      meta: { requiresAuth: true, requiresSuperAdmin: true },
+      children: [
+        {
+          path: '',
+          name: 'admin-overview',
+          component: () => import('@/views/admin/PlatformOverview.vue'),
+        },
+        {
+          path: 'restaurants',
+          name: 'admin-restaurants',
+          component: () => import('@/views/admin/RestaurantsAdmin.vue'),
+        },
+        {
+          path: 'users',
+          name: 'admin-users',
+          component: () => import('@/views/admin/UsersAdmin.vue'),
+        },
+      ],
+    },
+    {
       // Kitchen display — minimal full-screen board for kitchen/waiter staff.
       path: '/kitchen',
       component: KitchenLayout,
@@ -144,7 +168,8 @@ const router = createRouter({
   },
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
+  const auth = useAuthStore()
   const hasToken = !!localStorage.getItem(TOKEN_KEY)
   if (to.meta.requiresAuth && !hasToken) {
     return { name: 'login', query: { redirect: to.fullPath } }
@@ -152,7 +177,22 @@ router.beforeEach((to) => {
   if ((to.name === 'login' || to.name === 'register') && hasToken) {
     // Send already-authenticated users to their role's home (kitchen staff to
     // the kitchen display, everyone else to the owner dashboard).
-    return useAuthStore().homeRoute
+    return auth.homeRoute
+  }
+
+  // The platform admin area is super-admin only. Roles live on the loaded
+  // user, so fetch it first when we hold a token but haven't hydrated yet.
+  if (to.meta.requiresSuperAdmin) {
+    if (hasToken && !auth.user) {
+      try {
+        await auth.fetchMe()
+      } catch {
+        return { name: 'login', query: { redirect: to.fullPath } }
+      }
+    }
+    if (!auth.isSuperAdmin) {
+      return auth.homeRoute
+    }
   }
 
   // The customer menu portal normally only opens for a table whose QR was
