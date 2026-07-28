@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { Search, RefreshCw, Power } from 'lucide-vue-next'
-import { getUsers, updateUserStatus, roleLabel, ROLE_LABELS } from '@/services/admin'
+import { getUsers, updateUserStatus, updateUserRoles, roleLabel, ROLE_LABELS } from '@/services/admin'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
@@ -41,6 +41,24 @@ watch(roleFilter, load)
 
 function isSelf(user) {
   return user.id === auth.user?.id
+}
+
+function currentRole(user) {
+  return user.roles?.[0] || ''
+}
+
+async function changeRole(user, role) {
+  if (role === currentRole(user)) return
+  busyId.value = user.id
+  error.value = null
+  try {
+    const updated = await updateUserRoles(user.id, role ? [role] : [])
+    Object.assign(user, updated)
+  } catch (err) {
+    error.value = err?.response?.data?.message || 'Could not update the user’s role.'
+  } finally {
+    busyId.value = null
+  }
 }
 
 async function toggleActive(user) {
@@ -126,7 +144,17 @@ onMounted(load)
                 <p class="text-xs text-stone-400">{{ u.email }}</p>
               </td>
               <td class="px-4 py-3">
-                <div class="flex flex-wrap gap-1">
+                <select
+                  v-if="!isSelf(u)"
+                  :value="currentRole(u)"
+                  :disabled="busyId === u.id"
+                  class="rounded-lg border border-stone-200 bg-white px-2 py-1 text-xs font-medium outline-none focus:border-brand-400"
+                  @change="changeRole(u, $event.target.value)"
+                >
+                  <option value="">No role</option>
+                  <option v-for="r in roleOptions" :key="r.value" :value="r.value">{{ r.label }}</option>
+                </select>
+                <div v-else class="flex flex-wrap gap-1">
                   <span
                     v-for="role in u.roles"
                     :key="role"
@@ -196,19 +224,29 @@ onMounted(load)
               {{ u.is_active ? 'Active' : 'Inactive' }}
             </span>
           </div>
-          <button
-            v-if="!isSelf(u)"
-            class="mt-3 w-full rounded-lg border px-3 py-1.5 text-xs font-medium transition disabled:opacity-50"
-            :class="
-              u.is_active
-                ? 'border-stone-200 text-stone-600 hover:bg-stone-100'
-                : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
-            "
-            :disabled="busyId === u.id"
-            @click="toggleActive(u)"
-          >
-            {{ u.is_active ? 'Deactivate' : 'Activate' }}
-          </button>
+          <div v-if="!isSelf(u)" class="mt-3 flex items-center gap-2">
+            <select
+              :value="currentRole(u)"
+              :disabled="busyId === u.id"
+              class="flex-1 rounded-lg border border-stone-200 bg-white px-2 py-1.5 text-xs font-medium outline-none focus:border-brand-400"
+              @change="changeRole(u, $event.target.value)"
+            >
+              <option value="">No role</option>
+              <option v-for="r in roleOptions" :key="r.value" :value="r.value">{{ r.label }}</option>
+            </select>
+            <button
+              class="rounded-lg border px-3 py-1.5 text-xs font-medium transition disabled:opacity-50"
+              :class="
+                u.is_active
+                  ? 'border-stone-200 text-stone-600 hover:bg-stone-100'
+                  : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
+              "
+              :disabled="busyId === u.id"
+              @click="toggleActive(u)"
+            >
+              {{ u.is_active ? 'Deactivate' : 'Activate' }}
+            </button>
+          </div>
         </li>
       </ul>
     </div>

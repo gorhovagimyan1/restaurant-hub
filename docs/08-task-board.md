@@ -119,9 +119,9 @@ Super-admin area at `/admin` (role-gated). Phase 1 shipped; later phases pending
 
 * [x] Platform Dashboard (platform-wide overview: restaurants, users, orders, revenue)
 * [x] Restaurant Management (list/search/filter all restaurants, change status, soft-delete)
-* [x] User Management (list/search/filter all users, activate/deactivate)
-* [ ] Role Management (Phase 2)
-* [ ] Permission Management (Phase 2)
+* [x] User Management (list/search/filter, activate/deactivate, reassign roles)
+* [x] Role Management (edit role→permission matrix; super-admin locked)
+* [x] Permission Management (assign permissions to roles across all areas)
 * [ ] Platform Settings (Phase 3)
 * [ ] Activity Logs (Phase 3)
 * [ ] System Monitoring (Phase 4)

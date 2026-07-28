@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Admin\PlatformOverviewController;
 use App\Http\Controllers\Api\Admin\RestaurantController as AdminRestaurantController;
+use App\Http\Controllers\Api\Admin\RoleController as AdminRoleController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\PasswordResetController;
@@ -162,4 +163,9 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'super-admin'])->group(funct
     // Manage every user account on the platform.
     Route::get('users', [AdminUserController::class, 'index']);
     Route::patch('users/{user}/status', [AdminUserController::class, 'updateStatus']);
+    Route::patch('users/{user}/roles', [AdminUserController::class, 'updateRoles']);
+
+    // Role & permission matrix.
+    Route::get('roles', [AdminRoleController::class, 'index']);
+    Route::patch('roles/{role}/permissions', [AdminRoleController::class, 'updatePermissions']);
 });

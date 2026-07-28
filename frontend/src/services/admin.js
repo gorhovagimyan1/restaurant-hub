@@ -31,6 +31,21 @@ export async function updateUserStatus(id, isActive) {
   return data.data
 }
 
+export async function updateUserRoles(id, roles) {
+  const { data } = await http.patch(`/admin/users/${id}/roles`, { roles })
+  return data.data
+}
+
+export async function getRoles() {
+  const { data } = await http.get('/admin/roles')
+  return data.data
+}
+
+export async function updateRolePermissions(roleId, permissions) {
+  const { data } = await http.patch(`/admin/roles/${roleId}/permissions`, { permissions })
+  return data.data
+}
+
 // Restaurant platform statuses, with display labels and badge tones.
 export const RESTAURANT_STATUSES = [
   { value: 'pending', label: 'Pending', tone: 'bg-amber-100 text-amber-700' },

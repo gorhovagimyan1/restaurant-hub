@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\UpdateUserRolesRequest;
 use App\Http\Requests\Admin\UpdateUserStatusRequest;
 use App\Http\Resources\Admin\UserResource;
 use App\Models\User;
@@ -72,6 +73,26 @@ class UserController extends Controller
         return ApiResponse::success(
             new UserResource($user->fresh()->load(['roles', 'restaurants'])),
             'User status updated.',
+        );
+    }
+
+    /**
+     * Reassign the roles held by a user account. A super-admin cannot change
+     * their own roles, guarding against accidentally revoking their own access.
+     */
+    public function updateRoles(UpdateUserRolesRequest $request, User $user): JsonResponse
+    {
+        abort_if(
+            $user->id === $request->user()->id,
+            403,
+            'You cannot change your own roles.',
+        );
+
+        $user->syncRoles($request->validated()['roles']);
+
+        return ApiResponse::success(
+            new UserResource($user->fresh()->load(['roles', 'restaurants'])),
+            'User roles updated.',
         );
     }
 }

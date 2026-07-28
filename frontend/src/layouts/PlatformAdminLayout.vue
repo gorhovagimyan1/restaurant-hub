@@ -7,6 +7,7 @@ import {
   Store,
   Users,
   ShieldCheck,
+  KeyRound,
   CircleUserRound,
   LogOut,
   Menu as MenuIcon,
@@ -27,6 +28,7 @@ const nav = [
   { name: 'admin-overview', label: 'Overview', icon: LayoutDashboard, exact: true },
   { name: 'admin-restaurants', label: 'Restaurants', icon: Store },
   { name: 'admin-users', label: 'Users', icon: Users },
+  { name: 'admin-roles', label: 'Roles & Permissions', icon: KeyRound },
 ]
 
 const linkClass =
