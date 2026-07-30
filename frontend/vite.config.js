@@ -18,8 +18,10 @@ export default defineConfig({
     },
   },
   server: {
+    host: true,
+    allowedHosts: true,
+
     proxy: {
-      // Proxy API calls and uploaded files to the Laravel backend (:8000).
       '/api': {
         target: 'http://localhost:8000',
         changeOrigin: true,
