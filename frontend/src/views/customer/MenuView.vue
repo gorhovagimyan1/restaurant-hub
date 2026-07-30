@@ -7,7 +7,7 @@ import MenuItem from '@/components/menu/MenuItem.vue'
 
 const route = useRoute()
 const store = useMenuStore()
-const { categories, currency } = storeToRefs(store)
+const { categories, currency, theme } = storeToRefs(store)
 
 const activeId = ref(null)
 const sectionEls = new Map()
@@ -58,19 +58,15 @@ onBeforeUnmount(() => observer?.disconnect())
 <template>
   <div>
     <!-- Sticky category chips -->
-    <div class="sticky top-14 z-20 border-b border-stone-200 bg-white/95 backdrop-blur">
+    <div class="m-bar sticky top-14 z-20 border-b backdrop-blur">
       <div
         class="mx-auto flex max-w-3xl gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         <button
           v-for="category in categories"
           :key="category.id"
-          class="shrink-0 rounded-full px-4 py-1.5 text-sm font-medium transition"
-          :class="
-            activeId === category.id
-              ? 'bg-brand-500 text-white shadow-sm'
-              : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-          "
+          class="m-chip shrink-0 px-4 py-1.5 text-sm font-medium"
+          :class="activeId === category.id && 'm-chip-active shadow-sm'"
           @click="scrollToCategory(category.id)"
         >
           {{ category.name }}
@@ -87,22 +83,31 @@ onBeforeUnmount(() => observer?.disconnect())
         :data-cat-id="category.id"
         class="scroll-mt-32 pt-8"
       >
-        <div class="flex items-baseline justify-between border-b border-stone-200 pb-2">
-          <h2 :id="`cat-${category.id}`" class="text-xl font-bold text-stone-900">
+        <div class="m-border flex items-baseline justify-between border-b pb-2">
+          <h2 :id="`cat-${category.id}`" class="m-heading text-xl font-bold">
             {{ category.name }}
           </h2>
-          <span class="text-xs font-medium text-stone-400">{{ category.products.length }} items</span>
+          <span class="m-faint text-xs font-medium">{{ category.products.length }} items</span>
         </div>
-        <p v-if="category.description" class="mt-2 text-sm text-stone-500">
+        <p v-if="category.description" class="m-muted mt-2 text-sm">
           {{ category.description }}
         </p>
 
-        <div class="divide-y divide-stone-100">
+        <!-- Layout follows the restaurant's own menu design. -->
+        <div
+          :class="
+            theme.layout === 'grid'
+              ? 'mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2'
+              : 'm-divide'
+          "
+        >
           <MenuItem
             v-for="product in category.products"
             :key="product.id"
             :product="product"
             :currency="currency"
+            :layout="theme.layout"
+            :show-image="theme.show_images"
             @select="store.openProduct"
           />
         </div>

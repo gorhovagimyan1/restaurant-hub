@@ -82,19 +82,19 @@ onMounted(load)
   <div>
     <header class="mb-5 flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-2xl font-bold text-stone-900">All orders</h1>
-        <p class="text-sm text-stone-500">{{ rangeLabel }}</p>
+        <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">All orders</h1>
+        <p class="text-sm text-ink-500">{{ rangeLabel }}</p>
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <input
           v-model="search"
           type="search"
           placeholder="Search order #, table, name…"
-          class="w-56 rounded-full border border-stone-200 px-4 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+          class="w-56 field"
         />
         <select
           v-model="status"
-          class="rounded-full border border-stone-200 px-3 py-2 text-sm outline-none focus:border-brand-400"
+          class="rounded-full border border-hairline px-3 py-2 text-sm outline-none focus:border-brand-400"
         >
           <option value="">All statuses</option>
           <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
@@ -104,9 +104,9 @@ onMounted(load)
 
     <p v-if="error" class="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{{ error }}</p>
 
-    <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+    <div class="overflow-hidden card">
       <!-- Header row -->
-      <div class="hidden grid-cols-12 gap-2 border-b border-stone-100 px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-stone-400 sm:grid">
+      <div class="hidden grid-cols-12 gap-2 border-b border-hairline px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-ink-400 sm:grid">
         <span class="col-span-3">Order</span>
         <span class="col-span-2">Table</span>
         <span class="col-span-3">When</span>
@@ -114,13 +114,13 @@ onMounted(load)
         <span class="col-span-2 text-right">Status</span>
       </div>
 
-      <div v-if="loading && !orders.length" class="px-4 py-16 text-center text-sm text-stone-400">Loading…</div>
-      <div v-else-if="!orders.length" class="px-4 py-16 text-center text-sm text-stone-400">No orders found.</div>
+      <div v-if="loading && !orders.length" class="px-4 py-16 text-center text-sm text-ink-400">Loading…</div>
+      <div v-else-if="!orders.length" class="px-4 py-16 text-center text-sm text-ink-400">No orders found.</div>
 
-      <ul v-else class="divide-y divide-stone-100">
+      <ul v-else class="divide-y divide-hairline">
         <li v-for="order in orders" :key="order.id">
           <button
-            class="w-full px-4 py-3 text-left hover:bg-stone-50"
+            class="w-full px-4 py-3 text-left hover:bg-canvas"
             @click="toggle(order.id)"
           >
             <!-- Mobile: stacked -->
@@ -129,32 +129,32 @@ onMounted(load)
                 <component
                   :is="expanded.has(order.id) ? ChevronDown : ChevronRight"
                   :size="16"
-                  class="shrink-0 text-stone-400"
+                  class="shrink-0 text-ink-400"
                 />
-                <span class="min-w-0 flex-1 truncate font-semibold text-stone-800">{{ order.order_number }}</span>
+                <span class="min-w-0 flex-1 truncate font-semibold text-ink-800">{{ order.order_number }}</span>
                 <span class="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold" :class="statusMeta(order.status).badge">
                   {{ statusMeta(order.status).label }}
                 </span>
               </div>
               <div class="mt-1 flex items-center justify-between pl-6 text-sm">
-                <span class="truncate text-stone-500">{{ order.table?.name || '—' }} · {{ formatWhen(order.created_at) }}</span>
-                <span class="shrink-0 pl-2 font-semibold text-stone-800">{{ formatPrice(order.total) }}</span>
+                <span class="truncate text-ink-500">{{ order.table?.name || '—' }} · {{ formatWhen(order.created_at) }}</span>
+                <span class="shrink-0 pl-2 font-semibold text-ink-800">{{ formatPrice(order.total) }}</span>
               </div>
             </div>
 
             <!-- Desktop: table grid -->
             <div class="hidden grid-cols-12 items-center gap-2 sm:grid">
-              <span class="col-span-3 flex items-center gap-1.5 font-semibold text-stone-800">
+              <span class="col-span-3 flex items-center gap-1.5 font-semibold text-ink-800">
                 <component
                   :is="expanded.has(order.id) ? ChevronDown : ChevronRight"
                   :size="14"
-                  class="shrink-0 text-stone-400"
+                  class="shrink-0 text-ink-400"
                 />
                 <span class="truncate">{{ order.order_number }}</span>
               </span>
-              <span class="col-span-2 text-sm text-stone-600">{{ order.table?.name || '—' }}</span>
-              <span class="col-span-3 text-sm text-stone-500">{{ formatWhen(order.created_at) }}</span>
-              <span class="col-span-2 text-right font-semibold text-stone-800">{{ formatPrice(order.total) }}</span>
+              <span class="col-span-2 text-sm text-ink-600">{{ order.table?.name || '—' }}</span>
+              <span class="col-span-3 text-sm text-ink-500">{{ formatWhen(order.created_at) }}</span>
+              <span class="col-span-2 text-right font-semibold text-ink-800">{{ formatPrice(order.total) }}</span>
               <span class="col-span-2 flex justify-end">
                 <span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="statusMeta(order.status).badge">
                   {{ statusMeta(order.status).label }}
@@ -164,11 +164,11 @@ onMounted(load)
           </button>
 
           <!-- Expanded item detail -->
-          <div v-if="expanded.has(order.id)" class="bg-stone-50 px-4 py-3">
+          <div v-if="expanded.has(order.id)" class="bg-canvas px-4 py-3">
             <ul class="space-y-1.5 text-sm">
               <li v-for="item in order.items" :key="item.id" class="flex items-center justify-between gap-3">
-                <span class="text-stone-700">
-                  <span class="font-semibold text-stone-900">{{ item.quantity }}×</span> {{ item.product_name }}
+                <span class="text-ink-700">
+                  <span class="font-semibold text-ink-900">{{ item.quantity }}×</span> {{ item.product_name }}
                   <span v-if="item.notes" class="italic text-brand-600"> · “{{ item.notes }}”</span>
                 </span>
                 <span class="flex items-center gap-3">
@@ -179,11 +179,11 @@ onMounted(load)
                   >
                     {{ itemStatusMeta(item.status).label }}
                   </span>
-                  <span class="w-20 text-right tabular-nums text-stone-500">{{ formatPrice(item.total_price) }}</span>
+                  <span class="w-20 text-right tabular-nums text-ink-500">{{ formatPrice(item.total_price) }}</span>
                 </span>
               </li>
             </ul>
-            <div class="mt-2 flex flex-wrap gap-x-6 gap-y-1 border-t border-stone-200 pt-2 text-xs text-stone-500">
+            <div class="mt-2 flex flex-wrap gap-x-6 gap-y-1 border-t border-hairline pt-2 text-xs text-ink-500">
               <span v-if="order.customer_name" class="inline-flex items-center gap-1"><User :size="12" /> {{ order.customer_name }}</span>
               <span v-if="order.notes" class="inline-flex items-center gap-1"><StickyNote :size="12" /> {{ order.notes }}</span>
               <span v-if="order.service_charge">Service {{ formatPrice(order.service_charge) }}</span>
@@ -197,15 +197,15 @@ onMounted(load)
     <!-- Pagination -->
     <div v-if="meta.last_page > 1" class="mt-4 flex items-center justify-center gap-3">
       <button
-        class="rounded-full border border-stone-200 px-4 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-100 disabled:opacity-40"
+        class="rounded-full border border-hairline px-4 py-1.5 text-sm font-medium text-ink-600 hover:bg-canvas disabled:opacity-40"
         :disabled="meta.current_page <= 1"
         @click="page = meta.current_page - 1"
       >
         ‹ Prev
       </button>
-      <span class="text-sm text-stone-500">Page {{ meta.current_page }} of {{ meta.last_page }}</span>
+      <span class="text-sm text-ink-500">Page {{ meta.current_page }} of {{ meta.last_page }}</span>
       <button
-        class="rounded-full border border-stone-200 px-4 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-100 disabled:opacity-40"
+        class="rounded-full border border-hairline px-4 py-1.5 text-sm font-medium text-ink-600 hover:bg-canvas disabled:opacity-40"
         :disabled="meta.current_page >= meta.last_page"
         @click="page = meta.current_page + 1"
       >

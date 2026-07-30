@@ -1,9 +1,12 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Wallet, ReceiptText, Flame, Armchair, BellRing, RefreshCw } from 'lucide-vue-next'
+import { Wallet, ReceiptText, Flame, Armchair, BellRing, RefreshCw, ArrowRight } from 'lucide-vue-next'
 import { getOverview } from '@/services/dashboard'
 import { formatPrice } from '@/utils/format'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import AppCard from '@/components/ui/AppCard.vue'
+import StatCard from '@/components/ui/StatCard.vue'
 
 const router = useRouter()
 
@@ -14,13 +17,13 @@ const error = ref(null)
 const currency = computed(() => data.value?.currency || 'AMD')
 
 const statusColors = {
-  pending: 'bg-slate-200 text-slate-700',
-  accepted: 'bg-sky-100 text-sky-700',
-  preparing: 'bg-indigo-100 text-indigo-700',
-  ready: 'bg-brand-100 text-brand-700',
-  served: 'bg-teal-100 text-teal-700',
-  completed: 'bg-stone-100 text-stone-500',
-  cancelled: 'bg-red-100 text-red-600',
+  pending: 'bg-ink-900/5 text-ink-600',
+  accepted: 'bg-sky-50 text-sky-700',
+  preparing: 'bg-indigo-50 text-indigo-700',
+  ready: 'bg-brand-50 text-brand-700',
+  served: 'bg-teal-50 text-teal-700',
+  completed: 'bg-ink-900/5 text-ink-500',
+  cancelled: 'bg-red-50 text-red-600',
 }
 
 // Primary stat tiles derived from the payload.
@@ -37,6 +40,11 @@ const tiles = computed(() => {
 
 const serviceTotal = computed(() =>
   data.value ? data.value.service.waiter_calls + data.value.service.bill_requests : 0,
+)
+
+// The busiest seller sets the bar length for the rest.
+const topPeak = computed(() =>
+  Math.max(1, ...(data.value?.top_products || []).map((p) => p.quantity)),
 )
 
 function timeAgo(iso) {
@@ -69,135 +77,119 @@ onMounted(load)
 
 <template>
   <div>
-    <header class="mb-5 flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-stone-900">Overview</h1>
-        <p class="text-sm text-stone-500">Today at a glance.</p>
-      </div>
-      <button
-        class="flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-sm font-medium text-stone-600 transition hover:bg-stone-100 disabled:opacity-60"
-        :disabled="loading"
-        @click="load"
-      >
-        <RefreshCw :size="16" :class="loading && 'animate-spin'" />
-        {{ loading ? 'Refreshing…' : 'Refresh' }}
-      </button>
-    </header>
+    <PageHeader title="Overview" subtitle="Today at a glance.">
+      <template #actions>
+        <button
+          class="btn-ghost flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-medium disabled:opacity-60"
+          :disabled="loading"
+          @click="load"
+        >
+          <RefreshCw :size="15" :class="loading && 'animate-spin'" />
+          {{ loading ? 'Refreshing…' : 'Refresh' }}
+        </button>
+      </template>
+    </PageHeader>
 
-    <p v-if="error" class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{{ error }}</p>
-    <p v-if="loading && !data" class="text-sm text-stone-400">Loading…</p>
+    <p v-if="error" class="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{{ error }}</p>
 
-    <div v-else-if="data" class="space-y-6">
+    <!-- Skeleton keeps the layout from jumping once the numbers land. -->
+    <div v-if="loading && !data" class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div v-for="n in 4" :key="n" class="card h-[7.5rem] animate-pulse bg-surface-muted"></div>
+    </div>
+
+    <div v-else-if="data" class="space-y-5">
       <!-- Stat tiles -->
       <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <button
+        <StatCard
           v-for="tile in tiles"
           :key="tile.label"
-          type="button"
-          class="group relative overflow-hidden rounded-2xl p-5 text-left shadow-sm transition"
-          :class="[
-            tile.featured
-              ? 'bg-gradient-to-br from-brand-600 via-brand-500 to-accent-500 text-white shadow-brand-500/25'
-              : 'bg-white ring-1 ring-black/5 text-stone-900',
-            tile.to ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md' : 'cursor-default',
-          ]"
-          @click="go(tile.to)"
-        >
-          <div class="flex items-start justify-between">
-            <p
-              class="text-xs font-medium uppercase tracking-wide"
-              :class="tile.featured ? 'text-white/80' : 'text-stone-400'"
-            >
-              {{ tile.label }}
-            </p>
-            <span
-              class="flex h-9 w-9 items-center justify-center rounded-xl"
-              :class="tile.featured ? 'bg-white/20 text-white' : 'bg-brand-50 text-brand-600'"
-            >
-              <component :is="tile.icon" :size="18" />
-            </span>
-          </div>
-          <p class="mt-2 text-3xl font-extrabold tracking-tight">{{ tile.value }}</p>
-          <p class="mt-1 text-xs" :class="tile.featured ? 'text-white/75' : 'text-stone-400'">
-            {{ tile.hint }}
-          </p>
-          <div
-            v-if="tile.featured"
-            class="pointer-events-none absolute -bottom-8 -right-8 h-28 w-28 rounded-full bg-white/15 blur-2xl"
-          ></div>
-        </button>
+          v-bind="tile"
+          @open="go"
+        />
       </div>
 
       <!-- Service calls banner -->
       <button
         v-if="serviceTotal"
         type="button"
-        class="flex w-full items-center gap-3 rounded-2xl bg-brand-50 px-4 py-3 text-left ring-1 ring-brand-200 transition hover:bg-brand-100"
+        class="flex w-full items-center gap-3 rounded-2xl border border-brand-200/70 bg-brand-50/60 px-4 py-3 text-left transition hover:bg-brand-50"
         @click="go('dashboard-orders')"
       >
-        <BellRing :size="20" class="shrink-0 text-brand-600" />
-        <span class="text-sm font-medium text-brand-800">
+        <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand-500/10 text-brand-600">
+          <BellRing :size="17" />
+        </span>
+        <span class="min-w-0 flex-1 text-sm font-medium text-brand-800">
           {{ data.service.waiter_calls }} waiter call{{ data.service.waiter_calls === 1 ? '' : 's' }}
           · {{ data.service.bill_requests }} bill request{{ data.service.bill_requests === 1 ? '' : 's' }}
           waiting
         </span>
+        <ArrowRight :size="16" class="shrink-0 text-brand-600" />
       </button>
 
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <!-- Recent orders -->
-        <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-          <div class="mb-3 flex items-center justify-between">
-            <h2 class="font-bold text-stone-900">Recent orders</h2>
-            <button class="text-xs text-brand-600 hover:underline" @click="go('dashboard-orders')">
-              View all
+        <AppCard title="Recent orders" flush>
+          <template #action>
+            <button
+              class="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-brand-600 transition hover:bg-brand-50"
+              @click="go('dashboard-orders')"
+            >
+              View all <ArrowRight :size="13" />
             </button>
-          </div>
+          </template>
 
-          <p v-if="!data.recent_orders.length" class="py-4 text-sm text-stone-400">No orders yet.</p>
-          <ul v-else class="divide-y divide-stone-100">
+          <p v-if="!data.recent_orders.length" class="px-5 pb-5 text-sm text-ink-400">
+            No orders yet today.
+          </p>
+          <ul v-else class="divide-y divide-hairline">
             <li
               v-for="order in data.recent_orders"
               :key="order.id"
-              class="flex items-center gap-3 py-2.5"
+              class="flex items-center gap-3 px-5 py-3"
             >
               <div class="min-w-0 flex-1">
-                <p class="truncate text-sm font-medium text-stone-800">
+                <p class="truncate text-sm font-medium text-ink-800">
                   {{ order.table?.name || order.order_number }}
                 </p>
-                <p class="text-xs text-stone-400">{{ timeAgo(order.created_at) }}</p>
+                <p class="text-xs text-ink-400">{{ timeAgo(order.created_at) }}</p>
               </div>
               <span
-                class="rounded-full px-2 py-0.5 text-xs font-medium"
-                :class="statusColors[order.status] || 'bg-stone-100 text-stone-600'"
+                class="rounded-full px-2 py-0.5 text-[11px] font-medium capitalize"
+                :class="statusColors[order.status] || 'bg-ink-900/5 text-ink-600'"
               >
                 {{ order.status }}
               </span>
-              <span class="w-20 text-right text-sm font-semibold tabular-nums text-stone-700">
+              <span class="w-24 text-right text-sm font-semibold tabular-nums text-ink-800">
                 {{ formatPrice(order.total, currency) }}
               </span>
             </li>
           </ul>
-        </section>
+        </AppCard>
 
         <!-- Top products -->
-        <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
-          <h2 class="mb-3 font-bold text-stone-900">Top sellers today</h2>
-
-          <p v-if="!data.top_products.length" class="py-4 text-sm text-stone-400">
+        <AppCard title="Top sellers today" hint="By quantity sold." flush>
+          <p v-if="!data.top_products.length" class="px-5 pb-5 text-sm text-ink-400">
             No items sold yet today.
           </p>
-          <ul v-else class="space-y-2">
-            <li
-              v-for="(product, i) in data.top_products"
-              :key="product.name"
-              class="flex items-center gap-3"
-            >
-              <span class="w-5 text-sm font-semibold text-stone-400">{{ i + 1 }}</span>
-              <span class="min-w-0 flex-1 truncate text-sm text-stone-800">{{ product.name }}</span>
-              <span class="text-sm font-semibold tabular-nums text-stone-600">×{{ product.quantity }}</span>
+          <ul v-else class="space-y-3 px-5 pb-5">
+            <li v-for="(product, i) in data.top_products" :key="product.name">
+              <div class="flex items-center gap-3">
+                <span class="w-4 text-xs font-semibold tabular-nums text-ink-300">{{ i + 1 }}</span>
+                <span class="min-w-0 flex-1 truncate text-sm text-ink-800">{{ product.name }}</span>
+                <span class="text-sm font-semibold tabular-nums text-ink-600">
+                  ×{{ product.quantity }}
+                </span>
+              </div>
+              <!-- A bar makes the gap between #1 and #5 readable at a glance. -->
+              <div class="ml-7 mt-1.5 h-1 overflow-hidden rounded-full bg-canvas">
+                <div
+                  class="h-full rounded-full bg-gradient-to-r from-brand-500 to-accent-500"
+                  :style="{ width: `${Math.round((product.quantity / topPeak) * 100)}%` }"
+                ></div>
+              </div>
             </li>
           </ul>
-        </section>
+        </AppCard>
       </div>
     </div>
   </div>

@@ -58,11 +58,11 @@ const features = [
           <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-white">
             <UtensilsCrossed :size="18" />
           </span>
-          <span class="font-bold tracking-tight text-stone-900">Restaurant Hub</span>
+          <span class="font-bold tracking-tight text-ink-900">Restaurant Hub</span>
         </div>
 
-        <h1 v-if="title" class="text-2xl font-bold tracking-tight text-stone-900">{{ title }}</h1>
-        <p v-if="subtitle" class="mt-1 text-sm text-stone-500">{{ subtitle }}</p>
+        <h1 v-if="title" class="text-2xl font-bold tracking-tight text-ink-900">{{ title }}</h1>
+        <p v-if="subtitle" class="mt-1 text-sm text-ink-500">{{ subtitle }}</p>
 
         <div class="mt-6">
           <slot />

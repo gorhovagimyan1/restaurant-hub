@@ -31,6 +31,7 @@ Project Status: 🟢 Development Started
 ## Frontend Setup
 
 * [x] Install Vue 3
+* 
 * [x] Configure Vite
 * [x] Install Tailwind CSS
 * [x] Install PrimeVue
@@ -80,8 +81,8 @@ Project Status: 🟢 Development Started
 * [ ] Authentication Layout (login page exists; not a shared layout)
 * [x] Customer Layout
 * [x] Restaurant Dashboard Layout
-* [ ] Kitchen Layout
-* [ ] Platform Admin Layout
+* [x] Kitchen Layout
+* [x] Platform Admin Layout
 
 ## Frontend
 
@@ -112,17 +113,18 @@ Project Status: 🟢 Development Started
 
 ---
 
-# Sprint 5 - Platform Administration
+# Sprint 5 - Platform Administration 🟡
 
-* [ ] Platform Dashboard
-* 
-* [ ] Restaurant Management
-* [ ] User Management
-* [ ] Role Management
-* [ ] Permission Management
-* [ ] Platform Settings
-* [ ] Activity Logs
-* [ ] System Monitoring
+Super-admin area at `/admin` (role-gated). Phase 1 shipped; later phases pending.
+
+* [x] Platform Dashboard (platform-wide overview: restaurants, users, orders, revenue)
+* [x] Restaurant Management (list/search/filter all restaurants, change status, soft-delete)
+* [x] User Management (list/search/filter, activate/deactivate, reassign roles)
+* [x] Role Management (edit role→permission matrix; super-admin locked)
+* [x] Permission Management (assign permissions to roles across all areas)
+* [ ] Platform Settings (Phase 3)
+* [ ] Activity Logs (Phase 3)
+* [ ] System Monitoring (Phase 4)
 
 ---
 
@@ -140,14 +142,14 @@ Project Status: 🟢 Development Started
 
 ---
 
-# Sprint 7 - Table Management
+# Sprint 7 - Table Management 🟡
 
-* [ ] Restaurant Tables 
-* [ ] QR Code Generator
-* [ ] Download QR
+* [x] Restaurant Tables (create / list / delete; no edit endpoint)
+* [x] QR Code Generator (token on create; QR rendered client-side)
+* [x] Download QR (download + print from TableQrCard)
 * [ ] Regenerate QR
-* [ ] Table Capacity
-* [ ] Table Status
+* [x] Table Capacity
+* [x] Table Status
 
 ---
 
@@ -168,59 +170,64 @@ Project Status: 🟢 Development Started
 # Sprint 9 - Customer Portal 🟡
 
 * [x] Restaurant Landing Page
-* [ ] Scan QR
+* [x] Scan QR (token → dining session)
 * [x] Browse Menu
 * [x] Browse Categories
 * [x] Product Details
 * [x] Ingredients
 * [ ] Allergens
-* [ ] Shopping Cart
-* [ ] Checkout
-* [ ] Place Order
-* [ ] Order Confirmation
-* [ ] Live Order Status
-* [ ] Call Waiter
-* [ ] Request Bill
+* [x] Shopping Cart (per-table, persisted)
+* [x] Checkout
+* [x] Place Order
+* [x] Order Confirmation
+* [ ] Live Order Status (no customer-side polling yet)
+* [x] Call Waiter
+* [x] Request Bill
 
 ---
 
-# Sprint 10 - Waiter Dashboard
+# Sprint 10 - Waiter Dashboard ✅
 
-* [ ] Waiter Dashboard
-* [ ] Active Tables
-* [ ] Active Orders
-* [ ] Customer Requests
-* [ ] Update Order Status
-* [ ] Bill Requests
+Waiter functions are merged into the shared Orders board (no separate view),
+gated by permissions.
 
----
-
-# Sprint 11 - Kitchen Dashboard
-
-* [ ] Kitchen Dashboard
-* [ ] Pending Orders
-* [ ] Accepted Orders
-* [ ] Preparing Orders
-* [ ] Ready Orders
-* [ ] Completed Orders
-* [ ] Product Availability
+* [x] Waiter Dashboard (via OrdersBoard)
+* [x] Active Tables (open tables / running bills)
+* [x] Active Orders
+* [x] Customer Requests (service-calls banner)
+* [x] Update Order Status
+* [x] Bill Requests
 
 ---
 
-# Sprint 12 - Order Management
+# Sprint 11 - Kitchen Dashboard ✅
 
-* [ ] Order List
-* [ ] Order Details
-* [ ] Order Timeline
-* [ ] Order Status Workflow
-* [ ] Order History
-* [ ] Cancel Orders
+Dedicated `/kitchen` route + KitchenLayout with live polling and per-item advance.
+
+* [x] Kitchen Dashboard
+* [x] Pending Orders
+* [x] Accepted Orders
+* [x] Preparing Orders
+* [x] Ready Orders
+* [x] Completed Orders (Served / Completed states)
+* [x] Product Availability (toggled from menu management)
 
 ---
 
-# Sprint 13 - Reports
+# Sprint 12 - Order Management 🟡
 
-* [ ] Dashboard Overview
+* [x] Order List
+* [x] Order Details
+* [ ] Order Timeline (statuses + completed_at tracked; no per-status audit log)
+* [x] Order Status Workflow (OrderStatus state machine)
+* [x] Order History
+* [x] Cancel Orders
+
+---
+
+# Sprint 13 - Reports 🟡
+
+* [x] Dashboard Overview (today-only totals, live counts, top products)
 * [ ] Daily Sales
 * [ ] Weekly Sales
 * [ ] Monthly Sales
@@ -241,14 +248,15 @@ Project Status: 🟢 Development Started
 
 ---
 
-# Sprint 15 - Testing & Deployment
+# Sprint 15 - Testing & Deployment 🟡
 
 ## Testing
 
-* [ ] Unit Tests
-* [ ] Feature Tests
-* [ ] API Tests
+* [ ] Unit Tests (backend Unit suite is placeholder only)
+* [x] Feature Tests (auth, dashboard, dining, order transitions — ~12 files)
+* [x] API Tests (covered by the Laravel feature suite)
 * [ ] Browser Tests
+* [ ] Frontend Tests (none yet)
 
 ## Deployment
 

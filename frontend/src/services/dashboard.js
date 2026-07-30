@@ -27,6 +27,41 @@ export async function updateSettings(payload) {
   return data.data
 }
 
+// Logo + cover photo. Both return the updated restaurant profile.
+
+export async function uploadRestaurantImage(type, file) {
+  const form = new FormData()
+  form.append('type', type)
+  form.append('image', file)
+  const { data } = await http.post('/dashboard/restaurant/image', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return data.data
+}
+
+export async function deleteRestaurantImage(type) {
+  const { data } = await http.delete(`/dashboard/restaurant/image/${type}`)
+  return data.data
+}
+
+// The restaurant's own design for its customer-facing menu. Responses carry
+// both the saved theme and the presets to choose from.
+
+export async function getMenuTheme() {
+  const { data } = await http.get('/dashboard/menu-theme')
+  return data.data
+}
+
+export async function updateMenuTheme(payload) {
+  const { data } = await http.put('/dashboard/menu-theme', payload)
+  return data.data
+}
+
+export async function resetMenuTheme() {
+  const { data } = await http.delete('/dashboard/menu-theme')
+  return data.data
+}
+
 export async function getBusinessHours() {
   const { data } = await http.get('/dashboard/business-hours')
   return data.data

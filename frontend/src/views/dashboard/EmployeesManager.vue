@@ -107,68 +107,68 @@ onMounted(load)
 <template>
   <div>
     <header class="mb-5">
-      <h1 class="text-2xl font-bold text-stone-900">Team</h1>
-      <p class="text-sm text-stone-500">
+      <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">Team</h1>
+      <p class="text-sm text-ink-500">
         Invite staff and set what they can do. Waiters and kitchen staff get their own dashboards.
       </p>
     </header>
 
     <!-- Invite form -->
     <form
-      class="mb-6 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5"
+      class="mb-6 card p-4"
       @submit.prevent="invite"
     >
-      <p class="mb-3 text-sm font-semibold text-stone-700">Invite an employee</p>
+      <p class="mb-3 text-sm font-semibold text-ink-700">Invite an employee</p>
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <div>
-          <label class="block text-xs font-medium text-stone-500">First name</label>
+          <label class="block text-xs font-medium text-ink-500">First name</label>
           <input
             v-model="form.first_name"
             type="text"
             required
-            class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+            class="mt-1 w-full field"
           />
           <p v-if="formErrors.first_name" class="mt-1 text-xs text-red-600">
             {{ formErrors.first_name[0] }}
           </p>
         </div>
         <div>
-          <label class="block text-xs font-medium text-stone-500">Last name</label>
+          <label class="block text-xs font-medium text-ink-500">Last name</label>
           <input
             v-model="form.last_name"
             type="text"
             required
-            class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+            class="mt-1 w-full field"
           />
           <p v-if="formErrors.last_name" class="mt-1 text-xs text-red-600">
             {{ formErrors.last_name[0] }}
           </p>
         </div>
         <div>
-          <label class="block text-xs font-medium text-stone-500">Email</label>
+          <label class="block text-xs font-medium text-ink-500">Email</label>
           <input
             v-model="form.email"
             type="email"
             required
-            class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+            class="mt-1 w-full field"
           />
           <p v-if="formErrors.email" class="mt-1 text-xs text-red-600">
             {{ formErrors.email[0] }}
           </p>
         </div>
         <div>
-          <label class="block text-xs font-medium text-stone-500">Phone (optional)</label>
+          <label class="block text-xs font-medium text-ink-500">Phone (optional)</label>
           <input
             v-model="form.phone"
             type="text"
-            class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+            class="mt-1 w-full field"
           />
         </div>
         <div>
-          <label class="block text-xs font-medium text-stone-500">Role</label>
+          <label class="block text-xs font-medium text-ink-500">Role</label>
           <select
             v-model="form.role"
-            class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+            class="mt-1 w-full field"
           >
             <option v-for="r in ASSIGNABLE_ROLES" :key="r.value" :value="r.value">
               {{ r.label }}
@@ -195,33 +195,33 @@ onMounted(load)
     </p>
 
     <!-- Staff list -->
-    <div class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
-      <div class="flex items-center justify-between border-b border-stone-100 px-4 py-3">
-        <p class="text-sm font-semibold text-stone-700">Team members</p>
-        <span class="text-xs text-stone-400">{{ staffCount }} total</span>
+    <div class="overflow-hidden card">
+      <div class="flex items-center justify-between border-b border-hairline px-4 py-3">
+        <p class="text-sm font-semibold text-ink-700">Team members</p>
+        <span class="text-xs text-ink-400">{{ staffCount }} total</span>
       </div>
 
-      <p v-if="loading" class="px-4 py-6 text-sm text-stone-400">Loading…</p>
-      <p v-else-if="!employees.length" class="px-4 py-6 text-sm text-stone-400">
+      <p v-if="loading" class="px-4 py-6 text-sm text-ink-400">Loading…</p>
+      <p v-else-if="!employees.length" class="px-4 py-6 text-sm text-ink-400">
         No employees yet. Invite your first team member above.
       </p>
 
-      <ul v-else class="divide-y divide-stone-100">
+      <ul v-else class="divide-y divide-hairline">
         <li
           v-for="employee in employees"
           :key="employee.id"
           class="flex flex-wrap items-center gap-3 px-4 py-3"
         >
           <div class="min-w-0 flex-1">
-            <p class="truncate font-medium text-stone-900">
+            <p class="truncate font-medium text-ink-900">
               {{ employee.full_name }}
               <span
                 v-if="employee.email === user?.email"
-                class="ml-1 rounded bg-stone-100 px-1.5 py-0.5 text-xs font-normal text-stone-500"
+                class="ml-1 rounded bg-canvas px-1.5 py-0.5 text-xs font-normal text-ink-500"
                 >You</span
               >
             </p>
-            <p class="truncate text-xs text-stone-400">{{ employee.email }}</p>
+            <p class="truncate text-xs text-ink-400">{{ employee.email }}</p>
           </div>
 
           <!-- Controls: inline on desktop, own line on mobile -->
@@ -229,7 +229,7 @@ onMounted(load)
             <!-- Owner / self: read-only role badge -->
             <span
               v-if="!isManageable(employee)"
-              class="rounded-lg bg-stone-100 px-2.5 py-1 text-xs font-medium text-stone-600"
+              class="rounded-lg bg-canvas px-2.5 py-1 text-xs font-medium text-ink-600"
             >
               {{ employee.role === 'restaurant-owner' ? 'Owner' : roleLabel(employee.role) }}
             </span>
@@ -238,7 +238,7 @@ onMounted(load)
             <select
               v-else
               :value="employee.role"
-              class="rounded-lg border border-stone-200 px-2.5 py-1 text-xs outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+              class="field px-2.5 py-1 text-xs"
               @change="changeRole(employee, $event.target.value)"
             >
               <option v-for="r in ASSIGNABLE_ROLES" :key="r.value" :value="r.value">
@@ -252,7 +252,7 @@ onMounted(load)
               :class="
                 employee.is_active
                   ? 'bg-green-50 text-green-700 hover:bg-green-100'
-                  : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+                  : 'bg-canvas text-ink-500 hover:bg-hairline'
               "
               @click="toggleActive(employee)"
             >

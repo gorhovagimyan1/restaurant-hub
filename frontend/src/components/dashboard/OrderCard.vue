@@ -29,12 +29,12 @@ const elapsed = computed(() => {
 <template>
   <article
     class="rounded-2xl bg-white p-4 shadow-sm ring-1 transition"
-    :class="fresh ? 'ring-2 ring-brand-400 animate-pulse-once' : 'ring-black/5'"
+    :class="fresh ? 'ring-2 ring-brand-400 animate-pulse-once' : 'ring-hairline'"
   >
     <header class="flex items-start justify-between gap-2">
       <div>
-        <p class="text-lg font-bold leading-tight text-stone-900">{{ order.table?.name || 'Table' }}</p>
-        <p class="text-xs text-stone-400">{{ order.order_number }} · {{ elapsed }}</p>
+        <p class="text-lg font-bold leading-tight text-ink-900">{{ order.table?.name || 'Table' }}</p>
+        <p class="text-xs text-ink-400">{{ order.order_number }} · {{ elapsed }}</p>
       </div>
       <span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="meta.badge">
         {{ meta.label }}
@@ -43,8 +43,8 @@ const elapsed = computed(() => {
 
     <ul class="mt-3 space-y-1.5 text-sm">
       <li v-for="item in order.items" :key="item.id" class="flex items-start justify-between gap-2">
-        <span class="text-stone-700">
-          <span class="font-semibold text-stone-900">{{ item.quantity }}×</span>
+        <span class="text-ink-700">
+          <span class="font-semibold text-ink-900">{{ item.quantity }}×</span>
           {{ item.product_name }}
           <span v-if="item.notes" class="block text-xs italic text-brand-600">“{{ item.notes }}”</span>
         </span>
@@ -58,17 +58,17 @@ const elapsed = computed(() => {
       </li>
     </ul>
 
-    <p v-if="order.customer_name || order.notes" class="mt-3 rounded-lg bg-stone-50 px-3 py-2 text-xs text-stone-500">
-      <span v-if="order.customer_name" class="font-semibold text-stone-700">{{ order.customer_name }}</span>
+    <p v-if="order.customer_name || order.notes" class="mt-3 rounded-lg bg-canvas px-3 py-2 text-xs text-ink-500">
+      <span v-if="order.customer_name" class="font-semibold text-ink-700">{{ order.customer_name }}</span>
       <span v-if="order.customer_name && order.notes"> · </span>
       <span v-if="order.notes">{{ order.notes }}</span>
     </p>
 
-    <div class="mt-3 flex items-center justify-between border-t border-stone-100 pt-3">
-      <span class="text-base font-bold text-stone-900">{{ formatPrice(order.total) }}</span>
+    <div class="mt-3 flex items-center justify-between border-t border-hairline pt-3">
+      <span class="text-base font-bold text-ink-900">{{ formatPrice(order.total) }}</span>
       <button
         v-if="canCancel"
-        class="rounded-full px-3 py-1.5 text-xs font-medium text-stone-400 hover:bg-red-50 hover:text-red-500"
+        class="rounded-full px-3 py-1.5 text-xs font-medium text-ink-400 hover:bg-red-50 hover:text-red-500"
         @click="emit('cancel', order)"
       >
         Cancel

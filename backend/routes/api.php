@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\PlatformOverviewController;
+use App\Http\Controllers\Api\Admin\RestaurantController as AdminRestaurantController;
+use App\Http\Controllers\Api\Admin\RoleController as AdminRoleController;
+use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\PasswordResetController;
 use App\Http\Controllers\Api\Auth\ProfileController;
@@ -7,11 +11,13 @@ use App\Http\Controllers\Api\Dashboard\BusinessHoursController;
 use App\Http\Controllers\Api\Dashboard\CategoryController;
 use App\Http\Controllers\Api\Dashboard\DashboardController;
 use App\Http\Controllers\Api\Dashboard\EmployeeController;
+use App\Http\Controllers\Api\Dashboard\MenuThemeController;
 use App\Http\Controllers\Api\Dashboard\OrderController;
 use App\Http\Controllers\Api\Dashboard\OrderItemController;
 use App\Http\Controllers\Api\Dashboard\OverviewController;
 use App\Http\Controllers\Api\Dashboard\ProductController;
 use App\Http\Controllers\Api\Dashboard\ProductImageController;
+use App\Http\Controllers\Api\Dashboard\RestaurantImageController;
 use App\Http\Controllers\Api\Dashboard\SettingsController;
 use App\Http\Controllers\Api\Dashboard\SpecialHoursController;
 use App\Http\Controllers\Api\Dashboard\TableController;
@@ -82,6 +88,15 @@ Route::prefix('dashboard')->middleware('auth:sanctum')->group(function () {
 
         Route::get('special-hours', [SpecialHoursController::class, 'index']);
         Route::put('special-hours', [SpecialHoursController::class, 'update']);
+
+        // Logo + cover photo shown on the customer menu.
+        Route::post('restaurant/image', [RestaurantImageController::class, 'store']);
+        Route::delete('restaurant/image/{type}', [RestaurantImageController::class, 'destroy']);
+
+        // The restaurant's own design for its customer-facing menu.
+        Route::get('menu-theme', [MenuThemeController::class, 'show']);
+        Route::put('menu-theme', [MenuThemeController::class, 'update']);
+        Route::delete('menu-theme', [MenuThemeController::class, 'destroy']);
     });
 
     // Operational settings.
@@ -139,4 +154,29 @@ Route::prefix('dashboard')->middleware('auth:sanctum')->group(function () {
         Route::post('tables', [TableController::class, 'store']);
         Route::delete('tables/{table}', [TableController::class, 'destroy']);
     });
+});
+
+/*
+ * Platform administration — cross-tenant management for super-admins only.
+ * Owners hold every permission for their own restaurant, so these routes are
+ * gated by role (super-admin) rather than by permission.
+ */
+Route::prefix('admin')->middleware(['auth:sanctum', 'super-admin'])->group(function () {
+    // Platform-wide snapshot.
+    Route::get('overview', [PlatformOverviewController::class, 'index']);
+
+    // Manage every restaurant on the platform.
+    Route::get('restaurants', [AdminRestaurantController::class, 'index']);
+    Route::get('restaurants/{restaurant}', [AdminRestaurantController::class, 'show']);
+    Route::patch('restaurants/{restaurant}/status', [AdminRestaurantController::class, 'updateStatus']);
+    Route::delete('restaurants/{restaurant}', [AdminRestaurantController::class, 'destroy']);
+
+    // Manage every user account on the platform.
+    Route::get('users', [AdminUserController::class, 'index']);
+    Route::patch('users/{user}/status', [AdminUserController::class, 'updateStatus']);
+    Route::patch('users/{user}/roles', [AdminUserController::class, 'updateRoles']);
+
+    // Role & permission matrix.
+    Route::get('roles', [AdminRoleController::class, 'index']);
+    Route::patch('roles/{role}/permissions', [AdminRoleController::class, 'updatePermissions']);
 });

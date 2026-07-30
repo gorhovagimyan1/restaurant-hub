@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\MenuTheme;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,6 +26,7 @@ class RestaurantSettings extends Model
         'enable_waiter_call',
         'enable_bill_request',
         'auto_accept_orders',
+        'menu_theme',
     ];
 
     /**
@@ -40,7 +42,19 @@ class RestaurantSettings extends Model
             'enable_waiter_call' => 'boolean',
             'enable_bill_request' => 'boolean',
             'auto_accept_orders' => 'boolean',
+            'menu_theme' => 'array',
         ];
+    }
+
+    /**
+     * The complete, renderable design for this restaurant's public menu —
+     * stored choices filled out with the defaults for anything unset.
+     *
+     * @return array<string, mixed>
+     */
+    public function menuTheme(): array
+    {
+        return MenuTheme::normalize($this->menu_theme);
     }
 
     /**

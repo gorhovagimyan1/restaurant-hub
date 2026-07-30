@@ -20,6 +20,9 @@ export const useAuthStore = defineStore('auth', () => {
     return permissions.value.includes(permission)
   }
 
+  // Platform super-admins are routed to the cross-tenant admin area.
+  const isSuperAdmin = computed(() => roles.value.includes('super-admin'))
+
   // Kitchen/front-of-house staff who should land on the kitchen display rather
   // than the owner dashboard (which they lack permissions for).
   const isKitchenOnly = computed(() => {
@@ -28,9 +31,10 @@ export const useAuthStore = defineStore('auth', () => {
   })
 
   // Where a freshly-authenticated user should be sent.
-  const homeRoute = computed(() =>
-    isKitchenOnly.value ? { name: 'kitchen' } : { name: 'dashboard-overview' },
-  )
+  const homeRoute = computed(() => {
+    if (isSuperAdmin.value) return { name: 'admin-overview' }
+    return isKitchenOnly.value ? { name: 'kitchen' } : { name: 'dashboard-overview' }
+  })
 
   function setToken(value) {
     token.value = value
@@ -120,6 +124,7 @@ export const useAuthStore = defineStore('auth', () => {
     permissions,
     hasRole,
     can,
+    isSuperAdmin,
     isKitchenOnly,
     homeRoute,
     login,

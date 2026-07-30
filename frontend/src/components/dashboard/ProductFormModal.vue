@@ -64,17 +64,17 @@ async function submit() {
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="emit('close')">
     <div class="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
-      <h2 class="text-lg font-bold text-stone-900">
+      <h2 class="text-lg font-bold text-ink-900">
         {{ product ? 'Edit product' : 'New product' }}
       </h2>
 
       <form class="mt-4 space-y-3" @submit.prevent="submit">
         <!-- Image -->
         <div class="flex items-center gap-4">
-          <div class="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-stone-100">
+          <div class="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-canvas">
             <AppImage v-if="preview" :src="preview" alt="" class="h-full w-full object-cover" />
           </div>
-          <label class="cursor-pointer rounded-lg border border-stone-300 px-3 py-2 text-sm font-medium text-stone-600 hover:bg-stone-50">
+          <label class="cursor-pointer rounded-lg border border-hairline-strong px-3 py-2 text-sm font-medium text-ink-600 hover:bg-canvas">
             Upload image
             <input type="file" accept="image/*" class="hidden" @change="onFile" />
           </label>
@@ -82,68 +82,68 @@ async function submit() {
 
         <div class="grid grid-cols-2 gap-3">
           <div class="col-span-2">
-            <label class="mb-1 block text-sm font-medium text-stone-700">Name</label>
+            <label class="mb-1 block text-sm font-medium text-ink-700">Name</label>
             <input
               v-model="form.name"
               required
-              class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
+              class="w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm outline-none focus:border-brand-500"
             />
           </div>
           <div>
-            <label class="mb-1 block text-sm font-medium text-stone-700">Category</label>
+            <label class="mb-1 block text-sm font-medium text-ink-700">Category</label>
             <select
               v-model="form.category_id"
-              class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
+              class="w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm outline-none focus:border-brand-500"
             >
               <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
           </div>
           <div>
-            <label class="mb-1 block text-sm font-medium text-stone-700">Price</label>
+            <label class="mb-1 block text-sm font-medium text-ink-700">Price</label>
             <input
               v-model="form.price"
               type="number"
               min="0"
               step="1"
               required
-              class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
+              class="w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm outline-none focus:border-brand-500"
             />
           </div>
         </div>
 
         <div>
-          <label class="mb-1 block text-sm font-medium text-stone-700">Description</label>
+          <label class="mb-1 block text-sm font-medium text-ink-700">Description</label>
           <textarea
             v-model="form.description"
             rows="2"
-            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
+            class="w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm outline-none focus:border-brand-500"
           />
         </div>
 
         <div>
-          <label class="mb-1 block text-sm font-medium text-stone-700">Ingredients</label>
+          <label class="mb-1 block text-sm font-medium text-ink-700">Ingredients</label>
           <input
             v-model="form.ingredients"
             placeholder="Comma separated, e.g. Tomato, Basil, Cheese"
-            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
+            class="w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm outline-none focus:border-brand-500"
           />
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="mb-1 block text-sm font-medium text-stone-700">Prep time (min)</label>
+            <label class="mb-1 block text-sm font-medium text-ink-700">Prep time (min)</label>
             <input
               v-model="form.preparation_time"
               type="number"
               min="0"
-              class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
+              class="w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm outline-none focus:border-brand-500"
             />
           </div>
           <div class="flex flex-col justify-center gap-2 pt-4">
-            <label class="flex items-center gap-2 text-sm text-stone-700">
+            <label class="flex items-center gap-2 text-sm text-ink-700">
               <input v-model="form.is_available" type="checkbox" class="h-4 w-4" /> Available
             </label>
-            <label class="flex items-center gap-2 text-sm text-stone-700">
+            <label class="flex items-center gap-2 text-sm text-ink-700">
               <input v-model="form.is_featured" type="checkbox" class="h-4 w-4" /> Chef's pick
             </label>
           </div>
@@ -154,7 +154,7 @@ async function submit() {
         <div class="flex justify-end gap-2 pt-2">
           <button
             type="button"
-            class="rounded-lg px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100"
+            class="rounded-lg px-4 py-2 text-sm font-medium text-ink-600 hover:bg-canvas"
             @click="emit('close')"
           >
             Cancel

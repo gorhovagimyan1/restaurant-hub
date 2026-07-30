@@ -43,36 +43,36 @@ async function submit() {
 <template>
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="emit('close')">
     <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-      <h2 class="text-lg font-bold text-stone-900">
+      <h2 class="text-lg font-bold text-ink-900">
         {{ category ? 'Edit category' : 'New category' }}
       </h2>
 
       <form class="mt-4 space-y-3" @submit.prevent="submit">
         <div>
-          <label class="mb-1 block text-sm font-medium text-stone-700">Name</label>
+          <label class="mb-1 block text-sm font-medium text-ink-700">Name</label>
           <input
             v-model="form.name"
             required
-            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
+            class="w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm outline-none focus:border-brand-500"
           />
         </div>
         <div>
-          <label class="mb-1 block text-sm font-medium text-stone-700">Description</label>
+          <label class="mb-1 block text-sm font-medium text-ink-700">Description</label>
           <textarea
             v-model="form.description"
             rows="2"
-            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
+            class="w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm outline-none focus:border-brand-500"
           />
         </div>
         <div>
-          <label class="mb-1 block text-sm font-medium text-stone-700">Image URL (optional)</label>
+          <label class="mb-1 block text-sm font-medium text-ink-700">Image URL (optional)</label>
           <input
             v-model="form.image"
             placeholder="https://…"
-            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500"
+            class="w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm outline-none focus:border-brand-500"
           />
         </div>
-        <label class="flex items-center gap-2 text-sm text-stone-700">
+        <label class="flex items-center gap-2 text-sm text-ink-700">
           <input v-model="form.is_active" type="checkbox" class="h-4 w-4 rounded" />
           Active (visible to customers)
         </label>
@@ -82,7 +82,7 @@ async function submit() {
         <div class="flex justify-end gap-2 pt-2">
           <button
             type="button"
-            class="rounded-lg px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100"
+            class="rounded-lg px-4 py-2 text-sm font-medium text-ink-600 hover:bg-canvas"
             @click="emit('close')"
           >
             Cancel
