@@ -61,15 +61,28 @@ async function logout() {
       class="fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col border-r border-hairline bg-white transition-transform duration-200 sm:static sm:z-auto sm:translate-x-0"
       :class="navOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full'"
     >
-      <div class="flex items-center gap-3 border-b border-hairline/70 px-5 py-4">
-        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 text-white shadow-sm">
-          <ShieldCheck :size="20" :stroke-width="2.25" />
-        </span>
-        <div class="min-w-0 flex-1">
-          <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Platform</p>
-          <p class="truncate font-bold text-ink-900">Administration</p>
-        </div>
-        <button class="rounded-lg p-1 text-ink-400 hover:bg-canvas sm:hidden" @click="navOpen = false">
+      <div class="flex items-center gap-1 border-b border-hairline/70 px-3 py-3">
+        <!-- Clicking the brand mark returns to the platform overview. -->
+        <RouterLink
+          :to="{ name: 'admin-overview' }"
+          class="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-2 py-1.5 transition hover:bg-canvas"
+          title="Platform Administration — go to Overview"
+        >
+          <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 text-white shadow-sm">
+            <ShieldCheck :size="20" :stroke-width="2.25" />
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+              Platform
+            </span>
+            <span class="block truncate font-bold text-ink-900">Administration</span>
+          </span>
+        </RouterLink>
+        <button
+          class="shrink-0 rounded-lg p-1 text-ink-400 transition hover:bg-canvas sm:hidden"
+          aria-label="Close menu"
+          @click="navOpen = false"
+        >
           <X :size="20" />
         </button>
       </div>
