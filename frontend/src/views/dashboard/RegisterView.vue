@@ -39,14 +39,14 @@ async function submit() {
 }
 
 const inputClass =
-  'w-full rounded-xl border border-stone-200 bg-stone-50 px-3.5 py-2.5 text-sm text-stone-900 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100'
+  'w-full field'
 </script>
 
 <template>
   <AuthShell title="Create your restaurant" subtitle="Set up your account and start managing your menu.">
     <form class="space-y-4" @submit.prevent="submit">
       <div>
-        <label class="mb-1.5 block text-sm font-medium text-stone-700">Restaurant name</label>
+        <label class="mb-1.5 block text-sm font-medium text-ink-700">Restaurant name</label>
         <input v-model="form.restaurant_name" type="text" required :class="inputClass" />
         <p v-if="fieldError('restaurant_name')" class="mt-1 text-xs text-red-600">
           {{ fieldError('restaurant_name') }}
@@ -55,14 +55,14 @@ const inputClass =
 
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="mb-1.5 block text-sm font-medium text-stone-700">First name</label>
+          <label class="mb-1.5 block text-sm font-medium text-ink-700">First name</label>
           <input v-model="form.first_name" type="text" required :class="inputClass" />
           <p v-if="fieldError('first_name')" class="mt-1 text-xs text-red-600">
             {{ fieldError('first_name') }}
           </p>
         </div>
         <div>
-          <label class="mb-1.5 block text-sm font-medium text-stone-700">Last name</label>
+          <label class="mb-1.5 block text-sm font-medium text-ink-700">Last name</label>
           <input v-model="form.last_name" type="text" required :class="inputClass" />
           <p v-if="fieldError('last_name')" class="mt-1 text-xs text-red-600">
             {{ fieldError('last_name') }}
@@ -71,26 +71,26 @@ const inputClass =
       </div>
 
       <div>
-        <label class="mb-1.5 block text-sm font-medium text-stone-700">Email</label>
+        <label class="mb-1.5 block text-sm font-medium text-ink-700">Email</label>
         <input v-model="form.email" type="email" required autocomplete="username" :class="inputClass" />
         <p v-if="fieldError('email')" class="mt-1 text-xs text-red-600">{{ fieldError('email') }}</p>
       </div>
 
       <div>
-        <label class="mb-1.5 block text-sm font-medium text-stone-700">Phone (optional)</label>
+        <label class="mb-1.5 block text-sm font-medium text-ink-700">Phone (optional)</label>
         <input v-model="form.phone" type="text" :class="inputClass" />
       </div>
 
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="mb-1.5 block text-sm font-medium text-stone-700">Password</label>
+          <label class="mb-1.5 block text-sm font-medium text-ink-700">Password</label>
           <input v-model="form.password" type="password" required autocomplete="new-password" :class="inputClass" />
           <p v-if="fieldError('password')" class="mt-1 text-xs text-red-600">
             {{ fieldError('password') }}
           </p>
         </div>
         <div>
-          <label class="mb-1.5 block text-sm font-medium text-stone-700">Confirm</label>
+          <label class="mb-1.5 block text-sm font-medium text-ink-700">Confirm</label>
           <input
             v-model="form.password_confirmation"
             type="password"
@@ -114,7 +114,7 @@ const inputClass =
       </button>
     </form>
 
-    <p class="mt-6 text-center text-sm text-stone-500">
+    <p class="mt-6 text-center text-sm text-ink-500">
       Already have an account?
       <RouterLink :to="{ name: 'login' }" class="font-semibold text-brand-600 hover:underline">
         Sign in

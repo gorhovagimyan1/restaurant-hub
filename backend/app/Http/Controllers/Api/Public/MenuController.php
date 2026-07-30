@@ -24,6 +24,8 @@ class MenuController extends Controller
 
         $restaurant->load([
             'businessHours',
+            // Carries the menu design the portal renders with.
+            'settings',
             // Only forthcoming overrides matter to a customer viewing the menu.
             'specialHours' => fn ($query) => $query->whereDate('date', '>=', now()),
         ]);

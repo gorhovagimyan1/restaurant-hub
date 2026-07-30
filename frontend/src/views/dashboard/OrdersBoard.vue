@@ -88,23 +88,23 @@ onBeforeUnmount(() => store.stop())
   <div>
     <header class="mb-5 flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-2xl font-bold text-stone-900">Live orders</h1>
-        <p class="text-sm text-stone-500">
+        <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">Live orders</h1>
+        <p class="text-sm text-ink-500">
           {{ kitchen.length }} in kitchen · {{ openTables.length }} open tables · updated
           {{ lastUpdatedLabel }}
-          <span v-if="loading" class="text-stone-400">· refreshing…</span>
+          <span v-if="loading" class="text-ink-400">· refreshing…</span>
         </p>
       </div>
       <div class="flex items-center gap-3">
         <button
-          class="flex items-center gap-1.5 rounded-full border border-stone-200 px-3 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-100"
+          class="flex items-center gap-1.5 rounded-full border border-hairline px-3 py-1.5 text-sm font-medium text-ink-600 hover:bg-canvas"
           @click="soundOn = !soundOn"
         >
           <component :is="soundOn ? Bell : BellOff" :size="15" />
           {{ soundOn ? 'Sound on' : 'Sound off' }}
         </button>
         <button
-          class="rounded-full border border-stone-200 px-3 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-100"
+          class="rounded-full border border-hairline px-3 py-1.5 text-sm font-medium text-ink-600 hover:bg-canvas"
           @click="store.refresh()"
         >
           Refresh
@@ -119,7 +119,7 @@ onBeforeUnmount(() => store.stop())
 
     <!-- Open tables / bills -->
     <section v-if="openTables.length" class="mb-8">
-      <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-400">
+      <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-400">
         Open tables ({{ openTables.length }})
       </h2>
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -127,12 +127,12 @@ onBeforeUnmount(() => store.stop())
           v-for="table in openTables"
           :key="table.id"
           class="rounded-2xl bg-white p-4 shadow-sm ring-1 transition"
-          :class="table.billRequested ? 'ring-2 ring-brand-400' : 'ring-black/5'"
+          :class="table.billRequested ? 'ring-2 ring-brand-400' : 'ring-hairline'"
         >
           <div class="flex items-start justify-between">
             <div>
-              <p class="text-lg font-bold text-stone-900">{{ table.name }}</p>
-              <p class="text-xs text-stone-400">
+              <p class="text-lg font-bold text-ink-900">{{ table.name }}</p>
+              <p class="text-xs text-ink-400">
                 {{ table.orders.length }} order{{ table.orders.length === 1 ? '' : 's' }}
               </p>
             </div>
@@ -144,20 +144,20 @@ onBeforeUnmount(() => store.stop())
             </span>
           </div>
 
-          <ul class="mt-3 space-y-1 text-sm text-stone-600">
+          <ul class="mt-3 space-y-1 text-sm text-ink-600">
             <li v-for="order in table.orders" :key="order.id" class="flex justify-between gap-2">
               <span class="truncate">
                 {{ order.order_number }}
-                <span class="text-xs text-stone-400">· {{ order.items?.length || 0 }} items</span>
+                <span class="text-xs text-ink-400">· {{ order.items?.length || 0 }} items</span>
               </span>
               <span class="shrink-0 tabular-nums">{{ formatPrice(order.total) }}</span>
             </li>
           </ul>
 
-          <div class="mt-3 flex items-center justify-between border-t border-stone-100 pt-3">
+          <div class="mt-3 flex items-center justify-between border-t border-hairline pt-3">
             <div>
-              <p class="text-xs text-stone-400">Total due</p>
-              <p class="text-lg font-bold text-stone-900">{{ formatPrice(table.total) }}</p>
+              <p class="text-xs text-ink-400">Total due</p>
+              <p class="text-lg font-bold text-ink-900">{{ formatPrice(table.total) }}</p>
             </div>
             <button
               class="rounded-full bg-emerald-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600 disabled:opacity-60"
@@ -173,14 +173,14 @@ onBeforeUnmount(() => store.stop())
 
     <!-- Kitchen -->
     <section>
-      <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-400">Kitchen</h2>
+      <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-400">Kitchen</h2>
       <div
         v-if="!loading && kitchen.length === 0"
-        class="rounded-2xl border border-dashed border-stone-200 bg-white/50 px-6 py-16 text-center"
+        class="rounded-2xl border border-dashed border-hairline bg-white/50 px-6 py-16 text-center"
       >
-        <CookingPot :size="40" class="mx-auto text-stone-300" />
-        <h3 class="mt-3 font-semibold text-stone-700">Nothing cooking</h3>
-        <p class="mt-1 text-sm text-stone-500">New orders from scanned tables appear here instantly.</p>
+        <CookingPot :size="40" class="mx-auto text-ink-300" />
+        <h3 class="mt-3 font-semibold text-ink-700">Nothing cooking</h3>
+        <p class="mt-1 text-sm text-ink-500">New orders from scanned tables appear here instantly.</p>
       </div>
 
       <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
@@ -197,7 +197,7 @@ onBeforeUnmount(() => store.stop())
 
     <!-- Settled / cancelled today -->
     <section v-if="done.length" class="mt-10">
-      <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-400">
+      <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-400">
         Closed today ({{ done.length }})
       </h2>
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">

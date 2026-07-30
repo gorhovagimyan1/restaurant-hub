@@ -1,9 +1,16 @@
 @import 'tailwindcss';
 
 /*
+ * ---------------------------------------------------------------------------
+ * Design tokens
+ * ---------------------------------------------------------------------------
  * Brand palette — a fresh emerald with a teal companion, exposed as `brand-*`
  * utilities (bg-brand-500, text-brand-600, ring-brand-200, …). This is the
  * single source of truth for the accent: retheme the whole app from here.
+ *
+ * The `canvas`/`surface`/`hairline`/`ink-*` tokens below are the dashboard's
+ * semantic layer. Reach for those rather than raw stone/slate shades so the
+ * chrome stays consistent across screens.
  */
 @theme {
   --color-brand-50: #ecfdf5;
@@ -23,6 +30,27 @@
   --color-accent-500: #14b8a6;
   --color-accent-600: #0d9488;
 
+  /* Dashboard chrome: an airy off-white page over crisp white panels. */
+  --color-canvas: #f6f7f9;
+  --color-surface: #ffffff;
+  --color-surface-muted: #fafbfc;
+  --color-hairline: #e9ebef;
+  --color-hairline-strong: #dcdfe5;
+
+  /* Neutral type scale — very slightly cool, easier on the eye than pure grey. */
+  --color-ink-900: #10151c;
+  --color-ink-800: #1e252f;
+  --color-ink-700: #333c48;
+  --color-ink-600: #4d5765;
+  --color-ink-500: #6b7583;
+  --color-ink-400: #8d95a1;
+  --color-ink-300: #b3b9c2;
+
+  /* Soft, wide shadows: depth without the heavy drop-shadow look. */
+  --shadow-card: 0 1px 2px rgb(16 21 28 / 0.04), 0 1px 3px rgb(16 21 28 / 0.03);
+  --shadow-lift: 0 4px 12px -2px rgb(16 21 28 / 0.08), 0 2px 6px -2px rgb(16 21 28 / 0.04);
+  --shadow-pop: 0 20px 40px -12px rgb(16 21 28 / 0.18);
+
   --font-sans:
     'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
@@ -38,9 +66,8 @@ body {
 
 body {
   margin: 0;
-  /* A whisper of cool tint keeps the emerald reading fresh rather than muddy. */
-  background-color: #f6f8f7;
-  color: #0f1a17;
+  background-color: var(--color-canvas);
+  color: var(--color-ink-800);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -57,6 +84,66 @@ body {
 }
 
 /*
+ * ---------------------------------------------------------------------------
+ * Dashboard utilities
+ * ---------------------------------------------------------------------------
+ */
+
+/*
+ * The standard panel: hairline border instead of a heavy shadow, so a page of
+ * many cards still reads as calm.
+ */
+@utility card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-hairline);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-card);
+}
+
+/* Same panel, but interactive — use on cards that navigate somewhere. */
+@utility card-link {
+  transition:
+    box-shadow 0.18s ease,
+    transform 0.18s ease,
+    border-color 0.18s ease;
+
+  &:hover {
+    border-color: var(--color-hairline-strong);
+    box-shadow: var(--shadow-lift);
+    transform: translateY(-1px);
+  }
+}
+
+/* Text inputs, selects and textareas across the dashboard. */
+@utility field {
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-hairline-strong);
+  background-color: var(--color-surface);
+  padding: 0.55rem 0.85rem;
+  font-size: 0.875rem;
+  color: var(--color-ink-800);
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &::placeholder {
+    color: var(--color-ink-400);
+  }
+
+  &:focus {
+    border-color: var(--color-brand-400);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-brand-500) 16%, transparent);
+  }
+
+  &:disabled {
+    background-color: var(--color-surface-muted);
+    color: var(--color-ink-400);
+  }
+}
+
+/*
  * Reusable modern primary action: emerald→teal with a soft brand-tinted
  * shadow. Use `btn-brand` in place of a flat bg-brand-500 on prominent CTAs.
  */
@@ -68,4 +155,193 @@ body {
   &:hover {
     background-image: linear-gradient(135deg, var(--color-brand-600), var(--color-accent-600));
   }
+}
+
+/* The quiet secondary action that sits beside a primary one. */
+@utility btn-ghost {
+  border: 1px solid var(--color-hairline-strong);
+  background-color: var(--color-surface);
+  color: var(--color-ink-600);
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    background-color: var(--color-surface-muted);
+    color: var(--color-ink-800);
+  }
+}
+
+/* Small uppercase label above a value or section. */
+@utility eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-ink-400);
+}
+
+/*
+ * ---------------------------------------------------------------------------
+ * Customer menu theming
+ * ---------------------------------------------------------------------------
+ * Every restaurant designs its own public menu (see the Menu Design screen and
+ * App\Support\MenuTheme). The stored theme supplies only the base variables
+ * below — palette, fonts, radius; everything else is derived here in CSS with
+ * color-mix, which is what keeps a hand-picked colour pair from ever landing
+ * on unreadable text or invisible borders.
+ *
+ * `.menu-theme` carries the variables and typography but deliberately paints no
+ * background, so it can also be applied to teleported overlays without tinting
+ * their backdrop. Pair it with `.menu-page` on the portal's root element.
+ */
+.menu-theme {
+  /* Base — overwritten per restaurant via inline custom properties. */
+  --m-primary: #10b981;
+  --m-primary-contrast: #ffffff;
+  --m-surface: #f6f8f7;
+  --m-card: #ffffff;
+  --m-text: #14181a;
+  /* Cards may be lighter or darker than the page, so they carry their own
+     readable ink rather than inheriting the page's. */
+  --m-text-card: #14181a;
+  --m-radius: 16px;
+  --m-radius-btn: 999px;
+  --m-font-heading: var(--font-sans);
+  --m-font-body: var(--font-sans);
+
+  /* Derived — always in step with the base, light theme or dark. */
+  --m-radius-sm: calc(var(--m-radius) * 0.6);
+  --m-muted: color-mix(in oklab, var(--m-text) 55%, var(--m-surface));
+  --m-muted-card: color-mix(in oklab, var(--m-text-card) 55%, var(--m-card));
+  --m-faint: color-mix(in oklab, var(--m-text) 38%, var(--m-surface));
+  --m-border: color-mix(in oklab, var(--m-text) 14%, var(--m-surface));
+  --m-card-border: color-mix(in oklab, var(--m-text) 11%, var(--m-card));
+  --m-elevated: color-mix(in oklab, var(--m-text) 6%, var(--m-card));
+  --m-primary-soft: color-mix(in oklab, var(--m-primary) 15%, var(--m-card));
+  --m-primary-ink: color-mix(in oklab, var(--m-primary) 72%, var(--m-text));
+  --m-primary-hover: color-mix(in oklab, var(--m-primary) 86%, var(--m-text));
+
+  color: var(--m-text);
+  font-family: var(--m-font-body);
+}
+
+/* Paints the page itself; kept off `.menu-theme` for overlay reuse. */
+.menu-page {
+  background-color: var(--m-surface);
+}
+
+.m-heading {
+  font-family: var(--m-font-heading);
+}
+
+.m-card {
+  background-color: var(--m-card);
+  border: 1px solid var(--m-card-border);
+  border-radius: var(--m-radius);
+  color: var(--m-text-card);
+}
+
+.m-panel {
+  background-color: var(--m-card);
+  color: var(--m-text-card);
+}
+
+.m-radius {
+  border-radius: var(--m-radius);
+}
+
+.m-radius-sm {
+  border-radius: var(--m-radius-sm);
+}
+
+.m-muted {
+  color: var(--m-muted);
+}
+
+.m-muted-card {
+  color: var(--m-muted-card);
+}
+
+.m-faint {
+  color: var(--m-faint);
+}
+
+.m-accent {
+  color: var(--m-primary-ink);
+}
+
+.m-accent-soft {
+  background-color: var(--m-primary-soft);
+  color: var(--m-primary-ink);
+}
+
+.m-border {
+  border-color: var(--m-border);
+}
+
+.m-card-border {
+  border-color: var(--m-card-border);
+}
+
+.m-elevated {
+  background-color: var(--m-elevated);
+}
+
+/* Translucent sticky bars (top nav, category rail, cart bar). */
+.m-bar {
+  background-color: color-mix(in oklab, var(--m-card) 86%, transparent);
+  border-color: var(--m-card-border);
+}
+
+.m-btn {
+  background-color: var(--m-primary);
+  color: var(--m-primary-contrast);
+  border-radius: var(--m-radius-btn);
+  transition: background-color 0.15s ease;
+}
+
+.m-btn:hover {
+  background-color: var(--m-primary-hover);
+}
+
+.m-btn-outline {
+  border: 1px solid var(--m-primary);
+  color: var(--m-primary-ink);
+  border-radius: var(--m-radius-btn);
+  transition: background-color 0.15s ease;
+}
+
+.m-btn-outline:hover {
+  background-color: var(--m-primary-soft);
+}
+
+.m-btn-quiet {
+  border: 1px solid var(--m-card-border);
+  color: var(--m-muted-card);
+  border-radius: var(--m-radius-btn);
+  transition: background-color 0.15s ease;
+}
+
+.m-btn-quiet:hover {
+  background-color: var(--m-elevated);
+}
+
+.m-chip {
+  background-color: var(--m-elevated);
+  color: var(--m-muted-card);
+  border-radius: var(--m-radius-btn);
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.m-chip-active {
+  background-color: var(--m-primary);
+  color: var(--m-primary-contrast);
+}
+
+/* Hairline separators between dishes in a list layout. */
+.m-divide > * + * {
+  border-top: 1px solid var(--m-border);
 }

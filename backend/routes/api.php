@@ -11,11 +11,13 @@ use App\Http\Controllers\Api\Dashboard\BusinessHoursController;
 use App\Http\Controllers\Api\Dashboard\CategoryController;
 use App\Http\Controllers\Api\Dashboard\DashboardController;
 use App\Http\Controllers\Api\Dashboard\EmployeeController;
+use App\Http\Controllers\Api\Dashboard\MenuThemeController;
 use App\Http\Controllers\Api\Dashboard\OrderController;
 use App\Http\Controllers\Api\Dashboard\OrderItemController;
 use App\Http\Controllers\Api\Dashboard\OverviewController;
 use App\Http\Controllers\Api\Dashboard\ProductController;
 use App\Http\Controllers\Api\Dashboard\ProductImageController;
+use App\Http\Controllers\Api\Dashboard\RestaurantImageController;
 use App\Http\Controllers\Api\Dashboard\SettingsController;
 use App\Http\Controllers\Api\Dashboard\SpecialHoursController;
 use App\Http\Controllers\Api\Dashboard\TableController;
@@ -86,6 +88,15 @@ Route::prefix('dashboard')->middleware('auth:sanctum')->group(function () {
 
         Route::get('special-hours', [SpecialHoursController::class, 'index']);
         Route::put('special-hours', [SpecialHoursController::class, 'update']);
+
+        // Logo + cover photo shown on the customer menu.
+        Route::post('restaurant/image', [RestaurantImageController::class, 'store']);
+        Route::delete('restaurant/image/{type}', [RestaurantImageController::class, 'destroy']);
+
+        // The restaurant's own design for its customer-facing menu.
+        Route::get('menu-theme', [MenuThemeController::class, 'show']);
+        Route::put('menu-theme', [MenuThemeController::class, 'update']);
+        Route::delete('menu-theme', [MenuThemeController::class, 'destroy']);
     });
 
     // Operational settings.

@@ -67,6 +67,11 @@ const router = createRouter({
           component: () => import('@/views/dashboard/MenuManager.vue'),
         },
         {
+          path: 'design',
+          name: 'dashboard-design',
+          component: () => import('@/views/dashboard/MenuDesign.vue'),
+        },
+        {
           path: 'orders',
           name: 'dashboard-orders',
           component: () => import('@/views/dashboard/OrdersBoard.vue'),

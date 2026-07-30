@@ -69,8 +69,8 @@ async function ack(call) {
           :class="dark ? 'bg-stone-800' : 'bg-white shadow-sm'"
         >
           <div>
-            <span class="font-bold" :class="dark ? 'text-white' : 'text-stone-900'">{{ call.name }}</span>
-            <span class="ml-2 text-xs" :class="dark ? 'text-stone-400' : 'text-stone-500'">
+            <span class="font-bold" :class="dark ? 'text-white' : 'text-ink-900'">{{ call.name }}</span>
+            <span class="ml-2 text-xs" :class="dark ? 'text-ink-400' : 'text-ink-500'">
               <span v-if="call.waiter_called" class="inline-flex items-center gap-1"><BellRing :size="12" /> Waiter</span>
               <span v-if="call.waiter_called && call.bill_requested"> · </span>
               <span v-if="call.bill_requested" class="inline-flex items-center gap-1"><ReceiptText :size="12" /> Bill</span>

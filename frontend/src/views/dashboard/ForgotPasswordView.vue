@@ -25,22 +25,22 @@ async function submit() {
 </script>
 
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-stone-100 px-4">
-    <div class="w-full max-w-sm rounded-2xl bg-white p-8 shadow-sm ring-1 ring-black/5">
-      <h1 class="text-2xl font-bold text-stone-900">Forgot password?</h1>
-      <p class="mt-1 text-sm text-stone-500">
+  <div class="flex min-h-screen items-center justify-center bg-canvas px-4">
+    <div class="w-full max-w-sm card p-8">
+      <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">Forgot password?</h1>
+      <p class="mt-1 text-sm text-ink-500">
         Enter your email and we'll send you a reset link.
       </p>
 
       <form class="mt-6 space-y-4" @submit.prevent="submit">
         <div>
-          <label class="mb-1 block text-sm font-medium text-stone-700">Email</label>
+          <label class="mb-1 block text-sm font-medium text-ink-700">Email</label>
           <input
             v-model="email"
             type="email"
             required
             autocomplete="username"
-            class="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
+            class="w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-200"
           />
         </div>
 
@@ -60,7 +60,7 @@ async function submit() {
         </button>
       </form>
 
-      <div class="mt-4 text-center text-xs text-stone-400">
+      <div class="mt-4 text-center text-xs text-ink-400">
         <RouterLink :to="{ name: 'login' }" class="hover:text-brand-600">
           Back to sign in
         </RouterLink>

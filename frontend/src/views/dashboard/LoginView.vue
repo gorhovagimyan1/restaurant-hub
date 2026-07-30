@@ -31,19 +31,19 @@ function fillDemo(role) {
 }
 
 const inputClass =
-  'w-full rounded-xl border border-stone-200 bg-stone-50 px-3.5 py-2.5 text-sm text-stone-900 outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100'
+  'w-full field'
 </script>
 
 <template>
   <AuthShell title="Welcome back" subtitle="Sign in to manage your restaurant.">
     <form class="space-y-4" @submit.prevent="submit">
       <div>
-        <label class="mb-1.5 block text-sm font-medium text-stone-700">Email</label>
+        <label class="mb-1.5 block text-sm font-medium text-ink-700">Email</label>
         <input v-model="email" type="email" required autocomplete="username" :class="inputClass" />
       </div>
       <div>
         <div class="mb-1.5 flex items-center justify-between">
-          <label class="block text-sm font-medium text-stone-700">Password</label>
+          <label class="block text-sm font-medium text-ink-700">Password</label>
           <RouterLink :to="{ name: 'forgot-password' }" class="text-xs font-medium text-brand-600 hover:text-brand-700">
             Forgot password?
           </RouterLink>
@@ -68,17 +68,17 @@ const inputClass =
       </button>
     </form>
 
-    <div class="mt-5 flex items-center justify-center gap-3 text-xs text-stone-400">
-      <button class="rounded-lg px-2 py-1 font-medium hover:bg-stone-100 hover:text-brand-600" @click="fillDemo('owner')">
+    <div class="mt-5 flex items-center justify-center gap-3 text-xs text-ink-400">
+      <button class="rounded-lg px-2 py-1 font-medium hover:bg-canvas hover:text-brand-600" @click="fillDemo('owner')">
         Demo owner
       </button>
-      <span class="text-stone-300">·</span>
-      <button class="rounded-lg px-2 py-1 font-medium hover:bg-stone-100 hover:text-brand-600" @click="fillDemo('kitchen')">
+      <span class="text-ink-300">·</span>
+      <button class="rounded-lg px-2 py-1 font-medium hover:bg-canvas hover:text-brand-600" @click="fillDemo('kitchen')">
         Demo kitchen
       </button>
     </div>
 
-    <p class="mt-6 text-center text-sm text-stone-500">
+    <p class="mt-6 text-center text-sm text-ink-500">
       New here?
       <RouterLink :to="{ name: 'register' }" class="font-semibold text-brand-600 hover:underline">
         Create your restaurant

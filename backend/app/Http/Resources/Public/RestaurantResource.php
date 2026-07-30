@@ -4,6 +4,7 @@ namespace App\Http\Resources\Public;
 
 use App\Http\Resources\Dashboard\BusinessHourResource;
 use App\Http\Resources\Dashboard\SpecialHourResource;
+use App\Support\MenuTheme;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -40,6 +41,9 @@ class RestaurantResource extends JsonResource
                 $this->whenLoaded('specialHours'),
             ),
             'open_status' => $this->openStatus(),
+            // The restaurant's own menu design; always complete, so the portal
+            // can render straight from it without defaults of its own.
+            'menu_theme' => MenuTheme::normalize($this->settings?->menu_theme),
         ];
     }
 }

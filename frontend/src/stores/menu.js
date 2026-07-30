@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { fetchMenu } from '@/services/menu'
+import { DEFAULT_THEME } from '@/utils/menuTheme'
 
 export const useMenuStore = defineStore('menu', () => {
   const restaurant = ref(null)
@@ -21,6 +22,10 @@ export const useMenuStore = defineStore('menu', () => {
   }
 
   const currency = computed(() => restaurant.value?.currency || 'AMD')
+
+  // The restaurant's own design for this menu. The API always sends a complete
+  // theme; the defaults only cover the window before the menu has loaded.
+  const theme = computed(() => ({ ...DEFAULT_THEME, ...(restaurant.value?.menu_theme || {}) }))
 
   const totalProducts = computed(() =>
     categories.value.reduce((total, category) => total + category.products.length, 0),
@@ -68,6 +73,7 @@ export const useMenuStore = defineStore('menu', () => {
     loading,
     error,
     currency,
+    theme,
     totalProducts,
     featured,
     categoryById,

@@ -64,23 +64,23 @@ function print() {
 </script>
 
 <template>
-  <article class="flex flex-col rounded-2xl bg-white p-4 text-center shadow-sm ring-1 ring-black/5">
+  <article class="flex flex-col card p-4">
     <div class="flex items-center justify-between">
-      <h3 class="font-bold text-stone-900">{{ table.name }}</h3>
+      <h3 class="font-bold text-ink-900">{{ table.name }}</h3>
       <span
         class="rounded-full px-2 py-0.5 text-xs font-medium"
-        :class="table.status === 'occupied' ? 'bg-brand-100 text-brand-700' : 'bg-stone-100 text-stone-500'"
+        :class="table.status === 'occupied' ? 'bg-brand-100 text-brand-700' : 'bg-canvas text-ink-500'"
       >
         {{ table.status }}
       </span>
     </div>
 
-    <div class="mx-auto mt-3 grid aspect-square w-full max-w-[220px] place-items-center rounded-xl bg-stone-50 p-3">
+    <div class="mx-auto mt-3 grid aspect-square w-full max-w-[220px] place-items-center rounded-xl bg-canvas p-3">
       <img v-if="dataUrl" :src="dataUrl" :alt="`QR for ${table.name}`" class="h-full w-full object-contain" />
-      <span v-else class="text-xs text-stone-400">No QR</span>
+      <span v-else class="text-xs text-ink-400">No QR</span>
     </div>
 
-    <p class="mt-2 truncate text-xs text-stone-400" :title="orderUrl">{{ orderUrl }}</p>
+    <p class="mt-2 truncate text-xs text-ink-400" :title="orderUrl">{{ orderUrl }}</p>
 
     <div class="mt-3 flex items-center gap-2">
       <button
@@ -90,13 +90,13 @@ function print() {
         Print
       </button>
       <button
-        class="min-w-0 flex-1 truncate rounded-full border border-stone-200 px-2 py-1.5 text-xs font-semibold text-stone-600 transition hover:bg-stone-100"
+        class="min-w-0 flex-1 truncate rounded-full border border-hairline px-2 py-1.5 text-xs font-semibold text-ink-600 transition hover:bg-canvas"
         @click="download"
       >
         Download
       </button>
       <button
-        class="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-stone-200 text-stone-400 transition hover:bg-red-50 hover:text-red-500"
+        class="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-hairline text-ink-400 transition hover:bg-red-50 hover:text-red-500"
         title="Delete table"
         @click="emit('delete', table)"
       >

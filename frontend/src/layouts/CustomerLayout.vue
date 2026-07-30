@@ -13,13 +13,14 @@ import BillSheet from '@/components/order/BillSheet.vue'
 import { BellRing, ReceiptText, UtensilsCrossed, Check, Eye } from 'lucide-vue-next'
 import { callWaiter } from '@/services/orders'
 import { formatPrice } from '@/utils/format'
+import { themeVars, ensureThemeFonts } from '@/utils/menuTheme'
 
 const route = useRoute()
 const store = useMenuStore()
 const dining = useDiningStore()
 const cart = useCartStore()
 const auth = useAuthStore()
-const { restaurant, loading, error } = storeToRefs(store)
+const { restaurant, loading, error, theme } = storeToRefs(store)
 const {
   tableName,
   allowOrders,
@@ -32,6 +33,11 @@ const { count, total, currency } = storeToRefs(cart)
 
 const slug = computed(() => route.params.slug)
 const ready = computed(() => !!restaurant.value)
+
+// The restaurant's design, as CSS custom properties. Everything under
+// `.menu-theme` derives its palette from these — see assets/main.css.
+const themeStyle = computed(() => themeVars(theme.value))
+watch(theme, (value) => ensureThemeFonts(value), { immediate: true })
 
 const cartOpen = ref(false)
 const billOpen = ref(false)
@@ -96,11 +102,9 @@ function onPlaced(result) {
 </script>
 
 <template>
-  <div class="flex min-h-screen flex-col bg-stone-50 text-stone-800">
+  <div class="menu-theme menu-page flex min-h-screen flex-col" :style="themeStyle">
     <!-- Top bar -->
-    <header
-      class="sticky top-0 z-30 border-b border-stone-200/70 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/70"
-    >
+    <header class="m-bar sticky top-0 z-30 border-b backdrop-blur">
       <div class="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">
         <RouterLink
           :to="{ name: 'restaurant-home', params: { slug } }"
@@ -110,9 +114,9 @@ function onPlaced(result) {
             v-if="restaurant?.logo"
             :src="restaurant.logo"
             :alt="restaurant.name"
-            class="h-8 w-8 shrink-0 rounded-full object-cover ring-1 ring-stone-200"
+            class="m-card-border h-8 w-8 shrink-0 rounded-full object-cover ring-1"
           />
-          <span class="truncate text-base font-bold tracking-tight text-stone-900 sm:text-lg">
+          <span class="m-heading truncate text-base font-bold tracking-tight sm:text-lg">
             {{ restaurant?.name || 'Menu' }}
           </span>
         </RouterLink>
@@ -121,23 +125,23 @@ function onPlaced(result) {
           <nav class="flex items-center gap-1 text-sm font-medium">
             <RouterLink
               :to="{ name: 'restaurant-home', params: { slug } }"
-              class="hidden rounded-full px-2.5 py-1.5 text-stone-600 hover:bg-stone-100 sm:block sm:px-3"
-              active-class="!bg-brand-100 !text-brand-700"
-              exact-active-class="!bg-brand-100 !text-brand-700"
+              class="m-muted-card hidden rounded-full px-2.5 py-1.5 sm:block sm:px-3"
+              active-class="m-accent-soft"
+              exact-active-class="m-accent-soft"
             >
               Home
             </RouterLink>
             <RouterLink
               :to="{ name: 'restaurant-menu', params: { slug } }"
-              class="rounded-full px-2.5 py-1.5 text-stone-600 hover:bg-stone-100 sm:px-3"
-              active-class="!bg-brand-100 !text-brand-700"
+              class="m-muted-card rounded-full px-2.5 py-1.5 sm:px-3"
+              active-class="m-accent-soft"
             >
               Menu
             </RouterLink>
           </nav>
           <button
             v-if="canCallWaiter"
-            class="flex items-center gap-1 rounded-full border border-stone-200 px-2.5 py-1.5 text-xs font-semibold text-stone-600 transition hover:bg-stone-100 disabled:opacity-50"
+            class="m-btn-quiet flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold disabled:opacity-50"
             :disabled="waiterCalling"
             aria-label="Call waiter"
             @click="summonWaiter"
@@ -146,7 +150,7 @@ function onPlaced(result) {
           </button>
           <button
             v-if="diningActive"
-            class="flex items-center gap-1 rounded-full border border-stone-200 px-2.5 py-1.5 text-xs font-semibold text-stone-600 transition hover:bg-stone-100"
+            class="m-btn-quiet flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold"
             aria-label="Request bill"
             @click="billOpen = true"
           >
@@ -154,7 +158,7 @@ function onPlaced(result) {
           </button>
           <span
             v-if="tableName"
-            class="shrink-0 rounded-full bg-brand-100 px-2.5 py-1 text-xs font-semibold text-brand-700 sm:px-3"
+            class="m-accent-soft shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold sm:px-3"
           >
             {{ tableName }}
           </span>
@@ -180,9 +184,10 @@ function onPlaced(result) {
     <main class="flex-1" :class="{ 'pb-24': allowOrders && count > 0 }">
       <!-- Loading -->
       <div v-if="loading && !ready" class="flex h-[60vh] items-center justify-center">
-        <div class="flex flex-col items-center gap-3 text-stone-400">
+        <div class="m-muted flex flex-col items-center gap-3">
           <span
-            class="h-8 w-8 animate-spin rounded-full border-2 border-stone-200 border-t-brand-500"
+            class="m-border h-8 w-8 animate-spin rounded-full border-2"
+            style="border-top-color: var(--m-primary)"
           />
           <span class="text-sm">Loading menu…</span>
         </div>
@@ -190,13 +195,10 @@ function onPlaced(result) {
 
       <!-- Error -->
       <div v-else-if="error && !ready" class="mx-auto max-w-md px-4 py-24 text-center">
-        <UtensilsCrossed :size="44" class="mx-auto text-stone-300" />
-        <h2 class="mt-4 text-lg font-semibold text-stone-800">Menu unavailable</h2>
-        <p class="mt-1 text-sm text-stone-500">{{ error }}</p>
-        <button
-          class="mt-6 rounded-full bg-brand-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600"
-          @click="retry"
-        >
+        <UtensilsCrossed :size="44" class="m-faint mx-auto" />
+        <h2 class="m-heading mt-4 text-lg font-semibold">Menu unavailable</h2>
+        <p class="m-muted mt-1 text-sm">{{ error }}</p>
+        <button class="m-btn mt-6 px-5 py-2 text-sm font-semibold" @click="retry">
           Try again
         </button>
       </div>
@@ -205,27 +207,26 @@ function onPlaced(result) {
       <RouterView v-else />
     </main>
 
-    <footer v-if="ready" class="border-t border-stone-200 bg-white">
-      <div class="mx-auto max-w-3xl px-4 py-8 text-sm text-stone-500">
-        <p class="font-semibold text-stone-700">{{ restaurant.name }}</p>
+    <footer v-if="ready" class="m-panel m-card-border border-t">
+      <div class="m-muted-card mx-auto max-w-3xl px-4 py-8 text-sm">
+        <p class="m-heading font-semibold" style="color: var(--m-text-card)">
+          {{ restaurant.name }}
+        </p>
         <p v-if="restaurant.address" class="mt-1">
           {{ restaurant.address }}<span v-if="restaurant.city">, {{ restaurant.city }}</span>
         </p>
         <p v-if="restaurant.phone" class="mt-1">
-          <a :href="`tel:${restaurant.phone}`" class="hover:text-brand-600">{{ restaurant.phone }}</a>
+          <a :href="`tel:${restaurant.phone}`" class="hover:underline">{{ restaurant.phone }}</a>
         </p>
-        <p class="mt-4 text-xs text-stone-400">Powered by Restaurant Hub</p>
+        <p class="m-faint mt-4 text-xs">Powered by Restaurant Hub</p>
       </div>
     </footer>
 
     <!-- Floating cart bar -->
-    <div
-      v-if="allowOrders && count > 0"
-      class="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-white/95 backdrop-blur"
-    >
+    <div v-if="allowOrders && count > 0" class="m-bar fixed inset-x-0 bottom-0 z-40 border-t backdrop-blur">
       <div class="mx-auto max-w-3xl px-4 py-3">
         <button
-          class="flex w-full items-center justify-between rounded-full bg-brand-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600"
+          class="m-btn flex w-full items-center justify-between px-5 py-3 text-sm font-semibold shadow-sm"
           @click="cartOpen = true"
         >
           <span class="flex items-center gap-2">
@@ -260,23 +261,25 @@ function onPlaced(result) {
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6"
       @click.self="placedOrder = null"
     >
-      <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-xl">
-        <div class="mx-auto grid h-16 w-16 place-items-center rounded-full bg-brand-100 text-brand-600"><Check :size="32" :stroke-width="2.5" /></div>
-        <h2 class="mt-4 text-xl font-bold text-stone-900">Order sent!</h2>
-        <p class="mt-1 text-sm text-stone-500">
+      <div class="m-card w-full max-w-sm p-6 text-center shadow-xl">
+        <div class="m-accent-soft mx-auto grid h-16 w-16 place-items-center rounded-full">
+          <Check :size="32" :stroke-width="2.5" />
+        </div>
+        <h2 class="m-heading mt-4 text-xl font-bold">Order sent!</h2>
+        <p class="m-muted-card mt-1 text-sm">
           {{ tableName }} · your order is on its way to the kitchen.
         </p>
-        <div class="mt-4 rounded-xl bg-stone-50 p-3">
-          <p class="text-xs uppercase tracking-wide text-stone-400">Order number</p>
-          <p class="mt-1 text-lg font-bold text-stone-900">{{ placedOrder.order_number }}</p>
-          <p class="mt-1 text-sm text-stone-500">
-            Total <span class="font-semibold text-stone-800">{{ formatPrice(placedOrder.total, currency) }}</span>
+        <div class="m-elevated m-radius-sm mt-4 p-3">
+          <p class="m-faint text-xs uppercase tracking-wide">Order number</p>
+          <p class="m-heading mt-1 text-lg font-bold">{{ placedOrder.order_number }}</p>
+          <p class="m-muted-card mt-1 text-sm">
+            Total
+            <span class="font-semibold" style="color: var(--m-text-card)">
+              {{ formatPrice(placedOrder.total, currency) }}
+            </span>
           </p>
         </div>
-        <button
-          class="mt-5 w-full rounded-full bg-brand-500 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600"
-          @click="placedOrder = null"
-        >
+        <button class="m-btn mt-5 w-full py-2.5 text-sm font-semibold" @click="placedOrder = null">
           Order more
         </button>
       </div>
@@ -286,7 +289,8 @@ function onPlaced(result) {
     <Transition name="toast">
       <div
         v-if="toast"
-        class="fixed inset-x-0 bottom-24 z-50 mx-auto w-fit max-w-[90%] rounded-full bg-stone-900 px-5 py-3 text-center text-sm font-semibold text-white shadow-lg"
+        class="fixed inset-x-0 bottom-24 z-50 mx-auto w-fit max-w-[90%] rounded-full px-5 py-3 text-center text-sm font-semibold shadow-lg"
+        style="background-color: var(--m-text); color: var(--m-surface)"
       >
         {{ toast }}
       </div>

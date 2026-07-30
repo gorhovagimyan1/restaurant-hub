@@ -55,34 +55,34 @@ onMounted(load)
 <template>
   <div>
     <header class="mb-5">
-      <h1 class="text-2xl font-bold text-stone-900">Tables & QR codes</h1>
-      <p class="text-sm text-stone-500">
+      <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">Tables & QR codes</h1>
+      <p class="text-sm text-ink-500">
         Print a QR code for each table. Scanning it opens the menu and lets guests order.
       </p>
     </header>
 
     <!-- Add table -->
     <form
-      class="mb-6 flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5 sm:flex-row sm:flex-wrap sm:items-end"
+      class="mb-6 flex flex-col gap-3 card p-4 sm:flex-row sm:flex-wrap sm:items-end"
       @submit.prevent="add"
     >
       <div class="w-full sm:w-auto sm:flex-1">
-        <label class="block text-xs font-medium text-stone-500">Table name</label>
+        <label class="block text-xs font-medium text-ink-500">Table name</label>
         <input
           v-model="newName"
           type="text"
           placeholder="e.g. Table 9 / Patio 2"
-          class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 sm:w-64"
+          class="mt-1 w-full field sm:w-64"
         />
       </div>
       <div>
-        <label class="block text-xs font-medium text-stone-500">Seats</label>
+        <label class="block text-xs font-medium text-ink-500">Seats</label>
         <input
           v-model="newCapacity"
           type="number"
           min="1"
           max="50"
-          class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 sm:w-24"
+          class="mt-1 w-full field sm:w-24"
         />
       </div>
       <button
@@ -96,11 +96,11 @@ onMounted(load)
 
     <p v-if="error" class="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{{ error }}</p>
 
-    <div v-if="loading" class="py-16 text-center text-sm text-stone-400">Loading tables…</div>
+    <div v-if="loading" class="py-16 text-center text-sm text-ink-400">Loading tables…</div>
 
     <div
       v-else-if="tables.length === 0"
-      class="rounded-2xl border border-dashed border-stone-200 px-6 py-16 text-center text-sm text-stone-500"
+      class="rounded-2xl border border-dashed border-hairline px-6 py-16 text-center text-sm text-ink-500"
     >
       No tables yet — add your first one above.
     </div>

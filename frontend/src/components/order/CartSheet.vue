@@ -42,48 +42,48 @@ async function place() {
 
     <!-- Sheet -->
     <div
-      class="relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl sm:max-w-md sm:rounded-2xl"
+      class="relative flex max-h-[90vh] w-full flex-col overflow-hidden m-panel rounded-t-2xl shadow-xl sm:max-w-md sm:rounded-2xl"
     >
-      <header class="flex items-center justify-between border-b border-stone-200 px-5 py-3.5">
+      <header class="flex items-center justify-between m-card-border border-b px-5 py-3.5">
         <div>
-          <h2 class="font-bold text-stone-900">Your order</h2>
-          <p v-if="tableName" class="text-xs text-stone-500">{{ tableName }}</p>
+          <h2 class="m-heading font-bold">Your order</h2>
+          <p v-if="tableName" class="m-muted-card text-xs">{{ tableName }}</p>
         </div>
-        <button class="text-stone-400 hover:text-stone-600" aria-label="Close" @click="emit('close')"><X :size="20" /></button>
+        <button class="m-faint hover:opacity-70" aria-label="Close" @click="emit('close')"><X :size="20" /></button>
       </header>
 
       <div class="min-h-0 flex-1 overflow-y-auto px-5">
-        <p v-if="isEmpty" class="py-10 text-center text-sm text-stone-400">Your cart is empty.</p>
+        <p v-if="isEmpty" class="py-10 text-center m-faint text-sm">Your cart is empty.</p>
 
-        <ul v-else class="divide-y divide-stone-100">
+        <ul v-else class="m-divide">
           <li v-for="line in lines" :key="line.product.id" class="flex items-center gap-3 py-3">
             <AppImage
               :src="line.product.image"
               :alt="line.product.name"
-              class="h-12 w-12 shrink-0 rounded-lg object-cover"
+              class="h-12 w-12 shrink-0 m-radius-sm object-cover"
             />
             <div class="min-w-0 flex-1">
-              <p class="truncate text-sm font-semibold text-stone-800">{{ line.product.name }}</p>
-              <p class="text-xs text-stone-500">
+              <p class="truncate text-sm font-semibold">{{ line.product.name }}</p>
+              <p class="m-muted-card text-xs">
                 {{ formatPrice(line.product.price, currency) }}
               </p>
             </div>
-            <div class="flex items-center gap-2.5 rounded-full bg-stone-100 px-1.5 py-1">
+            <div class="flex items-center gap-2.5 rounded-full m-elevated m-muted-card px-1.5 py-1">
               <button
-                class="grid h-6 w-6 place-items-center rounded-full text-lg leading-none text-stone-600 hover:bg-stone-200"
+                class="grid h-6 w-6 place-items-center rounded-full text-lg leading-none"
                 @click="cart.decrement(line.product.id)"
               >
                 −
               </button>
               <span class="min-w-4 text-center text-sm font-bold tabular-nums">{{ line.quantity }}</span>
               <button
-                class="grid h-6 w-6 place-items-center rounded-full text-lg leading-none text-stone-600 hover:bg-stone-200"
+                class="grid h-6 w-6 place-items-center rounded-full text-lg leading-none"
                 @click="cart.add(line.product)"
               >
                 +
               </button>
             </div>
-            <span class="w-20 shrink-0 text-right text-sm font-bold text-stone-900">
+            <span class="w-20 shrink-0 text-right text-sm m-heading font-bold">
               {{ formatPrice(line.product.price * line.quantity, currency) }}
             </span>
           </li>
@@ -94,32 +94,32 @@ async function place() {
             v-model="customerName"
             type="text"
             placeholder="Your name (optional)"
-            class="w-full rounded-xl border border-stone-200 px-3.5 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+            class="w-full rounded-xl m-card-border m-elevated border px-3.5 py-2.5 text-sm outline-none focus:border-[var(--m-primary)]"
           />
           <textarea
             v-model="notes"
             rows="2"
             placeholder="Notes for the kitchen (optional)"
-            class="w-full resize-none rounded-xl border border-stone-200 px-3.5 py-2.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+            class="w-full resize-none rounded-xl m-card-border m-elevated border px-3.5 py-2.5 text-sm outline-none focus:border-[var(--m-primary)]"
           />
         </div>
       </div>
 
-      <footer v-if="!isEmpty" class="border-t border-stone-200 px-5 py-4">
+      <footer v-if="!isEmpty" class="m-card-border border-t px-5 py-4">
         <dl class="space-y-1 text-sm">
-          <div class="flex justify-between text-stone-500">
+          <div class="flex justify-between m-muted-card">
             <dt>Subtotal</dt>
             <dd>{{ formatPrice(subtotal, currency) }}</dd>
           </div>
-          <div v-if="serviceAmount > 0" class="flex justify-between text-stone-500">
+          <div v-if="serviceAmount > 0" class="flex justify-between m-muted-card">
             <dt>Service charge</dt>
             <dd>{{ formatPrice(serviceAmount, currency) }}</dd>
           </div>
-          <div v-if="taxAmount > 0" class="flex justify-between text-stone-500">
+          <div v-if="taxAmount > 0" class="flex justify-between m-muted-card">
             <dt>Tax</dt>
             <dd>{{ formatPrice(taxAmount, currency) }}</dd>
           </div>
-          <div class="flex justify-between pt-1 text-base font-bold text-stone-900">
+          <div class="flex justify-between pt-1 text-base m-heading font-bold">
             <dt>Total</dt>
             <dd>{{ formatPrice(total, currency) }}</dd>
           </div>
@@ -128,7 +128,7 @@ async function place() {
         <p v-if="error" class="mt-3 text-center text-sm text-red-500">{{ error }}</p>
 
         <button
-          class="mt-3 w-full rounded-full bg-brand-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-60"
+          class="mt-3 w-full m-btn py-3 text-sm font-semibold shadow-sm transition disabled:opacity-60"
           :disabled="submitting"
           @click="place"
         >

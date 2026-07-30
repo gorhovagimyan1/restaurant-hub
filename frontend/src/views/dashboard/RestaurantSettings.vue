@@ -307,78 +307,78 @@ async function saveSettings() {
 }
 
 const inputClass =
-  'mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100'
+  'mt-1 w-full field'
 </script>
 
 <template>
   <div>
     <header class="mb-5">
-      <h1 class="text-2xl font-bold text-stone-900">Settings</h1>
-      <p class="text-sm text-stone-500">Your restaurant's public profile and ordering options.</p>
+      <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">Settings</h1>
+      <p class="text-sm text-ink-500">Your restaurant's public profile and ordering options.</p>
     </header>
 
     <p v-if="loadError" class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
       {{ loadError }}
     </p>
-    <p v-if="loading" class="text-sm text-stone-400">Loading…</p>
+    <p v-if="loading" class="text-sm text-ink-400">Loading…</p>
 
     <div v-else class="space-y-6">
       <!-- Profile -->
-      <form class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5" @submit.prevent="saveProfile">
-        <h2 class="text-lg font-bold text-stone-900">Profile</h2>
-        <p class="mt-1 text-xs text-stone-400">
+      <form class="card p-6" @submit.prevent="saveProfile">
+        <h2 class="text-lg font-bold text-ink-900">Profile</h2>
+        <p class="mt-1 text-xs text-ink-400">
           Shown to customers. URL:
-          <span class="font-mono text-stone-500">/r/{{ slug }}</span>
+          <span class="font-mono text-ink-500">/r/{{ slug }}</span>
         </p>
 
         <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div class="sm:col-span-2">
-            <label class="block text-xs font-medium text-stone-500">Name</label>
+            <label class="block text-xs font-medium text-ink-500">Name</label>
             <input v-model="profile.name" type="text" :class="inputClass" />
             <p v-if="profileErrors.name" class="mt-1 text-xs text-red-600">{{ profileErrors.name[0] }}</p>
           </div>
           <div class="sm:col-span-2">
-            <label class="block text-xs font-medium text-stone-500">Description</label>
+            <label class="block text-xs font-medium text-ink-500">Description</label>
             <textarea v-model="profile.description" rows="3" :class="inputClass"></textarea>
             <p v-if="profileErrors.description" class="mt-1 text-xs text-red-600">
               {{ profileErrors.description[0] }}
             </p>
           </div>
           <div>
-            <label class="block text-xs font-medium text-stone-500">Phone</label>
+            <label class="block text-xs font-medium text-ink-500">Phone</label>
             <input v-model="profile.phone" type="text" :class="inputClass" />
             <p v-if="profileErrors.phone" class="mt-1 text-xs text-red-600">{{ profileErrors.phone[0] }}</p>
           </div>
           <div>
-            <label class="block text-xs font-medium text-stone-500">Email</label>
+            <label class="block text-xs font-medium text-ink-500">Email</label>
             <input v-model="profile.email" type="email" :class="inputClass" />
             <p v-if="profileErrors.email" class="mt-1 text-xs text-red-600">{{ profileErrors.email[0] }}</p>
           </div>
           <div class="sm:col-span-2">
-            <label class="block text-xs font-medium text-stone-500">Website</label>
+            <label class="block text-xs font-medium text-ink-500">Website</label>
             <input v-model="profile.website" type="url" placeholder="https://…" :class="inputClass" />
             <p v-if="profileErrors.website" class="mt-1 text-xs text-red-600">
               {{ profileErrors.website[0] }}
             </p>
           </div>
           <div class="sm:col-span-2">
-            <label class="block text-xs font-medium text-stone-500">Address</label>
+            <label class="block text-xs font-medium text-ink-500">Address</label>
             <input v-model="profile.address" type="text" :class="inputClass" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-stone-500">City</label>
+            <label class="block text-xs font-medium text-ink-500">City</label>
             <input v-model="profile.city" type="text" :class="inputClass" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-stone-500">Country</label>
+            <label class="block text-xs font-medium text-ink-500">Country</label>
             <input v-model="profile.country" type="text" :class="inputClass" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-stone-500">Postal code</label>
+            <label class="block text-xs font-medium text-ink-500">Postal code</label>
             <input v-model="profile.postal_code" type="text" :class="inputClass" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-stone-500">Currency</label>
+            <label class="block text-xs font-medium text-ink-500">Currency</label>
             <input
               v-model="profile.currency"
               type="text"
@@ -392,7 +392,7 @@ const inputClass =
             </p>
           </div>
           <div class="sm:col-span-2">
-            <label class="block text-xs font-medium text-stone-500">Timezone</label>
+            <label class="block text-xs font-medium text-ink-500">Timezone</label>
             <input v-model="profile.timezone" type="text" placeholder="Asia/Yerevan" :class="inputClass" />
             <p v-if="profileErrors.timezone" class="mt-1 text-xs text-red-600">
               {{ profileErrors.timezone[0] }}
@@ -415,19 +415,19 @@ const inputClass =
       <!-- Operational settings -->
       <form
         v-if="canSettings"
-        class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5"
+        class="card p-6"
         @submit.prevent="saveSettings"
       >
-        <h2 class="text-lg font-bold text-stone-900">Ordering &amp; service</h2>
-        <p class="mt-1 text-xs text-stone-400">Controls how guests order and what they can request.</p>
+        <h2 class="text-lg font-bold text-ink-900">Ordering &amp; service</h2>
+        <p class="mt-1 text-xs text-ink-400">Controls how guests order and what they can request.</p>
 
         <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
-            <label class="block text-xs font-medium text-stone-500">Default language</label>
+            <label class="block text-xs font-medium text-ink-500">Default language</label>
             <input v-model="settings.default_language" type="text" maxlength="5" :class="inputClass" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-stone-500">Tax %</label>
+            <label class="block text-xs font-medium text-ink-500">Tax %</label>
             <input
               v-model="settings.tax_percentage"
               type="number"
@@ -441,7 +441,7 @@ const inputClass =
             </p>
           </div>
           <div>
-            <label class="block text-xs font-medium text-stone-500">Service charge %</label>
+            <label class="block text-xs font-medium text-ink-500">Service charge %</label>
             <input
               v-model="settings.service_charge"
               type="number"
@@ -456,18 +456,18 @@ const inputClass =
           </div>
         </div>
 
-        <ul class="mt-5 divide-y divide-stone-100">
+        <ul class="mt-5 divide-y divide-hairline">
           <li v-for="t in TOGGLES" :key="t.key" class="flex items-center justify-between py-3">
             <div class="pr-4">
-              <p class="text-sm font-medium text-stone-800">{{ t.label }}</p>
-              <p class="text-xs text-stone-400">{{ t.hint }}</p>
+              <p class="text-sm font-medium text-ink-800">{{ t.label }}</p>
+              <p class="text-xs text-ink-400">{{ t.hint }}</p>
             </div>
             <button
               type="button"
               role="switch"
               :aria-checked="settings[t.key]"
               class="relative inline-flex h-6 w-11 shrink-0 rounded-full transition"
-              :class="settings[t.key] ? 'bg-brand-500' : 'bg-stone-300'"
+              :class="settings[t.key] ? 'bg-brand-500' : 'bg-hairline-strong'"
               @click="settings[t.key] = !settings[t.key]"
             >
               <span
@@ -491,20 +491,20 @@ const inputClass =
       </form>
 
       <!-- Business hours -->
-      <form class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5" @submit.prevent="saveHours">
-        <h2 class="text-lg font-bold text-stone-900">Opening hours</h2>
-        <p class="mt-1 text-xs text-stone-400">Shown to customers on your menu page.</p>
+      <form class="card p-6" @submit.prevent="saveHours">
+        <h2 class="text-lg font-bold text-ink-900">Opening hours</h2>
+        <p class="mt-1 text-xs text-ink-400">Shown to customers on your menu page.</p>
 
-        <ul class="mt-4 divide-y divide-stone-100">
+        <ul class="mt-4 divide-y divide-hairline">
           <li
             v-for="(day, i) in hours"
             :key="day.day_of_week"
             class="flex flex-wrap items-center gap-3 py-3"
           >
-            <span class="w-24 text-sm font-medium text-stone-800">{{ day.day_label }}</span>
+            <span class="w-24 text-sm font-medium text-ink-800">{{ day.day_label }}</span>
 
-            <label class="flex items-center gap-1.5 text-xs text-stone-500">
-              <input v-model="day.is_closed" type="checkbox" class="rounded border-stone-300" />
+            <label class="flex items-center gap-1.5 text-xs text-ink-500">
+              <input v-model="day.is_closed" type="checkbox" class="rounded border-hairline-strong" />
               Closed
             </label>
 
@@ -512,13 +512,13 @@ const inputClass =
               <input
                 v-model="day.open_time"
                 type="time"
-                class="rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+                class="field px-2.5 py-1.5"
               />
-              <span class="text-stone-400">–</span>
+              <span class="text-ink-400">–</span>
               <input
                 v-model="day.close_time"
                 type="time"
-                class="rounded-lg border border-stone-200 px-2.5 py-1.5 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+                class="field px-2.5 py-1.5"
               />
               <span
                 v-if="hoursError(i, 'open_time') || hoursError(i, 'close_time')"
@@ -527,7 +527,7 @@ const inputClass =
                 {{ hoursError(i, 'open_time') || hoursError(i, 'close_time') }}
               </span>
             </template>
-            <span v-else class="text-sm text-stone-400">Closed all day</span>
+            <span v-else class="text-sm text-ink-400">Closed all day</span>
           </li>
         </ul>
 
@@ -544,11 +544,11 @@ const inputClass =
       </form>
 
       <!-- Holidays / special days -->
-      <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
+      <section class="card p-6">
         <div class="flex items-start justify-between gap-3">
           <div>
-            <h2 class="text-lg font-bold text-stone-900">Holidays &amp; special days</h2>
-            <p class="mt-1 text-xs text-stone-400">
+            <h2 class="text-lg font-bold text-ink-900">Holidays &amp; special days</h2>
+            <p class="mt-1 text-xs text-ink-400">
               Override your weekly hours on specific dates. These win over the schedule above.
             </p>
           </div>
@@ -561,28 +561,28 @@ const inputClass =
           </button>
         </div>
 
-        <p v-if="!specialHours.length" class="mt-4 text-sm text-stone-400">
+        <p v-if="!specialHours.length" class="mt-4 text-sm text-ink-400">
           No special days set. Add one for a holiday or one-off closure.
         </p>
 
-        <ul v-else class="mt-4 divide-y divide-stone-100">
+        <ul v-else class="mt-4 divide-y divide-hairline">
           <li
             v-for="(day, i) in specialHours"
             :key="day.date"
             class="flex items-center gap-3 py-3"
           >
             <div class="min-w-0 flex-1">
-              <p class="truncate text-sm font-medium text-stone-800">
+              <p class="truncate text-sm font-medium text-ink-800">
                 {{ formatSpecialDate(day.date) }}
-                <span v-if="day.label" class="font-normal text-stone-400">· {{ day.label }}</span>
+                <span v-if="day.label" class="font-normal text-ink-400">· {{ day.label }}</span>
               </p>
-              <p class="text-xs" :class="day.is_closed ? 'text-red-500' : 'text-stone-500'">
+              <p class="text-xs" :class="day.is_closed ? 'text-red-500' : 'text-ink-500'">
                 {{ day.is_closed ? 'Closed all day' : `${day.open_time} – ${day.close_time}` }}
               </p>
             </div>
             <button
               type="button"
-              class="rounded-lg px-2 py-1 text-xs font-medium text-stone-500 hover:bg-stone-100"
+              class="rounded-lg px-2 py-1 text-xs font-medium text-ink-500 hover:bg-canvas"
               @click="openEditSpecial(i)"
             >
               Edit
@@ -609,50 +609,50 @@ const inputClass =
       @click.self="closeSpecialModal"
     >
       <div class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
-        <h3 class="text-lg font-bold text-stone-900">
+        <h3 class="text-lg font-bold text-ink-900">
           {{ editingIndex === null ? 'Add special day' : 'Edit special day' }}
         </h3>
 
         <div class="mt-4 space-y-4">
           <div>
-            <label class="block text-xs font-medium text-stone-500">Date</label>
+            <label class="block text-xs font-medium text-ink-500">Date</label>
             <input
               v-model="draft.date"
               type="date"
-              class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+              class="mt-1 w-full field"
             />
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-stone-500">Label (optional)</label>
+            <label class="block text-xs font-medium text-ink-500">Label (optional)</label>
             <input
               v-model="draft.label"
               type="text"
               placeholder="e.g. Christmas Day"
-              class="mt-1 w-full rounded-xl border border-stone-200 px-3.5 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+              class="mt-1 w-full field"
             />
           </div>
 
-          <label class="flex items-center gap-2 text-sm text-stone-600">
-            <input v-model="draft.is_closed" type="checkbox" class="rounded border-stone-300" />
+          <label class="flex items-center gap-2 text-sm text-ink-600">
+            <input v-model="draft.is_closed" type="checkbox" class="rounded border-hairline-strong" />
             Closed all day
           </label>
 
           <div v-if="!draft.is_closed" class="flex items-center gap-3">
             <div>
-              <label class="block text-xs font-medium text-stone-500">Opens</label>
+              <label class="block text-xs font-medium text-ink-500">Opens</label>
               <input
                 v-model="draft.open_time"
                 type="time"
-                class="mt-1 rounded-xl border border-stone-200 px-3 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+                class="mt-1 field"
               />
             </div>
             <div>
-              <label class="block text-xs font-medium text-stone-500">Closes</label>
+              <label class="block text-xs font-medium text-ink-500">Closes</label>
               <input
                 v-model="draft.close_time"
                 type="time"
-                class="mt-1 rounded-xl border border-stone-200 px-3 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+                class="mt-1 field"
               />
             </div>
           </div>
@@ -665,7 +665,7 @@ const inputClass =
         <div class="mt-6 flex justify-end gap-3">
           <button
             type="button"
-            class="rounded-xl px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100"
+            class="rounded-xl px-4 py-2 text-sm font-medium text-ink-600 hover:bg-canvas"
             @click="closeSpecialModal"
           >
             Cancel

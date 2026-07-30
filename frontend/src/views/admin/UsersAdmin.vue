@@ -83,11 +83,11 @@ onMounted(load)
   <div>
     <header class="mb-5 flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-2xl font-bold text-stone-900">Users</h1>
-        <p class="text-sm text-stone-500">Every account across the platform.</p>
+        <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">Users</h1>
+        <p class="text-sm text-ink-500">Every account across the platform.</p>
       </div>
       <button
-        class="flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-sm font-medium text-stone-600 transition hover:bg-stone-100 disabled:opacity-60"
+        class="flex items-center gap-2 rounded-xl border border-hairline bg-white px-3.5 py-2 text-sm font-medium text-ink-600 transition hover:bg-canvas disabled:opacity-60"
         :disabled="loading"
         @click="load"
       >
@@ -99,17 +99,17 @@ onMounted(load)
     <!-- Filters -->
     <div class="mb-4 flex flex-wrap items-center gap-3">
       <div class="relative flex-1 min-w-[200px]">
-        <Search :size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+        <Search :size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
         <input
           v-model="search"
           type="search"
           placeholder="Search by name or email…"
-          class="w-full rounded-xl border border-stone-200 bg-white py-2 pl-9 pr-3 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+          class="w-full field py-2 pl-9 pr-3"
         />
       </div>
       <select
         v-model="roleFilter"
-        class="rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+        class="field"
       >
         <option value="">All roles</option>
         <option v-for="r in roleOptions" :key="r.value" :value="r.value">{{ r.label }}</option>
@@ -117,18 +117,18 @@ onMounted(load)
     </div>
 
     <p v-if="error" class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{{ error }}</p>
-    <p v-if="loading && !users.length" class="text-sm text-stone-400">Loading…</p>
+    <p v-if="loading && !users.length" class="text-sm text-ink-400">Loading…</p>
     <p
       v-else-if="!users.length"
-      class="rounded-2xl bg-white p-8 text-center text-sm text-stone-400 ring-1 ring-black/5"
+      class="card p-8 text-center text-sm text-ink-400"
     >
       No users match your filters.
     </p>
 
-    <div v-else class="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
+    <div v-else class="overflow-hidden card">
       <div class="hidden overflow-x-auto sm:block">
         <table class="w-full text-left text-sm">
-          <thead class="border-b border-stone-100 text-xs uppercase tracking-wide text-stone-400">
+          <thead class="border-b border-hairline text-xs uppercase tracking-wide text-ink-400">
             <tr>
               <th class="px-4 py-3 font-medium">User</th>
               <th class="px-4 py-3 font-medium">Roles</th>
@@ -137,18 +137,18 @@ onMounted(load)
               <th class="px-4 py-3 font-medium text-right">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-stone-100">
+          <tbody class="divide-y divide-hairline">
             <tr v-for="u in users" :key="u.id" :class="busyId === u.id && 'opacity-50'">
               <td class="px-4 py-3">
-                <p class="font-medium text-stone-800">{{ u.full_name }}</p>
-                <p class="text-xs text-stone-400">{{ u.email }}</p>
+                <p class="font-medium text-ink-800">{{ u.full_name }}</p>
+                <p class="text-xs text-ink-400">{{ u.email }}</p>
               </td>
               <td class="px-4 py-3">
                 <select
                   v-if="!isSelf(u)"
                   :value="currentRole(u)"
                   :disabled="busyId === u.id"
-                  class="rounded-lg border border-stone-200 bg-white px-2 py-1 text-xs font-medium outline-none focus:border-brand-400"
+                  class="rounded-lg border border-hairline bg-white px-2 py-1 text-xs font-medium outline-none focus:border-brand-400"
                   @change="changeRole(u, $event.target.value)"
                 >
                   <option value="">No role</option>
@@ -162,16 +162,16 @@ onMounted(load)
                   >
                     {{ roleLabel(role) }}
                   </span>
-                  <span v-if="!u.roles?.length" class="text-xs text-stone-300">—</span>
+                  <span v-if="!u.roles?.length" class="text-xs text-ink-300">—</span>
                 </div>
               </td>
-              <td class="px-4 py-3 text-stone-600">
+              <td class="px-4 py-3 text-ink-600">
                 {{ u.restaurants?.map((r) => r.name).join(', ') || '—' }}
               </td>
               <td class="px-4 py-3">
                 <span
                   class="rounded-full px-2 py-0.5 text-xs font-medium"
-                  :class="u.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-200 text-stone-500'"
+                  :class="u.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-hairline text-ink-500'"
                 >
                   {{ u.is_active ? 'Active' : 'Inactive' }}
                 </span>
@@ -183,7 +183,7 @@ onMounted(load)
                     class="flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition disabled:opacity-50"
                     :class="
                       u.is_active
-                        ? 'border-stone-200 text-stone-600 hover:bg-stone-100'
+                        ? 'border-hairline text-ink-600 hover:bg-canvas'
                         : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
                     "
                     :disabled="busyId === u.id"
@@ -192,7 +192,7 @@ onMounted(load)
                     <Power :size="14" />
                     {{ u.is_active ? 'Deactivate' : 'Activate' }}
                   </button>
-                  <span v-else class="text-xs text-stone-300">You</span>
+                  <span v-else class="text-xs text-ink-300">You</span>
                 </div>
               </td>
             </tr>
@@ -201,12 +201,12 @@ onMounted(load)
       </div>
 
       <!-- Cards (mobile) -->
-      <ul class="divide-y divide-stone-100 sm:hidden">
+      <ul class="divide-y divide-hairline sm:hidden">
         <li v-for="u in users" :key="u.id" class="p-4" :class="busyId === u.id && 'opacity-50'">
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
-              <p class="truncate font-semibold text-stone-800">{{ u.full_name }}</p>
-              <p class="truncate text-xs text-stone-400">{{ u.email }}</p>
+              <p class="truncate font-semibold text-ink-800">{{ u.full_name }}</p>
+              <p class="truncate text-xs text-ink-400">{{ u.email }}</p>
               <div class="mt-1 flex flex-wrap gap-1">
                 <span
                   v-for="role in u.roles"
@@ -219,7 +219,7 @@ onMounted(load)
             </div>
             <span
               class="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
-              :class="u.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-200 text-stone-500'"
+              :class="u.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-hairline text-ink-500'"
             >
               {{ u.is_active ? 'Active' : 'Inactive' }}
             </span>
@@ -228,7 +228,7 @@ onMounted(load)
             <select
               :value="currentRole(u)"
               :disabled="busyId === u.id"
-              class="flex-1 rounded-lg border border-stone-200 bg-white px-2 py-1.5 text-xs font-medium outline-none focus:border-brand-400"
+              class="flex-1 rounded-lg border border-hairline bg-white px-2 py-1.5 text-xs font-medium outline-none focus:border-brand-400"
               @change="changeRole(u, $event.target.value)"
             >
               <option value="">No role</option>
@@ -238,7 +238,7 @@ onMounted(load)
               class="rounded-lg border px-3 py-1.5 text-xs font-medium transition disabled:opacity-50"
               :class="
                 u.is_active
-                  ? 'border-stone-200 text-stone-600 hover:bg-stone-100'
+                  ? 'border-hairline text-ink-600 hover:bg-canvas'
                   : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
               "
               :disabled="busyId === u.id"

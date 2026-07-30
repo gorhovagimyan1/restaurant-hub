@@ -85,11 +85,11 @@ onMounted(load)
   <div>
     <header class="mb-5 flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-2xl font-bold text-stone-900">Roles &amp; Permissions</h1>
-        <p class="text-sm text-stone-500">Choose which abilities each role grants.</p>
+        <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">Roles &amp; Permissions</h1>
+        <p class="text-sm text-ink-500">Choose which abilities each role grants.</p>
       </div>
       <button
-        class="flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-sm font-medium text-stone-600 transition hover:bg-stone-100 disabled:opacity-60"
+        class="flex items-center gap-2 rounded-xl border border-hairline bg-white px-3.5 py-2 text-sm font-medium text-ink-600 transition hover:bg-canvas disabled:opacity-60"
         :disabled="loading"
         @click="load"
       >
@@ -99,17 +99,17 @@ onMounted(load)
     </header>
 
     <p v-if="error" class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{{ error }}</p>
-    <p v-if="loading && !roles.length" class="text-sm text-stone-400">Loading…</p>
+    <p v-if="loading && !roles.length" class="text-sm text-ink-400">Loading…</p>
 
     <div
       v-else-if="roles.length"
-      class="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-black/5"
+      class="overflow-x-auto card"
     >
       <table class="w-full border-collapse text-sm">
         <thead>
-          <tr class="border-b border-stone-100">
+          <tr class="border-b border-hairline">
             <th class="sticky left-0 z-10 bg-white px-4 py-3 text-left align-bottom">
-              <span class="text-xs font-medium uppercase tracking-wide text-stone-400">Permission</span>
+              <span class="text-xs font-medium uppercase tracking-wide text-ink-400">Permission</span>
             </th>
             <th
               v-for="role in roles"
@@ -117,11 +117,11 @@ onMounted(load)
               class="min-w-[8.5rem] px-3 py-3 text-center align-bottom"
             >
               <div class="flex flex-col items-center gap-1">
-                <span class="flex items-center gap-1 font-semibold text-stone-800">
+                <span class="flex items-center gap-1 font-semibold text-ink-800">
                   {{ role.label }}
-                  <Lock v-if="role.is_locked" :size="12" class="text-stone-400" />
+                  <Lock v-if="role.is_locked" :size="12" class="text-ink-400" />
                 </span>
-                <span class="text-[11px] text-stone-400">
+                <span class="text-[11px] text-ink-400">
                   {{ role.users_count }} user{{ role.users_count === 1 ? '' : 's' }}
                 </span>
                 <div v-if="isDirty(role)" class="mt-1 flex items-center gap-1">
@@ -134,7 +134,7 @@ onMounted(load)
                     {{ savingId === role.id ? 'Saving…' : 'Save' }}
                   </button>
                   <button
-                    class="rounded-lg border border-stone-200 p-1 text-stone-400 transition hover:bg-stone-100"
+                    class="rounded-lg border border-hairline p-1 text-ink-400 transition hover:bg-canvas"
                     :disabled="savingId === role.id"
                     title="Discard changes"
                     @click="reset(role)"
@@ -148,10 +148,10 @@ onMounted(load)
         </thead>
         <tbody>
           <template v-for="group in groupedPermissions" :key="group.name">
-            <tr class="bg-stone-50/70">
+            <tr class="bg-canvas/70">
               <td
                 :colspan="roles.length + 1"
-                class="px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-stone-400"
+                class="px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-400"
               >
                 {{ group.name }}
               </td>
@@ -159,9 +159,9 @@ onMounted(load)
             <tr
               v-for="perm in group.items"
               :key="perm.value"
-              class="border-b border-stone-50 last:border-0 hover:bg-stone-50/50"
+              class="border-b border-stone-50 last:border-0 hover:bg-canvas/50"
             >
-              <td class="sticky left-0 z-10 bg-white px-4 py-2.5 text-stone-700">{{ perm.label }}</td>
+              <td class="sticky left-0 z-10 bg-white px-4 py-2.5 text-ink-700">{{ perm.label }}</td>
               <td v-for="role in roles" :key="role.id" class="px-3 py-2.5 text-center">
                 <button
                   type="button"
@@ -169,7 +169,7 @@ onMounted(load)
                   :class="[
                     has(role, perm.value)
                       ? 'border-brand-500 bg-brand-500 text-white'
-                      : 'border-stone-300 bg-white text-transparent',
+                      : 'border-hairline-strong bg-white text-transparent',
                     role.is_locked ? 'cursor-not-allowed opacity-70' : 'hover:border-brand-400',
                   ]"
                   :disabled="role.is_locked"
@@ -185,7 +185,7 @@ onMounted(load)
       </table>
     </div>
 
-    <p class="mt-3 text-xs text-stone-400">
+    <p class="mt-3 text-xs text-ink-400">
       The super-admin role always has full access and cannot be changed.
     </p>
   </div>

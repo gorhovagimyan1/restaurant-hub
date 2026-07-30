@@ -55,27 +55,27 @@ onMounted(load)
     <div class="absolute inset-0 bg-black/40" @click="emit('close')" />
 
     <div
-      class="relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl sm:max-w-md sm:rounded-2xl"
+      class="relative flex max-h-[90vh] w-full flex-col overflow-hidden m-panel rounded-t-2xl shadow-xl sm:max-w-md sm:rounded-2xl"
     >
-      <header class="flex items-center justify-between border-b border-stone-200 px-5 py-3.5">
+      <header class="flex items-center justify-between m-card-border border-b px-5 py-3.5">
         <div>
-          <h2 class="font-bold text-stone-900">Your bill</h2>
-          <p v-if="bill?.table" class="text-xs text-stone-500">{{ bill.table.name }}</p>
+          <h2 class="m-heading font-bold">Your bill</h2>
+          <p v-if="bill?.table" class="m-muted-card text-xs">{{ bill.table.name }}</p>
         </div>
-        <button class="text-stone-400 hover:text-stone-600" aria-label="Close" @click="emit('close')"><X :size="20" /></button>
+        <button class="m-faint hover:opacity-70" aria-label="Close" @click="emit('close')"><X :size="20" /></button>
       </header>
 
       <div class="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-        <p v-if="loading" class="py-8 text-center text-sm text-stone-400">Loading…</p>
+        <p v-if="loading" class="py-8 text-center m-faint text-sm">Loading…</p>
         <p v-else-if="error" class="py-8 text-center text-sm text-red-500">{{ error }}</p>
-        <p v-else-if="!bill.orders.length" class="py-8 text-center text-sm text-stone-400">
+        <p v-else-if="!bill.orders.length" class="py-8 text-center m-faint text-sm">
           You haven't ordered anything yet.
         </p>
 
         <div v-else class="space-y-4">
           <div v-for="order in bill.orders" :key="order.order_number">
             <div class="flex items-center justify-between">
-              <p class="text-xs font-semibold text-stone-400">{{ order.order_number }}</p>
+              <p class="m-faint text-xs font-semibold">{{ order.order_number }}</p>
               <span
                 class="rounded-full px-2 py-0.5 text-xs font-medium"
                 :class="statusMeta(order.status).badge"
@@ -87,43 +87,43 @@ onMounted(load)
               <li
                 v-for="(item, i) in order.items"
                 :key="i"
-                class="flex justify-between gap-2 text-stone-600"
+                class="m-muted-card flex justify-between gap-2"
               >
-                <span><span class="font-semibold text-stone-800">{{ item.quantity }}×</span> {{ item.product_name }}</span>
-                <span class="tabular-nums text-stone-500">{{ formatPrice(item.total_price, bill.currency) }}</span>
+                <span><span class="font-semibold">{{ item.quantity }}×</span> {{ item.product_name }}</span>
+                <span class="tabular-nums m-muted-card">{{ formatPrice(item.total_price, bill.currency) }}</span>
               </li>
             </ul>
           </div>
         </div>
       </div>
 
-      <footer v-if="bill && bill.orders.length" class="border-t border-stone-200 px-5 py-4">
+      <footer v-if="bill && bill.orders.length" class="m-card-border border-t px-5 py-4">
         <dl class="space-y-1 text-sm">
-          <div v-if="bill.service_charge > 0" class="flex justify-between text-stone-500">
+          <div v-if="bill.service_charge > 0" class="flex justify-between m-muted-card">
             <dt>Service charge</dt>
             <dd>{{ formatPrice(bill.service_charge, bill.currency) }}</dd>
           </div>
-          <div v-if="bill.tax > 0" class="flex justify-between text-stone-500">
+          <div v-if="bill.tax > 0" class="flex justify-between m-muted-card">
             <dt>Tax</dt>
             <dd>{{ formatPrice(bill.tax, bill.currency) }}</dd>
           </div>
-          <div class="flex justify-between pt-1 text-base font-bold text-stone-900">
+          <div class="flex justify-between pt-1 text-base m-heading font-bold">
             <dt>Total</dt>
             <dd>{{ formatPrice(bill.total, bill.currency) }}</dd>
           </div>
         </dl>
 
-        <p class="mt-2 text-center text-xs text-stone-400">Pay at the table when you're ready to leave.</p>
+        <p class="m-faint mt-2 text-center text-xs">Pay at the table when you're ready to leave.</p>
 
         <div
           v-if="requested"
-          class="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-brand-50 py-2.5 text-center text-sm font-semibold text-brand-600"
+          class="m-accent-soft mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full py-2.5 text-center text-sm font-semibold"
         >
           <Check :size="15" /> A waiter is on the way with your bill
         </div>
         <button
           v-else-if="canRequest"
-          class="mt-3 w-full rounded-full bg-brand-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-60"
+          class="mt-3 w-full m-btn py-3 text-sm font-semibold shadow-sm transition disabled:opacity-60"
           :disabled="requesting"
           @click="askForBill"
         >

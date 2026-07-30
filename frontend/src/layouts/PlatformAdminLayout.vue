@@ -32,7 +32,7 @@ const nav = [
 ]
 
 const linkClass =
-  'flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-stone-600 transition hover:bg-stone-100'
+  'flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-ink-600 transition hover:bg-canvas'
 const activeClass = 'bg-brand-50 text-brand-700 font-semibold ring-1 ring-brand-100'
 
 onMounted(async () => {
@@ -52,24 +52,24 @@ async function logout() {
 </script>
 
 <template>
-  <div class="flex min-h-screen bg-stone-50 text-stone-800">
+  <div class="flex min-h-screen bg-canvas text-ink-800">
     <!-- Mobile drawer backdrop -->
     <div v-if="navOpen" class="fixed inset-0 z-40 bg-black/40 sm:hidden" @click="navOpen = false"></div>
 
     <!-- Sidebar -->
     <aside
-      class="fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col border-r border-stone-200 bg-white transition-transform duration-200 sm:static sm:z-auto sm:translate-x-0"
+      class="fixed inset-y-0 left-0 z-50 flex w-64 shrink-0 flex-col border-r border-hairline bg-white transition-transform duration-200 sm:static sm:z-auto sm:translate-x-0"
       :class="navOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full'"
     >
-      <div class="flex items-center gap-3 border-b border-stone-200/70 px-5 py-4">
+      <div class="flex items-center gap-3 border-b border-hairline/70 px-5 py-4">
         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 text-white shadow-sm">
           <ShieldCheck :size="20" :stroke-width="2.25" />
         </span>
         <div class="min-w-0 flex-1">
           <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Platform</p>
-          <p class="truncate font-bold text-stone-900">Administration</p>
+          <p class="truncate font-bold text-ink-900">Administration</p>
         </div>
-        <button class="rounded-lg p-1 text-stone-400 hover:bg-stone-100 sm:hidden" @click="navOpen = false">
+        <button class="rounded-lg p-1 text-ink-400 hover:bg-canvas sm:hidden" @click="navOpen = false">
           <X :size="20" />
         </button>
       </div>
@@ -88,7 +88,7 @@ async function logout() {
         </RouterLink>
       </nav>
 
-      <div class="border-t border-stone-200/70 p-3">
+      <div class="border-t border-hairline/70 p-3">
         <RouterLink :to="{ name: 'profile' }" :class="linkClass">
           <CircleUserRound :size="18" class="shrink-0" />
           <span class="truncate">{{ user?.full_name || 'My Profile' }}</span>
@@ -102,12 +102,12 @@ async function logout() {
 
     <!-- Main -->
     <div class="flex min-w-0 flex-1 flex-col">
-      <header class="sticky top-0 z-30 flex items-center gap-3 border-b border-stone-200 bg-white/90 px-4 py-3 backdrop-blur sm:hidden">
-        <button class="rounded-lg p-1.5 text-stone-600 hover:bg-stone-100" aria-label="Open menu" @click="navOpen = true">
+      <header class="sticky top-0 z-30 flex items-center gap-3 border-b border-hairline bg-white/90 px-4 py-3 backdrop-blur sm:hidden">
+        <button class="rounded-lg p-1.5 text-ink-600 hover:bg-canvas" aria-label="Open menu" @click="navOpen = true">
           <MenuIcon :size="22" />
         </button>
         <span class="min-w-0 flex-1 truncate font-bold">Platform Admin</span>
-        <button class="flex items-center gap-1.5 text-sm text-stone-500" @click="logout">
+        <button class="flex items-center gap-1.5 text-sm text-ink-500" @click="logout">
           <LogOut :size="16" /> Sign out
         </button>
       </header>

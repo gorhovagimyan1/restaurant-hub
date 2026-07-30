@@ -7,14 +7,19 @@ import { useCartStore } from '@/stores/cart'
 import { X, Star } from 'lucide-vue-next'
 import AppImage from '@/components/ui/AppImage.vue'
 import { formatPrice } from '@/utils/format'
+import { themeVars } from '@/utils/menuTheme'
 
 const store = useMenuStore()
 const dining = useDiningStore()
 const cart = useCartStore()
-const { selectedProduct, currency } = storeToRefs(store)
+const { selectedProduct, currency, theme } = storeToRefs(store)
 const { allowOrders } = storeToRefs(dining)
 
 const open = computed(() => !!selectedProduct.value)
+
+// Teleported to <body>, so it sits outside the portal's themed root and has to
+// carry the restaurant's design variables itself.
+const themeStyle = computed(() => themeVars(theme.value))
 
 // Ordering is offered inside the modal only when seated via a scanned QR.
 const canOrder = computed(() => allowOrders.value && selectedProduct.value?.is_available)
@@ -52,11 +57,12 @@ onBeforeUnmount(() => {
     <Transition name="modal">
       <div
         v-if="open"
-        class="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4"
+        class="menu-theme fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4"
+        :style="themeStyle"
         @click.self="close"
       >
         <div
-          class="relative flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl"
+          class="m-panel relative flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl shadow-2xl sm:rounded-3xl"
         >
           <!-- Close -->
           <button
@@ -67,20 +73,27 @@ onBeforeUnmount(() => {
             <X :size="18" />
           </button>
 
-          <!-- Image -->
-          <div class="h-56 w-full shrink-0">
+          <!-- Image: contained over a blurred copy of itself, so the whole
+               dish is visible however the photo was shot. -->
+          <div v-if="theme.show_images" class="relative h-56 w-full shrink-0 overflow-hidden">
+            <AppImage
+              :src="selectedProduct.image"
+              alt=""
+              aria-hidden="true"
+              class="absolute inset-0 h-full w-full scale-125 object-cover blur-xl"
+            />
             <AppImage
               :src="selectedProduct.image"
               :alt="selectedProduct.name"
-              class="h-full w-full object-cover"
+              class="relative h-full w-full object-contain"
             />
           </div>
 
           <!-- Body -->
-          <div class="flex-1 overflow-y-auto p-5">
+          <div class="flex-1 overflow-y-auto p-5" :class="!theme.show_images && 'pt-12'">
             <div class="flex items-start justify-between gap-4">
-              <h2 class="text-xl font-bold text-stone-900">{{ selectedProduct.name }}</h2>
-              <span class="shrink-0 text-lg font-bold text-brand-600">
+              <h2 class="m-heading text-xl font-bold">{{ selectedProduct.name }}</h2>
+              <span class="m-accent shrink-0 text-lg font-bold">
                 {{ formatPrice(selectedProduct.price, currency) }}
               </span>
             </div>
@@ -88,11 +101,11 @@ onBeforeUnmount(() => {
             <div class="mt-2 flex flex-wrap items-center gap-2 text-xs">
               <span
                 v-if="selectedProduct.is_featured"
-                class="inline-flex items-center gap-1 rounded-full bg-brand-100 px-2 py-0.5 font-semibold text-brand-700"
+                class="m-accent-soft inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold"
               >
-                <Star :size="11" class="fill-brand-500 text-brand-500" /> Chef's pick
+                <Star :size="11" style="fill: currentColor" /> Chef's pick
               </span>
-              <span v-if="selectedProduct.preparation_time" class="text-stone-400">
+              <span v-if="selectedProduct.preparation_time" class="m-faint">
                 ⏱ {{ selectedProduct.preparation_time }} min
               </span>
               <span v-if="!selectedProduct.is_available" class="font-semibold text-red-500">
@@ -100,34 +113,34 @@ onBeforeUnmount(() => {
               </span>
             </div>
 
-            <p v-if="selectedProduct.description" class="mt-3 text-sm leading-relaxed text-stone-600">
+            <p v-if="selectedProduct.description" class="m-muted-card mt-3 text-sm leading-relaxed">
               {{ selectedProduct.description }}
             </p>
 
             <!-- Ingredients -->
             <div v-if="selectedProduct.ingredients?.length" class="mt-5">
-              <h3 class="text-sm font-semibold text-stone-800">Ingredients</h3>
+              <h3 class="m-heading text-sm font-semibold">Ingredients</h3>
               <div class="mt-2 flex flex-wrap gap-2">
                 <span
                   v-for="ingredient in selectedProduct.ingredients"
                   :key="ingredient"
-                  class="rounded-full bg-stone-100 px-3 py-1 text-sm text-stone-600"
+                  class="m-elevated m-muted-card rounded-full px-3 py-1 text-sm"
                 >
                   {{ ingredient }}
                 </span>
               </div>
             </div>
-            <p v-else class="mt-5 text-sm italic text-stone-400">
+            <p v-else class="m-faint mt-5 text-sm italic">
               No ingredient information available.
             </p>
           </div>
 
           <!-- Add to order -->
-          <footer v-if="canOrder" class="shrink-0 border-t border-stone-200 p-4">
+          <footer v-if="canOrder" class="m-card-border shrink-0 border-t p-4">
             <div v-if="quantity > 0" class="flex items-center gap-3">
-              <div class="flex items-center gap-3 rounded-full bg-stone-100 px-2 py-1.5">
+              <div class="m-elevated m-muted-card flex items-center gap-3 rounded-full px-2 py-1.5">
                 <button
-                  class="grid h-8 w-8 place-items-center rounded-full text-xl leading-none text-stone-600 hover:bg-stone-200"
+                  class="grid h-8 w-8 place-items-center rounded-full text-xl leading-none"
                   aria-label="Remove one"
                   @click="cart.decrement(selectedProduct.id)"
                 >
@@ -135,23 +148,20 @@ onBeforeUnmount(() => {
                 </button>
                 <span class="min-w-5 text-center font-bold tabular-nums">{{ quantity }}</span>
                 <button
-                  class="grid h-8 w-8 place-items-center rounded-full text-xl leading-none text-stone-600 hover:bg-stone-200"
+                  class="grid h-8 w-8 place-items-center rounded-full text-xl leading-none"
                   aria-label="Add one"
                   @click="cart.add(selectedProduct)"
                 >
                   +
                 </button>
               </div>
-              <button
-                class="flex-1 rounded-full bg-brand-500 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600"
-                @click="close"
-              >
+              <button class="m-btn flex-1 py-2.5 text-sm font-semibold" @click="close">
                 Done · {{ formatPrice(selectedProduct.price * quantity, currency) }}
               </button>
             </div>
             <button
               v-else
-              class="w-full rounded-full bg-brand-500 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600"
+              class="m-btn w-full py-3 text-sm font-semibold shadow-sm"
               @click="cart.add(selectedProduct)"
             >
               Add to order · {{ formatPrice(selectedProduct.price, currency) }}

@@ -78,11 +78,11 @@ onMounted(load)
   <div>
     <header class="mb-5 flex items-center justify-between">
       <div>
-        <h1 class="text-2xl font-bold text-stone-900">Platform Overview</h1>
-        <p class="text-sm text-stone-500">Every restaurant and user, at a glance.</p>
+        <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">Platform Overview</h1>
+        <p class="text-sm text-ink-500">Every restaurant and user, at a glance.</p>
       </div>
       <button
-        class="flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-sm font-medium text-stone-600 transition hover:bg-stone-100 disabled:opacity-60"
+        class="flex items-center gap-2 rounded-xl border border-hairline bg-white px-3.5 py-2 text-sm font-medium text-ink-600 transition hover:bg-canvas disabled:opacity-60"
         :disabled="loading"
         @click="load"
       >
@@ -92,7 +92,7 @@ onMounted(load)
     </header>
 
     <p v-if="error" class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{{ error }}</p>
-    <p v-if="loading && !data" class="text-sm text-stone-400">Loading…</p>
+    <p v-if="loading && !data" class="text-sm text-ink-400">Loading…</p>
 
     <div v-else-if="data" class="space-y-6">
       <!-- Stat tiles -->
@@ -105,7 +105,7 @@ onMounted(load)
           :class="[
             tile.featured
               ? 'bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 text-white'
-              : 'bg-white ring-1 ring-black/5 text-stone-900',
+              : 'bg-white ring-1 ring-hairline text-ink-900',
             tile.to ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md' : 'cursor-default',
           ]"
           @click="go(tile.to)"
@@ -113,7 +113,7 @@ onMounted(load)
           <div class="flex items-start justify-between">
             <p
               class="text-xs font-medium uppercase tracking-wide"
-              :class="tile.featured ? 'text-white/80' : 'text-stone-400'"
+              :class="tile.featured ? 'text-white/80' : 'text-ink-400'"
             >
               {{ tile.label }}
             </p>
@@ -125,33 +125,33 @@ onMounted(load)
             </span>
           </div>
           <p class="mt-2 text-3xl font-extrabold tracking-tight">{{ tile.value }}</p>
-          <p class="mt-1 text-xs" :class="tile.featured ? 'text-white/75' : 'text-stone-400'">
+          <p class="mt-1 text-xs" :class="tile.featured ? 'text-white/75' : 'text-ink-400'">
             {{ tile.hint }}
           </p>
         </button>
       </div>
 
       <!-- Recent restaurants -->
-      <section class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
+      <section class="card p-5">
         <div class="mb-3 flex items-center justify-between">
-          <h2 class="font-bold text-stone-900">Newest restaurants</h2>
+          <h2 class="font-bold text-ink-900">Newest restaurants</h2>
           <button class="text-xs text-brand-600 hover:underline" @click="go('admin-restaurants')">
             View all
           </button>
         </div>
 
-        <p v-if="!data.recent_restaurants.length" class="py-4 text-sm text-stone-400">
+        <p v-if="!data.recent_restaurants.length" class="py-4 text-sm text-ink-400">
           No restaurants yet.
         </p>
-        <ul v-else class="divide-y divide-stone-100">
+        <ul v-else class="divide-y divide-hairline">
           <li
             v-for="r in data.recent_restaurants"
             :key="r.id"
             class="flex items-center gap-3 py-2.5"
           >
             <div class="min-w-0 flex-1">
-              <p class="truncate text-sm font-medium text-stone-800">{{ r.name }}</p>
-              <p class="text-xs text-stone-400">
+              <p class="truncate text-sm font-medium text-ink-800">{{ r.name }}</p>
+              <p class="text-xs text-ink-400">
                 {{ r.users_count }} user{{ r.users_count === 1 ? '' : 's' }}
                 · {{ r.orders_count }} order{{ r.orders_count === 1 ? '' : 's' }}
                 · {{ timeAgo(r.created_at) }}
