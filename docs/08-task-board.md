@@ -1,6 +1,19 @@
 # Task Board
 
-Project Status: 🟢 Development Started
+Project Status: 🟢 Core flows complete — not yet deployable
+
+Every actor's main journey works end to end: a guest scans a table QR, orders,
+tracks the food, and asks for the bill; the kitchen and waiters work the order;
+owners run their menu, team, tables and design; super-admins manage the
+platform. 167 backend feature tests cover it.
+
+The gaps that matter most, in rough order:
+
+1. **Deployment** (Sprint 15) — no Docker, no CI, no frontend tests. Nothing
+   here is shippable yet, and the test suite doesn't run on push.
+2. **Reports** (Sprint 13) — one today-only overview; no sales history.
+3. **Payments** — pay-at-table only; no online payment of any kind.
+4. **Notifications** — no email, SMS or push anywhere in the product.
 
 ---
 
@@ -78,7 +91,7 @@ Project Status: 🟢 Development Started
 
 ## Layouts
 
-* [ ] Authentication Layout (login page exists; not a shared layout)
+* [ ] Authentication Layout (shared AuthShell covers login & register; forgot/reset still roll their own)
 * [x] Customer Layout
 * [x] Restaurant Dashboard Layout
 * [x] Kitchen Layout
@@ -134,6 +147,7 @@ Super-admin area at `/admin` (role-gated). Phase 1 shipped; later phases pending
 * [x] Owner self-registration (provisions restaurant + settings on sign-up)
 * [ ] Restaurant CRUD (platform-admin: manage all restaurants — Sprint 5)
 * [x] Restaurant Profile
+* [x] Logo & Cover Photo (upload/replace/remove from Menu Design)
 * [x] Restaurant Settings
 * [x] Business Hours
 * [x] Employee Management
@@ -164,6 +178,9 @@ Super-admin area at `/admin` (role-gated). Phase 1 shipped; later phases pending
 * [x] Ingredients
 * [ ] Allergens
 * [ ] Product Search
+* [x] Menu Design (per-restaurant theme: presets, colours, fonts, radius,
+  list/grid layout, header style — stored on restaurant_settings and applied
+  to the customer portal via CSS variables)
 
 ---
 
@@ -180,7 +197,8 @@ Super-admin area at `/admin` (role-gated). Phase 1 shipped; later phases pending
 * [x] Checkout
 * [x] Place Order
 * [x] Order Confirmation
-* [ ] Live Order Status (no customer-side polling yet)
+* [x] Live Order Status (four-step timeline + per-item progress; polls while
+  the tab is visible and stops once nothing can change)
 * [x] Call Waiter
 * [x] Request Bill
 
@@ -238,13 +256,17 @@ Dedicated `/kitchen` route + KitchenLayout with live polling and per-item advanc
 
 ---
 
-# Sprint 14 - Settings
+# Sprint 14 - Settings 🟡
 
-* [ ] Restaurant Settings
-* [ ] User Settings
-* [ ] Notification Settings
-* [ ] Language Settings
-* [ ] Theme Settings
+Largely absorbed by earlier sprints; only the last three are still open.
+
+* [x] Restaurant Settings (Sprint 6 — profile, ordering & service toggles)
+* [x] User Settings (Sprint 4 — profile & change password)
+* [ ] Notification Settings (nothing to configure until notifications exist)
+* [ ] Language Settings (`default_language` is stored but nothing reads it —
+  the UI is English-only, no i18n layer)
+* [x] Theme Settings (customer menu — see Menu Design in Sprint 8; the
+  dashboard itself has no user-facing theme switch)
 
 ---
 
@@ -253,7 +275,8 @@ Dedicated `/kitchen` route + KitchenLayout with live polling and per-item advanc
 ## Testing
 
 * [ ] Unit Tests (backend Unit suite is placeholder only)
-* [x] Feature Tests (auth, dashboard, dining, order transitions — ~12 files)
+* [x] Feature Tests (18 files, 167 tests — auth, dashboard, admin, dining,
+  order transitions, menu theme, image uploads, customer order tracking)
 * [x] API Tests (covered by the Laravel feature suite)
 * [ ] Browser Tests
 * [ ] Frontend Tests (none yet)
