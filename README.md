@@ -1,5 +1,7 @@
 # Restaurant Hub
 
+[![CI](https://github.com/gorhovagimyan1/restaurant-hub/actions/workflows/ci.yml/badge.svg)](https://github.com/gorhovagimyan1/restaurant-hub/actions/workflows/ci.yml)
+
 Restaurant Hub is a multi-tenant SaaS platform that enables restaurants to accept customer orders through QR codes.
 
 Customers scan a QR code at their table, browse the menu, place orders, and track their order status in real time.
@@ -80,6 +82,18 @@ php artisan test
 ```bash
 DB_CONNECTION=mysql DB_DATABASE=restaurant_hub_test php artisan test
 ```
+
+Frontend checks:
+
+```bash
+cd frontend
+npm run lint:ci   # report-only; `npm run lint` auto-fixes instead
+npm run build
+```
+
+CI runs all of the above on every push to `main` and on every pull request —
+the backend suite against MySQL on PHP 8.2 and 8.3, plus frontend lint and
+build. See [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
 ## Documentation
 

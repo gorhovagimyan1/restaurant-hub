@@ -53,7 +53,11 @@ watch(page, load)
 
 function toggle(id) {
   const set = new Set(expanded.value)
-  set.has(id) ? set.delete(id) : set.add(id)
+  if (set.has(id)) {
+    set.delete(id)
+  } else {
+    set.add(id)
+  }
   expanded.value = set
 }
 

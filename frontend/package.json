@@ -9,14 +9,14 @@
     "preview": "vite preview",
     "lint": "run-s \"lint:*\"",
     "lint:oxlint": "oxlint . --fix",
-    "lint:eslint": "eslint . --fix --cache"
+    "lint:eslint": "eslint . --fix --cache",
+    "//lint:ci": "Report-only: `lint` auto-fixes, which must never happen in CI.",
+    "lint:ci": "oxlint . && eslint ."
   },
   "dependencies": {
-    "@primeuix/themes": "^2.0.3",
     "axios": "^1.18.1",
     "lucide-vue-next": "^1.0.0",
     "pinia": "^3.0.4",
-    "primevue": "^4.5.5",
     "qrcode": "^1.5.4",
     "vue": "^3.5.38",
     "vue-router": "^5.1.0"

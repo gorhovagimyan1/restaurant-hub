@@ -9,8 +9,8 @@ platform. 167 backend feature tests cover it.
 
 The gaps that matter most, in rough order:
 
-1. **Deployment** (Sprint 15) — no Docker, no CI, no frontend tests. Nothing
-   here is shippable yet, and the test suite doesn't run on push.
+1. **Deployment** (Sprint 15) — CI now runs the suite on every push, but there
+   is still no Docker image, no deploy pipeline and no frontend tests.
 2. **Reports** (Sprint 13) — one today-only overview; no sales history.
 3. **Payments** — pay-at-table only; no online payment of any kind.
 4. **Notifications** — no email, SMS or push anywhere in the product.
@@ -284,7 +284,9 @@ Largely absorbed by earlier sprints; only the last three are still open.
 ## Deployment
 
 * [ ] Docker
-* [ ] CI/CD
+* [x] CI (GitHub Actions: backend suite on MySQL across PHP 8.2/8.3, plus
+  frontend lint & build, on every push to main and every PR)
+* [ ] CD (nothing deploys anywhere yet)
 * [ ] Production Deployment
 * [ ] Monitoring
 * [ ] Logging
