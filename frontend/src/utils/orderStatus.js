@@ -43,6 +43,50 @@ export function isOpen(status) {
   return OPEN_STATUSES.includes(status)
 }
 
+/* ---- Customer-facing progress ---- */
+
+/**
+ * The four steps a guest is shown. Staff have finer states (accepted vs
+ * preparing); to someone waiting for food those are both "being cooked", so
+ * they collapse into one step rather than a timeline that barely moves.
+ */
+export const CUSTOMER_STEPS = [
+  { key: 'sent', label: 'Sent' },
+  { key: 'cooking', label: 'Cooking' },
+  { key: 'ready', label: 'Ready' },
+  { key: 'served', label: 'Served' },
+]
+
+const STEP_INDEX = {
+  pending: 0,
+  accepted: 1,
+  preparing: 1,
+  ready: 2,
+  served: 3,
+  completed: 3,
+}
+
+/** How far along the timeline an order is, or -1 when cancelled. */
+export function progressIndex(status) {
+  if (status === 'cancelled') return -1
+  return STEP_INDEX[status] ?? 0
+}
+
+// What the guest is told, in plain language rather than workflow jargon.
+const CUSTOMER_LINE = {
+  pending: 'Sent to the kitchen',
+  accepted: 'The kitchen has your order',
+  preparing: 'Being cooked now',
+  ready: 'Ready — on its way over',
+  served: 'Delivered to your table',
+  completed: 'Completed',
+  cancelled: 'This order was cancelled',
+}
+
+export function customerLine(status) {
+  return CUSTOMER_LINE[status] || CUSTOMER_LINE.pending
+}
+
 /* ---- Per-item status (kitchen cooks & waiter delivers each dish) ---- */
 
 export const ITEM_STATUS = {

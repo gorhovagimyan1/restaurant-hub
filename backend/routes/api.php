@@ -40,6 +40,9 @@ Route::prefix('public')->group(function () {
     Route::post('tables/{tableQrCode}/session', [PublicTableController::class, 'openSession']);
     Route::post('tables/{tableQrCode}/orders', [PublicOrderController::class, 'store']);
 
+    // Live progress of the guest's own orders (polled by the tracking screen).
+    Route::get('tables/{tableQrCode}/orders', [PublicTableController::class, 'orders']);
+
     // The table's running bill (all orders this visit) + "request bill" signal.
     Route::get('tables/{tableQrCode}/bill', [PublicTableController::class, 'bill']);
     Route::post('tables/{tableQrCode}/bill/request', [PublicTableController::class, 'requestBill']);

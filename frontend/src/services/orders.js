@@ -39,6 +39,17 @@ export async function fetchBill(token, sessionToken) {
 }
 
 /**
+ * Live progress of the guest's own orders this visit. Polled by the tracking
+ * screen; the payload's `has_active` says whether anything can still change.
+ */
+export async function fetchOrderProgress(token, sessionToken) {
+  const { data } = await http.get(`/public/tables/${token}/orders`, {
+    params: { session_token: sessionToken },
+  })
+  return data.data
+}
+
+/**
  * Signal staff that the guest is ready to pay and leave.
  */
 export async function requestBill(token, sessionToken) {
