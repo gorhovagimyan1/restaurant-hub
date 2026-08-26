@@ -1,8 +1,9 @@
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import { useDashboardStore } from '@/stores/dashboard'
+import BillingPanel from '@/components/dashboard/BillingPanel.vue'
 import {
   getRestaurant,
   updateRestaurant,
@@ -18,7 +19,10 @@ const auth = useAuthStore()
 const dashboard = useDashboardStore()
 const { restaurant } = storeToRefs(dashboard)
 
-const canSettings = auth.can('settings.manage')
+// Computed, not a one-off read: landing here directly (a refresh, or a
+// bookmarked link) sets this component up before the user has been fetched,
+// and a plain const would stay false for ever and hide the panels below.
+const canSettings = computed(() => auth.can('settings.manage'))
 
 const loading = ref(true)
 const loadError = ref(null)
@@ -198,7 +202,7 @@ onMounted(async () => {
     fillProfile(await getRestaurant())
     hours.value = await getBusinessHours()
     specialHours.value = await getSpecialHours()
-    if (canSettings) fillSettings(await getSettings())
+    if (canSettings.value) fillSettings(await getSettings())
   } catch (err) {
     loadError.value = err?.response?.data?.message || 'Could not load settings.'
   } finally {
@@ -323,6 +327,9 @@ const inputClass =
     <p v-if="loading" class="text-sm text-ink-400">Loading…</p>
 
     <div v-else class="space-y-6">
+      <!-- Billing -->
+      <BillingPanel v-if="canSettings" />
+
       <!-- Profile -->
       <form class="card p-6" @submit.prevent="saveProfile">
         <h2 class="text-lg font-bold text-ink-900">Profile</h2>

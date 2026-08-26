@@ -52,6 +52,14 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      // Standalone by design: a locked-out owner must not be shown a dashboard
+      // shell whose every link answers 402.
+      path: '/checkout',
+      name: 'checkout',
+      component: () => import('@/views/dashboard/CheckoutView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/dashboard',
       component: DashboardLayout,
       meta: { requiresAuth: true },

@@ -12,7 +12,8 @@ The gaps that matter most, in rough order:
 1. **Deployment** (Sprint 15) — CI now runs the suite on every push, but there
    is still no Docker image, no deploy pipeline and no frontend tests.
 2. **Reports** (Sprint 13) — one today-only overview; no sales history.
-3. **Payments** — pay-at-table only; no online payment of any kind.
+3. **Payments** — subscriptions are billed by arrangement and confirmed by
+   hand (Sprint 16); no gateway is wired up, and diners still pay at the table.
 4. **Notifications** — no email, SMS or push anywhere in the product.
 
 ---
@@ -294,13 +295,45 @@ Largely absorbed by earlier sprints; only the last three are still open.
 
 ---
 
+# Sprint 16 - Subscriptions & Billing 🟡
+
+Restaurants pay to use the platform. Owners get a free trial on registration,
+then choose monthly or yearly. The dashboard is gated on an active
+subscription; the customer menu deliberately is not, so a billing lapse never
+stops a diner mid-meal.
+
+* [x] Plans (monthly + yearly pricing, feature list, seedable)
+* [x] Subscriptions (trial / active / cancelled / expired, period tracking)
+* [x] Free trial on registration (14 days, `billing.trial_days`)
+* [x] Checkout screen (interval toggle, savings, plan selection)
+* [x] Access gating (402 on dashboard routes; public menu untouched)
+* [x] Trial countdown banner
+* [x] Billing panel in settings (plan, renewal date, cancel)
+* [x] Payment records & billing history
+* [x] Manual payment confirmation (super-admin)
+* [x] Provider-agnostic gateway interface
+* [ ] Real payment provider (see Payments below — needs a provider decision)
+* [ ] Dunning / retry on failed payment
+* [ ] Invoices & receipts
+* [ ] Admin UI for the pending-payment queue (API exists; no screen yet)
+
+---
+
 # Future Features
 
 ## Payments
 
-* [ ] Stripe
+Money is currently taken out of band and confirmed by a super-admin. Swapping
+in a provider means implementing `App\Services\Billing\PaymentGateway` and
+changing `billing.gateway` — nothing else moves.
+
+Note: Stripe does not support businesses based in Armenia, so it is only an
+option via an entity registered elsewhere.
+
+* [ ] Paddle / Lemon Squeezy (merchant of record; supports Armenian sellers)
+* [ ] Local Payment Gateway (Ameriabank / Arca / Idram — charges in AMD)
+* [ ] Stripe (requires a non-Armenian entity)
 * [ ] PayPal
-* [ ] Local Payment Gateway
 
 ## Reservations
 

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Admin\PlatformOverviewController;
 use App\Http\Controllers\Api\Admin\RestaurantController as AdminRestaurantController;
 use App\Http\Controllers\Api\Admin\RoleController as AdminRoleController;
+use App\Http\Controllers\Api\Admin\SubscriptionAdminController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\PasswordResetController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\Api\Dashboard\ProductImageController;
 use App\Http\Controllers\Api\Dashboard\RestaurantImageController;
 use App\Http\Controllers\Api\Dashboard\SettingsController;
 use App\Http\Controllers\Api\Dashboard\SpecialHoursController;
+use App\Http\Controllers\Api\Dashboard\SubscriptionController;
 use App\Http\Controllers\Api\Dashboard\TableController;
 use App\Http\Controllers\Api\Public\MenuController;
 use App\Http\Controllers\Api\Public\OrderController as PublicOrderController;
@@ -75,8 +77,25 @@ Route::prefix('auth')->group(function () {
  * user's own restaurant.
  */
 Route::prefix('dashboard')->middleware('auth:sanctum')->group(function () {
-    Route::get('restaurant', [DashboardController::class, 'restaurant']);
+    /*
+     * Billing sits OUTSIDE the `subscribed` gate below — an owner whose trial
+     * has run out must still be able to see the plans and pay for one.
+     */
+    Route::get('subscription', [SubscriptionController::class, 'show']);
+    Route::post('subscription/checkout', [SubscriptionController::class, 'checkout']);
+    Route::post('subscription/cancel', [SubscriptionController::class, 'cancel']);
 
+    // Identifies the tenant; the dashboard chrome needs it even while locked,
+    // and it exposes nothing an unpaid owner shouldn't see.
+    Route::get('restaurant', [DashboardController::class, 'restaurant']);
+});
+
+/*
+ * Everything a restaurant actually does day to day. Gated on an active trial
+ * or subscription: lapse, and these answer 402 while the public customer
+ * endpoints above keep serving diners.
+ */
+Route::prefix('dashboard')->middleware(['auth:sanctum', 'subscribed'])->group(function () {
     // At-a-glance overview (owners/managers with reporting access).
     Route::middleware('can:reports.view')->group(function () {
         Route::get('overview', [OverviewController::class, 'index']);
@@ -182,4 +201,8 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'super-admin'])->group(funct
     // Role & permission matrix.
     Route::get('roles', [AdminRoleController::class, 'index']);
     Route::patch('roles/{role}/permissions', [AdminRoleController::class, 'updatePermissions']);
+
+    // Billing: confirm payments that arrived out of band.
+    Route::get('subscription-payments', [SubscriptionAdminController::class, 'pending']);
+    Route::post('subscription-payments/{payment}/confirm', [SubscriptionAdminController::class, 'confirm']);
 });

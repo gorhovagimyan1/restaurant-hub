@@ -12,6 +12,7 @@ use App\Http\Resources\Dashboard\RestaurantResource;
 use App\Http\Resources\UserResource;
 use App\Models\Restaurant;
 use App\Models\User;
+use App\Services\Billing\SubscriptionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -53,6 +54,11 @@ class AuthController extends Controller
                 'is_active' => true,
                 'joined_at' => now(),
             ]);
+
+            // Full access from the first minute; they are asked to pay before
+            // the trial runs out. A restaurant will not buy before it has seen
+            // its own menu and QR codes working.
+            app(SubscriptionService::class)->startTrial($restaurant);
 
             return [$user, $restaurant];
         });

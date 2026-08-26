@@ -67,6 +67,16 @@ class Restaurant extends Model
     }
 
     /**
+     * This restaurant's access to the platform — trial or paid.
+     *
+     * @return HasOne<Subscription, $this>
+     */
+    public function subscription(): HasOne
+    {
+        return $this->hasOne(Subscription::class);
+    }
+
+    /**
      * The opening hours for this restaurant, one row per weekday.
      *
      * @return HasMany<BusinessHour, $this>

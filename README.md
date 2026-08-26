@@ -21,7 +21,10 @@ overrides, and a Menu Design screen for styling the customer menu (presets,
 colours, fonts, corner radius, list/grid layout, cover photo and logo).
 
 **For the platform** — a super-admin area covering every restaurant and user
-on the platform, plus an editable role/permission matrix.
+on the platform, an editable role/permission matrix, and subscription billing:
+restaurants get a free trial on sign-up, then pay monthly or yearly to keep
+dashboard access. Guests are never locked out — a billing lapse must not stop
+service at the table.
 
 ## Tech Stack
 
