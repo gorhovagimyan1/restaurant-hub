@@ -314,8 +314,9 @@ stops a diner mid-meal.
 * [x] Provider-agnostic gateway interface
 * [ ] Real payment provider (see Payments below — needs a provider decision)
 * [ ] Dunning / retry on failed payment
+* [x] Admin payment queue (confirm payments, outstanding total, stale-request
+  flag, recently-confirmed history, nav badge)
 * [ ] Invoices & receipts
-* [ ] Admin UI for the pending-payment queue (API exists; no screen yet)
 
 ---
 

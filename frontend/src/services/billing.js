@@ -29,7 +29,10 @@ export async function cancelSubscription() {
   return data.data
 }
 
-/** Super-admin: payments awaiting confirmation. */
+/**
+ * Super-admin: the billing work queue.
+ * Returns { pending, recently_confirmed }.
+ */
 export async function getPendingPayments() {
   const { data } = await http.get('/admin/subscription-payments')
   return data.data

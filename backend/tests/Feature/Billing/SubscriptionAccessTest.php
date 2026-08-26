@@ -371,6 +371,54 @@ class SubscriptionAccessTest extends TestCase
             ->assertStatus(422);
     }
 
+    public function test_the_admin_queue_lists_pending_then_confirmed_payments(): void
+    {
+        $this->subscribe([
+            'status' => SubscriptionStatus::Trialing,
+            'trial_ends_at' => now()->addDay(),
+        ]);
+
+        $this->actingAs($this->owner, 'sanctum')
+            ->postJson('/api/dashboard/subscription/checkout', [
+                'plan_id' => $this->plan->id,
+                'interval' => 'monthly',
+            ])->assertOk();
+
+        $admin = User::factory()->create(['first_name' => 'Super', 'last_name' => 'Admin']);
+        $admin->assignRole(Role::SuperAdmin->value);
+
+        $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/admin/subscription-payments')
+            ->assertOk()
+            ->assertJsonCount(1, 'data.pending')
+            ->assertJsonCount(0, 'data.recently_confirmed')
+            ->assertJsonPath('data.pending.0.restaurant.name', $this->restaurant->name)
+            ->assertJsonPath('data.pending.0.interval', 'monthly');
+
+        $payment = $this->restaurant->subscription->payments()->sole();
+
+        $this->actingAs($admin, 'sanctum')
+            ->postJson("/api/admin/subscription-payments/{$payment->id}/confirm")
+            ->assertOk();
+
+        // It moves out of the queue and into the confirmed list, so the admin
+        // can see the action landed rather than the row simply vanishing.
+        $this->actingAs($admin, 'sanctum')
+            ->getJson('/api/admin/subscription-payments')
+            ->assertOk()
+            ->assertJsonCount(0, 'data.pending')
+            ->assertJsonCount(1, 'data.recently_confirmed')
+            ->assertJsonPath('data.recently_confirmed.0.confirmed_by', 'Super Admin')
+            ->assertJsonPath('data.recently_confirmed.0.restaurant.name', $this->restaurant->name);
+    }
+
+    public function test_the_admin_queue_is_super_admin_only(): void
+    {
+        $this->actingAs($this->owner, 'sanctum')
+            ->getJson('/api/admin/subscription-payments')
+            ->assertForbidden();
+    }
+
     public function test_only_super_admins_can_confirm_payments(): void
     {
         $this->subscribe([

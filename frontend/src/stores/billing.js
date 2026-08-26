@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { getSubscription } from '@/services/billing'
+import { getSubscription, getPendingPayments } from '@/services/billing'
 
 /**
  * The restaurant's subscription state, shared by the countdown banner, the
@@ -51,11 +51,33 @@ export const useBillingStore = defineStore('billing', () => {
     }
   }
 
+  /*
+   * Platform-admin side: how many payments are awaiting confirmation.
+   *
+   * Kept here rather than in the admin layout so the nav badge and the queue
+   * screen share one number — confirming a payment has to clear the badge
+   * without a page change.
+   */
+  const pendingCount = ref(0)
+
+  function setPendingCount(value) {
+    pendingCount.value = value
+  }
+
+  async function refreshPendingCount() {
+    try {
+      pendingCount.value = (await getPendingPayments()).pending?.length || 0
+    } catch {
+      // Non-fatal: the badge is a convenience, not the source of truth.
+    }
+  }
+
   function reset() {
     subscription.value = null
     plans.value = []
     loaded.value = false
     error.value = null
+    pendingCount.value = 0
   }
 
   return {
@@ -71,6 +93,9 @@ export const useBillingStore = defineStore('billing', () => {
     showBanner,
     bannerUrgent,
     load,
+    pendingCount,
+    setPendingCount,
+    refreshPendingCount,
     reset,
   }
 })
