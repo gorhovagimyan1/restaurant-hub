@@ -29,7 +29,10 @@ async function submit() {
   generalError.value = null
   try {
     await auth.register({ ...form, phone: form.phone.trim() || null })
-    router.push(auth.homeRoute)
+    // Straight to pricing rather than the dashboard: a new owner should see
+    // what the product costs up front. They can still take the trial from
+    // there, so this informs rather than blocks.
+    router.push({ name: 'checkout', query: { welcome: '1' } })
   } catch (err) {
     errors.value = err?.response?.data?.errors || {}
     if (!Object.keys(errors.value).length) {

@@ -1,11 +1,12 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import {
   UtensilsCrossed,
   Check,
   ArrowLeft,
+  ArrowRight,
   LogOut,
   Clock,
   CircleAlert,
@@ -16,10 +17,15 @@ import { useBillingStore } from '@/stores/billing'
 import { startCheckout } from '@/services/billing'
 import { formatPrice } from '@/utils/format'
 
+const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const billing = useBillingStore()
 const { subscription, plans, loading, error } = storeToRefs(billing)
+
+// Arrived straight from registration: greet them rather than warn them, and
+// offer the trial as the way past this screen.
+const welcome = computed(() => route.query.welcome === '1' && !!subscription.value?.on_trial)
 
 const interval = ref('yearly')
 const submitting = ref(false)
@@ -152,8 +158,11 @@ onMounted(() => billing.load({ force: true }))
         <template v-else>
           <header class="mb-6">
             <h1 class="text-2xl font-semibold tracking-tight text-ink-900">
-              Choose your plan
+              {{ welcome ? 'Welcome to Restaurant Hub' : 'Choose your plan' }}
             </h1>
+            <p v-if="welcome" class="mt-1 text-sm text-ink-500">
+              Here's what it costs. You can start with a free trial and decide later.
+            </p>
             <p
               v-if="status"
               class="mt-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium"
@@ -244,10 +253,16 @@ onMounted(() => billing.load({ force: true }))
           <!-- Only offered while they still have access to go back to. -->
           <button
             v-if="subscription?.has_access"
-            class="mt-3 flex w-full items-center justify-center gap-1.5 text-sm text-ink-500 transition hover:text-ink-800"
+            class="mt-3 flex w-full items-center justify-center gap-1.5 text-sm font-medium text-ink-500 transition hover:text-ink-800"
             @click="router.push({ name: 'dashboard-overview' })"
           >
-            <ArrowLeft :size="15" /> Back to the dashboard
+            <template v-if="welcome">
+              Start my {{ subscription.days_remaining }}-day free trial
+              <ArrowRight :size="15" />
+            </template>
+            <template v-else>
+              <ArrowLeft :size="15" /> Back to the dashboard
+            </template>
           </button>
         </template>
       </template>
