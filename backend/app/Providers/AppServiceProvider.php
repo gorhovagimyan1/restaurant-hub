@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Enums\Role;
+use App\Exceptions\BillingUnavailable;
 use App\Services\Billing\ManualGateway;
 use App\Services\Billing\PaymentGateway;
 use App\Services\Billing\StripeGateway;
@@ -35,9 +36,7 @@ class AppServiceProvider extends ServiceProvider
             $factory = self::GATEWAYS[$name] ?? null;
 
             if ($factory === null) {
-                throw new \InvalidArgumentException(
-                    "Unknown billing gateway [{$name}]. Known: ".implode(', ', array_keys(self::GATEWAYS)).'.',
-                );
+                throw BillingUnavailable::unknownGateway($name, array_keys(self::GATEWAYS));
             }
 
             return $factory();
@@ -55,7 +54,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Failing here beats a confusing Stripe error on the first checkout.
         if ($secret === '') {
-            throw new \RuntimeException(
+            throw BillingUnavailable::missingConfiguration(
                 'BILLING_GATEWAY is "stripe" but STRIPE_SECRET is not set.',
             );
         }

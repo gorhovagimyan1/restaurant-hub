@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Dashboard;
 
+use App\Exceptions\BillingUnavailable;
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Concerns\ResolvesRestaurant;
 use App\Http\Controllers\Controller;
@@ -13,6 +14,7 @@ use App\Services\Billing\SubscriptionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Stripe\Exception\ApiErrorException;
 
 /**
  * The owner's own billing.
@@ -24,10 +26,20 @@ class SubscriptionController extends Controller
 {
     use ResolvesRestaurant;
 
-    public function __construct(
-        private readonly SubscriptionService $subscriptions,
-        private readonly PaymentGateway $gateway,
-    ) {}
+    public function __construct(private readonly SubscriptionService $subscriptions) {}
+
+    /**
+     * The configured gateway, resolved only when money is about to move.
+     *
+     * Deliberately not a constructor dependency: a half-finished gateway
+     * config (BILLING_GATEWAY set, keys not yet pasted in) would otherwise
+     * take the whole billing screen down with a 500, so an owner could not
+     * even see the plans. This way only paying reports the problem.
+     */
+    private function gateway(): PaymentGateway
+    {
+        return app(PaymentGateway::class);
+    }
 
     /**
      * Current billing state plus the plans on sale.
@@ -63,11 +75,20 @@ class SubscriptionController extends Controller
 
         $subscription = $this->subscriptions->forRestaurant($this->currentRestaurant($request));
 
-        $result = $this->gateway->checkout(
-            $subscription,
-            $plan,
-            $this->subscriptions->intervalFrom($data['interval']),
-        );
+        try {
+            $result = $this->gateway()->checkout(
+                $subscription,
+                $plan,
+                $this->subscriptions->intervalFrom($data['interval']),
+            );
+        } catch (BillingUnavailable|ApiErrorException $e) {
+            // Bad configuration or an unreachable provider is our problem, not
+            // the owner's — log it for us, and say something plain to them
+            // rather than leaking a stack trace onto the billing screen.
+            report($e);
+
+            abort(503, 'Payments are not available right now. Please try again shortly.');
+        }
 
         return ApiResponse::success(
             $result->toArray(),
