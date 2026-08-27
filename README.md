@@ -71,6 +71,35 @@ table QR creates: open **Tables & QR** in the dashboard and follow a table's
 QR link. Signed-in staff can also open `/r/<slug>` directly as a read-only
 preview.
 
+### Billing
+
+Restaurants get a free trial on sign-up (`BILLING_TRIAL_DAYS`, default 14),
+then pay monthly or yearly. `BILLING_GATEWAY` decides how:
+
+- **`manual`** (default) — the owner is shown payment instructions and a
+  super-admin confirms the transfer under **Admin → Payments**. Set
+  `BILLING_MANUAL_INSTRUCTIONS` to your bank details.
+- **`stripe`** — choosing a plan redirects to Stripe's hosted card page. Set
+  `STRIPE_SECRET` and `STRIPE_WEBHOOK_SECRET`, and register a webhook at
+  `POST /api/webhooks/stripe` for `checkout.session.completed` and
+  `checkout.session.expired`.
+
+Payment is recognised by webhook, not by the browser returning — someone who
+pays and closes the tab still gets their subscription, and nobody gets in by
+visiting the success URL by hand.
+
+To try Stripe locally with [test cards](https://docs.stripe.com/testing)
+(`4242 4242 4242 4242`):
+
+```bash
+stripe listen --forward-to localhost:8000/api/webhooks/stripe
+# paste the printed whsec_… into STRIPE_WEBHOOK_SECRET
+```
+
+Adding another provider means implementing `App\Services\Billing\PaymentGateway`
+and registering it in `AppServiceProvider::GATEWAYS` — no caller names a
+gateway directly.
+
 ### Tests
 
 ```bash

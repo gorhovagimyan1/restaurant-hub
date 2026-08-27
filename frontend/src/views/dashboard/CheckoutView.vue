@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import {
@@ -11,6 +11,7 @@ import {
   Clock,
   CircleAlert,
   BadgeCheck,
+  Loader2,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import { useBillingStore } from '@/stores/billing'
@@ -26,6 +27,27 @@ const { subscription, plans, loading, error, forbidden } = storeToRefs(billing)
 // Arrived straight from registration: greet them rather than warn them, and
 // offer the trial as the way past this screen.
 const welcome = computed(() => route.query.welcome === '1' && !!subscription.value?.on_trial)
+
+// Back from the provider's hosted card page.
+const returnedPaid = computed(() => route.query.paid === '1')
+const returnedCancelled = computed(() => route.query.cancelled === '1')
+
+// Payment is recognised by webhook, which can land a moment after the browser
+// returns. Poll briefly rather than claiming success the page cannot verify.
+const awaitingWebhook = ref(false)
+let pollTimer = null
+
+async function pollUntilActive(attempts = 10) {
+  awaitingWebhook.value = true
+  for (let i = 0; i < attempts; i++) {
+    await billing.load({ force: true })
+    if (subscription.value?.status === 'active') break
+    await new Promise((resolve) => {
+      pollTimer = setTimeout(resolve, 2000)
+    })
+  }
+  awaitingWebhook.value = false
+}
 
 const interval = ref('yearly')
 const submitting = ref(false)
@@ -102,7 +124,20 @@ async function signOut() {
   router.push({ name: 'login' })
 }
 
-onMounted(() => billing.load({ force: true }))
+onMounted(async () => {
+  await billing.load({ force: true })
+
+  if (returnedCancelled.value) {
+    checkoutError.value = 'Payment was cancelled — nothing has been charged.'
+  }
+
+  // Give the webhook a moment to land before showing the result.
+  if (returnedPaid.value && subscription.value?.status !== 'active') {
+    pollUntilActive()
+  }
+})
+
+onBeforeUnmount(() => clearTimeout(pollTimer))
 </script>
 
 <template>
@@ -157,8 +192,43 @@ onMounted(() => billing.load({ force: true }))
       </p>
 
       <template v-else>
-        <!-- Payment arranged: the plan picker has done its job -->
-        <section v-if="arranged" class="card p-8 text-center">
+        <!-- Just back from the card page and the payment has landed -->
+        <section
+          v-if="returnedPaid && subscription?.status === 'active'"
+          class="card p-8 text-center"
+        >
+          <div class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-brand-50 text-brand-600">
+            <Check :size="28" :stroke-width="2.5" />
+          </div>
+          <h1 class="mt-4 text-xl font-semibold tracking-tight text-ink-900">You're all set</h1>
+          <p class="mt-2 text-sm text-ink-600">
+            Payment received. Your subscription runs until
+            {{ new Date(subscription.current_period_end).toLocaleDateString() }}.
+          </p>
+          <button
+            class="btn-brand mt-6 rounded-xl px-5 py-2.5 text-sm font-semibold"
+            @click="router.push({ name: 'dashboard-overview' })"
+          >
+            Go to the dashboard
+          </button>
+        </section>
+
+        <!-- Paid, but the webhook hasn't reached us yet -->
+        <section v-else-if="returnedPaid || awaitingWebhook" class="card p-8 text-center">
+          <div class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-canvas text-ink-500">
+            <Loader2 :size="26" class="animate-spin" />
+          </div>
+          <h1 class="mt-4 text-xl font-semibold tracking-tight text-ink-900">
+            Confirming your payment
+          </h1>
+          <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink-600">
+            This usually takes a few seconds. You can safely leave this page —
+            your subscription activates as soon as the payment clears.
+          </p>
+        </section>
+
+        <!-- Payment arranged out of band: the plan picker has done its job -->
+        <section v-else-if="arranged" class="card p-8 text-center">
           <div class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-brand-50 text-brand-600">
             <Check :size="28" :stroke-width="2.5" />
           </div>

@@ -312,8 +312,11 @@ stops a diner mid-meal.
 * [x] Payment records & billing history
 * [x] Manual payment confirmation (super-admin)
 * [x] Provider-agnostic gateway interface
-* [ ] Real payment provider (see Payments below — needs a provider decision)
+* [x] Stripe card payments (hosted Checkout + signed webhook, idempotent and
+  replay-safe; needs STRIPE_SECRET / STRIPE_WEBHOOK_SECRET to go live)
 * [ ] Dunning / retry on failed payment
+* [ ] Auto-renew (each period is charged as a one-off today; the owner pays
+  again rather than being billed automatically)
 * [x] Admin payment queue (confirm payments, outstanding total, stale-request
   flag, recently-confirmed history, nav badge)
 * [ ] Invoices & receipts

@@ -26,6 +26,7 @@ use App\Http\Controllers\Api\Dashboard\TableController;
 use App\Http\Controllers\Api\Public\MenuController;
 use App\Http\Controllers\Api\Public\OrderController as PublicOrderController;
 use App\Http\Controllers\Api\Public\TableController as PublicTableController;
+use App\Http\Controllers\Api\Webhooks\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -52,6 +53,12 @@ Route::prefix('public')->group(function () {
     // Call a waiter over to the table.
     Route::post('tables/{tableQrCode}/call-waiter', [PublicTableController::class, 'callWaiter']);
 });
+
+/*
+ * Payment provider callbacks. No auth: the caller is Stripe, not a user — the
+ * request is trusted by verifying its signature instead.
+ */
+Route::post('webhooks/stripe', [StripeWebhookController::class, 'handle']);
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);

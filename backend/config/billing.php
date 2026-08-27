@@ -43,4 +43,33 @@ return [
 
     'manual_instructions' => env('BILLING_MANUAL_INSTRUCTIONS'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Stripe
+    |--------------------------------------------------------------------------
+    |
+    | Used when BILLING_GATEWAY=stripe. Card details are entered on Stripe's
+    | own hosted page, so nothing sensitive reaches this application.
+    |
+    | The webhook secret is what makes payment trustworthy: without it anyone
+    | who can POST to the endpoint could grant themselves a subscription. Get
+    | it from the Stripe dashboard when you add the endpoint
+    | (POST /api/webhooks/stripe) subscribed to `checkout.session.completed`
+    | and `checkout.session.expired`.
+    |
+    | Locally, `stripe listen --forward-to localhost:8000/api/webhooks/stripe`
+    | prints a secret to use instead.
+    |
+    */
+
+    'stripe' => [
+        'secret' => env('STRIPE_SECRET'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+
+        // Where Stripe returns the owner after the hosted page. Both point at
+        // the SPA's checkout screen, which reads the query flag.
+        'success_url' => env('STRIPE_SUCCESS_URL', env('APP_FRONTEND_URL', 'http://localhost:5173').'/checkout?paid=1'),
+        'cancel_url' => env('STRIPE_CANCEL_URL', env('APP_FRONTEND_URL', 'http://localhost:5173').'/checkout?cancelled=1'),
+    ],
+
 ];
