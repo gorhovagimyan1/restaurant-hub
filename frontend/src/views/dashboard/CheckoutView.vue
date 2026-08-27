@@ -21,7 +21,7 @@ const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const billing = useBillingStore()
-const { subscription, plans, loading, error } = storeToRefs(billing)
+const { subscription, plans, loading, error, forbidden } = storeToRefs(billing)
 
 // Arrived straight from registration: greet them rather than warn them, and
 // offer the trial as the way past this screen.
@@ -126,7 +126,32 @@ onMounted(() => billing.load({ force: true }))
         </button>
       </div>
 
-      <p v-if="loading && !plans.length" class="text-sm text-ink-400">Loading plans…</p>
+      <p v-if="loading && !plans.length && !forbidden" class="text-sm text-ink-400">
+        Loading plans…
+      </p>
+
+      <!--
+        Staff land here too when a lapsed subscription locks the dashboard, but
+        billing is the owner's to settle. Tell them what happened rather than
+        showing a pricing page they cannot act on.
+      -->
+      <section v-else-if="forbidden" class="card p-8 text-center">
+        <div class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-amber-50 text-amber-700">
+          <CircleAlert :size="28" />
+        </div>
+        <h1 class="mt-4 text-xl font-semibold tracking-tight text-ink-900">
+          This restaurant's subscription has ended
+        </h1>
+        <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink-600">
+          Ask the restaurant owner to renew it — they can do that from
+          Settings. Your customer menu and table QR codes keep working in the
+          meantime.
+        </p>
+        <button class="btn-ghost mt-6 rounded-xl px-4 py-2 text-sm font-medium" @click="signOut">
+          Sign out
+        </button>
+      </section>
+
       <p v-else-if="error" class="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
         {{ error }}
       </p>

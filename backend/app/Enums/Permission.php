@@ -19,6 +19,12 @@ enum Permission: string
     case ManageSettings = 'settings.manage';
 
     /**
+     * Plans, checkout and cancellation. Separate from settings.manage so an
+     * owner can delegate day-to-day admin without handing over the money.
+     */
+    case ManageBilling = 'billing.manage';
+
+    /**
      * @return array<int, string>
      */
     public static function values(): array
@@ -43,6 +49,7 @@ enum Permission: string
             self::UpdateOrderStatus => 'Update order status',
             self::ViewReports => 'View reports',
             self::ManageSettings => 'Manage settings',
+            self::ManageBilling => 'Manage billing & subscription',
         };
     }
 
@@ -57,6 +64,7 @@ enum Permission: string
             self::ManageTables => 'Tables',
             self::ManageOrders, self::ViewOrders, self::UpdateOrderStatus => 'Orders',
             self::ViewReports => 'Reports',
+            self::ManageBilling => 'Billing',
         };
     }
 

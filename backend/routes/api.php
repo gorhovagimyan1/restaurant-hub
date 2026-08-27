@@ -80,10 +80,15 @@ Route::prefix('dashboard')->middleware('auth:sanctum')->group(function () {
     /*
      * Billing sits OUTSIDE the `subscribed` gate below — an owner whose trial
      * has run out must still be able to see the plans and pay for one.
+     *
+     * It is gated on billing.manage instead: money is the owner's business,
+     * not something a waiter on shift should be able to cancel or commit to.
      */
-    Route::get('subscription', [SubscriptionController::class, 'show']);
-    Route::post('subscription/checkout', [SubscriptionController::class, 'checkout']);
-    Route::post('subscription/cancel', [SubscriptionController::class, 'cancel']);
+    Route::middleware('can:billing.manage')->group(function () {
+        Route::get('subscription', [SubscriptionController::class, 'show']);
+        Route::post('subscription/checkout', [SubscriptionController::class, 'checkout']);
+        Route::post('subscription/cancel', [SubscriptionController::class, 'cancel']);
+    });
 
     // Identifies the tenant; the dashboard chrome needs it even while locked,
     // and it exposes nothing an unpaid owner shouldn't see.

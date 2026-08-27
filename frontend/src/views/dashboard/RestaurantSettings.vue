@@ -23,6 +23,9 @@ const { restaurant } = storeToRefs(dashboard)
 // bookmarked link) sets this component up before the user has been fetched,
 // and a plain const would stay false for ever and hide the panels below.
 const canSettings = computed(() => auth.can('settings.manage'))
+// Billing is its own permission, so an owner can delegate settings without
+// handing over the money.
+const canBilling = computed(() => auth.can('billing.manage'))
 
 const loading = ref(true)
 const loadError = ref(null)
@@ -328,7 +331,7 @@ const inputClass =
 
     <div v-else class="space-y-6">
       <!-- Billing -->
-      <BillingPanel v-if="canSettings" />
+      <BillingPanel v-if="canBilling" />
 
       <!-- Profile -->
       <form class="card p-6" @submit.prevent="saveProfile">

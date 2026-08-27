@@ -371,6 +371,44 @@ class SubscriptionAccessTest extends TestCase
             ->assertStatus(422);
     }
 
+    public function test_staff_cannot_see_or_change_the_subscription(): void
+    {
+        $this->subscribe([
+            'plan_id' => $this->plan->id,
+            'interval' => 'monthly',
+            'status' => SubscriptionStatus::Active,
+            'current_period_end' => now()->addMonth(),
+        ]);
+
+        // Billing belongs to whoever owns the business, not to whoever is on
+        // shift. A waiter cancelling their employer's subscription, or a cook
+        // committing them to a yearly plan, must not be possible.
+        foreach ([Role::RestaurantManager, Role::Waiter, Role::KitchenStaff] as $role) {
+            $staff = $this->member($role);
+
+            $this->actingAs($staff, 'sanctum')
+                ->getJson('/api/dashboard/subscription')
+                ->assertForbidden();
+
+            $this->actingAs($staff, 'sanctum')
+                ->postJson('/api/dashboard/subscription/checkout', [
+                    'plan_id' => $this->plan->id,
+                    'interval' => 'yearly',
+                ])
+                ->assertForbidden();
+
+            $this->actingAs($staff, 'sanctum')
+                ->postJson('/api/dashboard/subscription/cancel')
+                ->assertForbidden();
+        }
+
+        // Untouched by all that.
+        $this->assertSame(
+            SubscriptionStatus::Active,
+            $this->restaurant->refresh()->subscription->status,
+        );
+    }
+
     public function test_the_admin_queue_lists_pending_then_confirmed_payments(): void
     {
         $this->subscribe([

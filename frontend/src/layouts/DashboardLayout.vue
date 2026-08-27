@@ -112,9 +112,11 @@ onMounted(async () => {
     }
   }
 
-  // Drives the countdown banner. Its endpoint is ungated, so this is safe even
-  // for a restaurant that has just lapsed.
-  billing.load()
+  // Drives the countdown banner. Only the owner can act on it, and only they
+  // may read it — asking as a waiter would just earn a 403.
+  if (auth.can('billing.manage')) {
+    billing.load()
+  }
 })
 
 async function logout() {

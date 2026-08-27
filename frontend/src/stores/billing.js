@@ -13,6 +13,8 @@ export const useBillingStore = defineStore('billing', () => {
   const loading = ref(false)
   const error = ref(null)
   const loaded = ref(false)
+  // Set when the signed-in user lacks billing.manage — staff, not the owner.
+  const forbidden = ref(false)
 
   const onTrial = computed(() => !!subscription.value?.on_trial)
   const hasAccess = computed(() => subscription.value?.has_access !== false)
@@ -43,9 +45,16 @@ export const useBillingStore = defineStore('billing', () => {
       plans.value = data.plans || []
       trialDays.value = data.trial_days ?? 14
       loaded.value = true
+      forbidden.value = false
     } catch (err) {
-      // A 402 here would be circular — this endpoint is deliberately ungated.
-      error.value = err?.response?.data?.message || 'Could not load your subscription.'
+      // Staff reach this endpoint when a lapsed subscription bounces them to
+      // checkout; they simply aren't the ones who can pay.
+      if (err?.response?.status === 403) {
+        forbidden.value = true
+      } else {
+        // A 402 here would be circular — this endpoint is deliberately ungated.
+        error.value = err?.response?.data?.message || 'Could not load your subscription.'
+      }
     } finally {
       loading.value = false
     }
@@ -87,6 +96,7 @@ export const useBillingStore = defineStore('billing', () => {
     loading,
     error,
     loaded,
+    forbidden,
     onTrial,
     hasAccess,
     daysRemaining,
