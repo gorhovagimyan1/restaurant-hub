@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\Dashboard\OverviewController;
 use App\Http\Controllers\Api\Dashboard\ProductController;
 use App\Http\Controllers\Api\Dashboard\ProductImageController;
 use App\Http\Controllers\Api\Dashboard\RestaurantImageController;
+use App\Http\Controllers\Api\Dashboard\SandboxPaymentController;
 use App\Http\Controllers\Api\Dashboard\SettingsController;
 use App\Http\Controllers\Api\Dashboard\SpecialHoursController;
 use App\Http\Controllers\Api\Dashboard\SubscriptionController;
@@ -95,6 +96,11 @@ Route::prefix('dashboard')->middleware('auth:sanctum')->group(function () {
         Route::get('subscription', [SubscriptionController::class, 'show']);
         Route::post('subscription/checkout', [SubscriptionController::class, 'checkout']);
         Route::post('subscription/cancel', [SubscriptionController::class, 'cancel']);
+
+        // Stands in for a provider's webhook while developing. 404s unless the
+        // sandbox gateway is active in a local environment.
+        Route::get('sandbox-payments/{payment}', [SandboxPaymentController::class, 'show']);
+        Route::post('sandbox-payments/{payment}/pay', [SandboxPaymentController::class, 'pay']);
     });
 
     // Identifies the tenant; the dashboard chrome needs it even while locked,

@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Exceptions\BillingUnavailable;
 use App\Services\Billing\ManualGateway;
 use App\Services\Billing\PaymentGateway;
+use App\Services\Billing\SandboxGateway;
 use App\Services\Billing\StripeGateway;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -23,6 +24,8 @@ class AppServiceProvider extends ServiceProvider
     private const GATEWAYS = [
         'manual' => [self::class, 'makeManualGateway'],
         'stripe' => [self::class, 'makeStripeGateway'],
+        // Local development only; refuses to run elsewhere.
+        'sandbox' => [self::class, 'makeSandboxGateway'],
     ];
 
     /**
@@ -46,6 +49,14 @@ class AppServiceProvider extends ServiceProvider
     private static function makeManualGateway(): ManualGateway
     {
         return new ManualGateway(config('billing.manual_instructions'));
+    }
+
+    private static function makeSandboxGateway(): SandboxGateway
+    {
+        return new SandboxGateway(
+            rtrim((string) config('billing.frontend_url'), '/').'/sandbox-pay',
+            (string) app()->environment(),
+        );
     }
 
     private static function makeStripeGateway(): StripeGateway

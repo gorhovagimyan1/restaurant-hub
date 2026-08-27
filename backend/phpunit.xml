@@ -19,6 +19,10 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <!-- Pinned so the suite doesn't change behaviour with whatever gateway
+             a developer happens to have configured locally. Tests that care
+             set their own. -->
+        <env name="BILLING_GATEWAY" value="manual"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>

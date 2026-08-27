@@ -79,6 +79,9 @@ then pay monthly or yearly. `BILLING_GATEWAY` decides how:
 - **`manual`** (default) — the owner is shown payment instructions and a
   super-admin confirms the transfer under **Admin → Payments**. Set
   `BILLING_MANUAL_INSTRUCTIONS` to your bank details.
+- **`sandbox`** — a stand-in card page at `/sandbox-pay`, for building and
+  demoing the paid flow before you have a provider account. Any card number is
+  accepted and no money moves; it refuses to run outside local development.
 - **`stripe`** — choosing a plan redirects to Stripe's hosted card page. Set
   `STRIPE_SECRET` and `STRIPE_WEBHOOK_SECRET`, and register a webhook at
   `POST /api/webhooks/stripe` for `checkout.session.completed` and
@@ -136,10 +139,12 @@ notification), written against the current implementation.
 
 ## Status
 
-🟢 **Core flows complete — not yet deployable.** Every actor's main journey
-works end to end, covered by 167 backend feature tests. Still missing:
-deployment tooling (no Docker or CI), sales reporting beyond today's figures,
-online payments, and notifications of any kind.
+🟢 **Core flows complete — not yet deployed.** Every actor's main journey works
+end to end, covered by 210 backend feature tests running in CI. Still missing:
+a deploy pipeline (CI builds and tests, but nothing ships anywhere), sales
+reporting beyond today's figures, notifications of any kind, and a live payment
+provider — subscriptions work, but taking real money needs Stripe keys or
+another gateway.
 
 See [`docs/08-task-board.md`](docs/08-task-board.md) for the sprint-by-sprint
 breakdown.

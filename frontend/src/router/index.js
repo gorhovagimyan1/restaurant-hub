@@ -60,6 +60,14 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      // Stand-in for a provider's hosted card page while developing. The API
+      // behind it 404s unless the sandbox gateway is active locally.
+      path: '/sandbox-pay',
+      name: 'sandbox-pay',
+      component: () => import('@/views/dashboard/SandboxPayView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/dashboard',
       component: DashboardLayout,
       meta: { requiresAuth: true },
