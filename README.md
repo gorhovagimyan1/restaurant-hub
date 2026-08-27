@@ -99,6 +99,12 @@ stripe listen --forward-to localhost:8000/api/webhooks/stripe
 # paste the printed whsec_… into STRIPE_WEBHOOK_SECRET
 ```
 
+Check what's actually configured at any point:
+
+```bash
+php artisan billing:status
+```
+
 Adding another provider means implementing `App\Services\Billing\PaymentGateway`
 and registering it in `AppServiceProvider::GATEWAYS` — no caller names a
 gateway directly.
