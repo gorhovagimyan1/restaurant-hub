@@ -191,7 +191,13 @@ onMounted(load)
 
           <div>
             <label class="block text-xs font-medium text-ink-600">Name on card</label>
-            <input v-model="form.name" class="field mt-1 py-2.5" placeholder="Optional" />
+            <input
+              v-model="form.name"
+              class="field mt-1 py-2.5"
+              placeholder="Peter Parker"
+              required
+              aria-label="Name on card"
+            />
           </div>
 
           <p v-if="error" class="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-600">{{ error }}</p>
