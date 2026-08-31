@@ -26,13 +26,22 @@ const paymentId = computed(() => route.query.payment)
 const form = ref({ number: '4242 4242 4242 4242', expiry: '12/34', cvc: '123', name: '' })
 
 async function load() {
+  // Reached without a payment in the URL — a refresh, a back-button, or the
+  // page opened directly. There is nothing to pay for, so say so plainly
+  // rather than asking the API about payment "undefined".
+  if (!paymentId.value) {
+    error.value = 'There is no payment in progress. Choose a plan to start one.'
+    loading.value = false
+    return
+  }
+
   try {
     const { data } = await http.get(`/dashboard/sandbox-payments/${paymentId.value}`)
     payment.value = data.data
   } catch (err) {
     error.value =
       err?.response?.status === 404
-        ? 'This test payment page is not available.'
+        ? 'This payment link has expired or was already used. Choose a plan to start again.'
         : err?.response?.data?.message || 'Could not load this payment.'
   } finally {
     loading.value = false
@@ -71,11 +80,22 @@ onMounted(load)
       </div>
 
       <p v-if="loading" class="text-sm text-ink-400">Loading…</p>
-      <p v-else-if="error && !payment" class="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
-        {{ error }}
-      </p>
 
-      <div v-else-if="payment" class="card p-6">
+      <!-- No payment to show. Always offer the way back, or this is a dead end. -->
+      <div v-else-if="!payment" class="card p-8 text-center">
+        <div class="mx-auto grid h-12 w-12 place-items-center rounded-full bg-canvas text-ink-400">
+          <CreditCard :size="22" />
+        </div>
+        <p class="mt-4 text-sm text-ink-600">{{ error }}</p>
+        <button
+          class="btn-brand mt-5 rounded-xl px-5 py-2.5 text-sm font-semibold"
+          @click="router.push({ name: 'checkout' })"
+        >
+          Choose a plan
+        </button>
+      </div>
+
+      <div v-else class="card p-6">
         <div class="flex items-baseline justify-between gap-3 border-b border-hairline pb-4">
           <div>
             <p class="font-semibold text-ink-900">{{ payment.plan }}</p>
