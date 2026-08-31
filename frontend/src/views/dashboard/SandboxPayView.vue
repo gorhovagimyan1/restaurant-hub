@@ -135,28 +135,40 @@ onMounted(load)
             <label class="block text-xs font-medium text-ink-600">Card number</label>
             <div class="relative mt-1">
               <CreditCard :size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
-              <input v-model="form.number" class="field py-2.5 pl-9 font-mono" inputmode="numeric" />
+              <input
+                v-model="form.number"
+                class="field py-2.5 pl-9 font-mono tracking-[0.08em]"
+                inputmode="numeric"
+                aria-label="Card number"
+              />
             </div>
           </div>
 
-          <div class="grid grid-cols-3 gap-3">
-            <div class="col-span-2">
+          <div class="flex items-start gap-3">
+            <div class="min-w-0 flex-1">
               <label class="block text-xs font-medium text-ink-600">Expiry</label>
-              <div class="mt-1 flex items-center gap-2">
-                <select v-model="form.month" class="field py-2.5 font-mono" aria-label="Expiry month">
+              <div class="mt-1 flex gap-2">
+                <select
+                  v-model="form.month"
+                  class="field field-select w-[4.75rem] shrink-0 py-2.5 font-mono"
+                  aria-label="Expiry month"
+                >
                   <option v-for="m in MONTHS" :key="m" :value="m">{{ m }}</option>
                 </select>
-                <span class="text-ink-400">/</span>
-                <select v-model="form.year" class="field py-2.5 font-mono" aria-label="Expiry year">
+                <select
+                  v-model="form.year"
+                  class="field field-select min-w-0 flex-1 py-2.5 font-mono sm:max-w-[6.5rem]"
+                  aria-label="Expiry year"
+                >
                   <option v-for="y in YEARS" :key="y" :value="y">{{ y }}</option>
                 </select>
               </div>
             </div>
-            <div>
+            <div class="w-[5.5rem] shrink-0">
               <label class="block text-xs font-medium text-ink-600">CVC</label>
               <input
                 :value="form.cvc"
-                class="field mt-1 py-2.5 font-mono"
+                class="field mt-1 py-2.5 text-center font-mono tracking-[0.2em]"
                 inputmode="numeric"
                 maxlength="3"
                 placeholder="123"
