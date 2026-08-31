@@ -16,6 +16,7 @@ Customers can place orders without creating an account.
 
 The primary goal is to provide the fastest possible ordering experience.
 
+
 Customers only need to:
 
 1. Scan the QR code.
