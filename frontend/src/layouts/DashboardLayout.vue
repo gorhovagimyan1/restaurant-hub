@@ -21,11 +21,14 @@ import {
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import { useDashboardStore } from '@/stores/dashboard'
+import { useBillingStore } from '@/stores/billing'
+import TrialBanner from '@/components/dashboard/TrialBanner.vue'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const dashboard = useDashboardStore()
+const billing = useBillingStore()
 const { restaurant } = storeToRefs(dashboard)
 const { user } = storeToRefs(auth)
 
@@ -100,7 +103,19 @@ onMounted(async () => {
     return
   }
   if (!restaurant.value) {
-    await dashboard.init()
+    try {
+      await dashboard.init()
+    } catch {
+      // A lapsed subscription answers 402 here; the http interceptor has
+      // already redirected to checkout, so there is nothing to do but stop.
+      return
+    }
+  }
+
+  // Drives the countdown banner. Only the owner can act on it, and only they
+  // may read it — asking as a waiter would just earn a 403.
+  if (auth.can('billing.manage')) {
+    billing.load()
   }
 })
 
@@ -244,6 +259,7 @@ async function logout() {
 
       <main class="flex-1 overflow-y-auto p-5 sm:p-8">
         <div class="mx-auto w-full max-w-[84rem]">
+          <TrialBanner />
           <RouterView />
         </div>
       </main>

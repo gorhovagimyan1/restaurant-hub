@@ -1,16 +1,18 @@
 <script setup>
-import { computed, watch, onMounted, ref } from 'vue'
+import { computed, watch, onMounted, onBeforeUnmount, ref } from 'vue'
 import { useRoute, RouterView, RouterLink } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useMenuStore } from '@/stores/menu'
 import { useDiningStore } from '@/stores/dining'
 import { useCartStore } from '@/stores/cart'
 import { useAuthStore } from '@/stores/auth'
+import { useOrderTrackingStore } from '@/stores/orderTracking'
 import AppImage from '@/components/ui/AppImage.vue'
 import ProductModal from '@/components/menu/ProductModal.vue'
 import CartSheet from '@/components/order/CartSheet.vue'
 import BillSheet from '@/components/order/BillSheet.vue'
-import { BellRing, ReceiptText, UtensilsCrossed, Check, Eye } from 'lucide-vue-next'
+import OrderTracker from '@/components/order/OrderTracker.vue'
+import { BellRing, ReceiptText, UtensilsCrossed, Check, Eye, CookingPot } from 'lucide-vue-next'
 import { callWaiter } from '@/services/orders'
 import { formatPrice } from '@/utils/format'
 import { themeVars, ensureThemeFonts } from '@/utils/menuTheme'
@@ -39,8 +41,12 @@ const ready = computed(() => !!restaurant.value)
 const themeStyle = computed(() => themeVars(theme.value))
 watch(theme, (value) => ensureThemeFonts(value), { immediate: true })
 
+const tracking = useOrderTrackingStore()
+const { activeCount, count: orderCount } = storeToRefs(tracking)
+
 const cartOpen = ref(false)
 const billOpen = ref(false)
+const trackerOpen = ref(false)
 const placedOrder = ref(null)
 
 // Staff/owner/super-admin reach this portal without a scanned-QR session — a
@@ -81,7 +87,15 @@ onMounted(() => {
       sessionToken: dining.sessionToken,
     })
   }
+
+  // Pick the guest's orders back up after a refresh, so a returning phone
+  // shows current progress without them having to ask for it.
+  if (dining.active && dining.sessionToken) {
+    tracking.startPolling()
+  }
 })
+
+onBeforeUnmount(() => tracking.stopPolling())
 
 watch(
   slug,
@@ -98,6 +112,14 @@ function retry() {
 function onPlaced(result) {
   cartOpen.value = false
   placedOrder.value = result
+  // Begin following the round they just sent.
+  tracking.trackNew()
+}
+
+// From the confirmation straight into "where is it?".
+function trackFromConfirmation() {
+  placedOrder.value = null
+  trackerOpen.value = true
 }
 </script>
 
@@ -110,18 +132,23 @@ function onPlaced(result) {
           :to="{ name: 'restaurant-home', params: { slug } }"
           class="flex min-w-0 flex-1 items-center gap-2"
         >
+          <!--
+            The logo yields on the narrowest phones: with the service buttons
+            alongside it there isn't room for both, and the name identifies the
+            restaurant better than a 32px crop of its logo does.
+          -->
           <AppImage
             v-if="restaurant?.logo"
             :src="restaurant.logo"
             :alt="restaurant.name"
-            class="m-card-border h-8 w-8 shrink-0 rounded-full object-cover ring-1"
+            class="m-card-border hidden h-8 w-8 shrink-0 rounded-full object-cover ring-1 min-[420px]:block"
           />
           <span class="m-heading truncate text-base font-bold tracking-tight sm:text-lg">
             {{ restaurant?.name || 'Menu' }}
           </span>
         </RouterLink>
 
-        <div class="flex shrink-0 items-center gap-1.5 sm:gap-2">
+        <div class="flex shrink-0 items-center gap-1 sm:gap-2">
           <nav class="flex items-center gap-1 text-sm font-medium">
             <RouterLink
               :to="{ name: 'restaurant-home', params: { slug } }"
@@ -147,6 +174,25 @@ function onPlaced(result) {
             @click="summonWaiter"
           >
             <BellRing :size="15" /> <span class="hidden sm:inline">Waiter</span>
+          </button>
+          <!-- Order progress. Only offered once something has been ordered. -->
+          <button
+            v-if="diningActive && orderCount"
+            class="m-btn-quiet relative flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold"
+            aria-label="Track your order"
+            @click="trackerOpen = true"
+          >
+            <CookingPot :size="15" /> <span class="hidden sm:inline">Order</span>
+            <span
+              v-if="activeCount"
+              class="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[10px] font-bold"
+              :style="{
+                backgroundColor: 'var(--m-primary)',
+                color: 'var(--m-primary-contrast)',
+              }"
+            >
+              {{ activeCount }}
+            </span>
           </button>
           <button
             v-if="diningActive"
@@ -255,6 +301,12 @@ function onPlaced(result) {
       @close="billOpen = false"
     />
 
+    <OrderTracker
+      v-if="trackerOpen"
+      :table-name="tableName"
+      @close="trackerOpen = false"
+    />
+
     <!-- Order confirmation -->
     <div
       v-if="placedOrder"
@@ -279,9 +331,17 @@ function onPlaced(result) {
             </span>
           </p>
         </div>
-        <button class="m-btn mt-5 w-full py-2.5 text-sm font-semibold" @click="placedOrder = null">
-          Order more
-        </button>
+        <div class="mt-5 flex gap-2">
+          <button
+            class="m-btn-quiet flex-1 py-2.5 text-sm font-semibold"
+            @click="placedOrder = null"
+          >
+            Order more
+          </button>
+          <button class="m-btn flex-1 py-2.5 text-sm font-semibold" @click="trackFromConfirmation">
+            Track order
+          </button>
+        </div>
       </div>
     </div>
 

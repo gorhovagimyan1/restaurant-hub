@@ -20,9 +20,10 @@ http.interceptors.request.use((config) => {
   return config
 })
 
-// On 401, drop the token and bounce to the login screen. On 409 from the public
-// QR flow, the table's dining session has ended (bill settled) — clear it and
-// send the guest to the "scan again" screen.
+// On 401, drop the token and bounce to the login screen. On 402, the
+// restaurant's trial or subscription has lapsed — send them to checkout. On 409
+// from the public QR flow, the table's dining session has ended (bill settled)
+// — clear it and send the guest to the "scan again" screen.
 http.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -34,6 +35,15 @@ http.interceptors.response.use(
       const { default: router } = await import('@/router')
       if (router.currentRoute.value.name !== 'login') {
         router.push({ name: 'login' })
+      }
+    }
+
+    // Payment Required: every gated dashboard endpoint answers this once the
+    // trial runs out, so catching it here means no screen has to check.
+    if (status === 402) {
+      const { default: router } = await import('@/router')
+      if (router.currentRoute.value.name !== 'checkout') {
+        router.push({ name: 'checkout' })
       }
     }
 

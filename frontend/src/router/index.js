@@ -52,6 +52,22 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      // Standalone by design: a locked-out owner must not be shown a dashboard
+      // shell whose every link answers 402.
+      path: '/checkout',
+      name: 'checkout',
+      component: () => import('@/views/dashboard/CheckoutView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      // Stand-in for a provider's hosted card page while developing. The API
+      // behind it 404s unless the sandbox gateway is active locally.
+      path: '/sandbox-pay',
+      name: 'sandbox-pay',
+      component: () => import('@/views/dashboard/SandboxPayView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/dashboard',
       component: DashboardLayout,
       meta: { requiresAuth: true },
@@ -118,6 +134,11 @@ const router = createRouter({
           path: 'users',
           name: 'admin-users',
           component: () => import('@/views/admin/UsersAdmin.vue'),
+        },
+        {
+          path: 'payments',
+          name: 'admin-payments',
+          component: () => import('@/views/admin/PaymentsAdmin.vue'),
         },
         {
           path: 'roles',

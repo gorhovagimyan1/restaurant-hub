@@ -1,6 +1,20 @@
 # Task Board
 
-Project Status: 🟢 Development Started
+Project Status: 🟢 Core flows complete — not yet deployable
+
+Every actor's main journey works end to end: a guest scans a table QR, orders,
+tracks the food, and asks for the bill; the kitchen and waiters work the order;
+owners run their menu, team, tables and design; super-admins manage the
+platform. 167 backend feature tests cover it.
+
+The gaps that matter most, in rough order:
+
+1. **Deployment** (Sprint 15) — CI now runs the suite on every push, but there
+   is still no Docker image, no deploy pipeline and no frontend tests.
+2. **Reports** (Sprint 13) — one today-only overview; no sales history.
+3. **Payments** — subscriptions are billed by arrangement and confirmed by
+   hand (Sprint 16); no gateway is wired up, and diners still pay at the table.
+4. **Notifications** — no email, SMS or push anywhere in the product.
 
 ---
 
@@ -78,7 +92,7 @@ Project Status: 🟢 Development Started
 
 ## Layouts
 
-* [ ] Authentication Layout (login page exists; not a shared layout)
+* [ ] Authentication Layout (shared AuthShell covers login & register; forgot/reset still roll their own)
 * [x] Customer Layout
 * [x] Restaurant Dashboard Layout
 * [x] Kitchen Layout
@@ -134,6 +148,7 @@ Super-admin area at `/admin` (role-gated). Phase 1 shipped; later phases pending
 * [x] Owner self-registration (provisions restaurant + settings on sign-up)
 * [ ] Restaurant CRUD (platform-admin: manage all restaurants — Sprint 5)
 * [x] Restaurant Profile
+* [x] Logo & Cover Photo (upload/replace/remove from Menu Design)
 * [x] Restaurant Settings
 * [x] Business Hours
 * [x] Employee Management
@@ -164,6 +179,9 @@ Super-admin area at `/admin` (role-gated). Phase 1 shipped; later phases pending
 * [x] Ingredients
 * [ ] Allergens
 * [ ] Product Search
+* [x] Menu Design (per-restaurant theme: presets, colours, fonts, radius,
+  list/grid layout, header style — stored on restaurant_settings and applied
+  to the customer portal via CSS variables)
 
 ---
 
@@ -180,7 +198,8 @@ Super-admin area at `/admin` (role-gated). Phase 1 shipped; later phases pending
 * [x] Checkout
 * [x] Place Order
 * [x] Order Confirmation
-* [ ] Live Order Status (no customer-side polling yet)
+* [x] Live Order Status (four-step timeline + per-item progress; polls while
+  the tab is visible and stops once nothing can change)
 * [x] Call Waiter
 * [x] Request Bill
 
@@ -238,13 +257,17 @@ Dedicated `/kitchen` route + KitchenLayout with live polling and per-item advanc
 
 ---
 
-# Sprint 14 - Settings
+# Sprint 14 - Settings 🟡
 
-* [ ] Restaurant Settings
-* [ ] User Settings
-* [ ] Notification Settings
-* [ ] Language Settings
-* [ ] Theme Settings
+Largely absorbed by earlier sprints; only the last three are still open.
+
+* [x] Restaurant Settings (Sprint 6 — profile, ordering & service toggles)
+* [x] User Settings (Sprint 4 — profile & change password)
+* [ ] Notification Settings (nothing to configure until notifications exist)
+* [ ] Language Settings (`default_language` is stored but nothing reads it —
+  the UI is English-only, no i18n layer)
+* [x] Theme Settings (customer menu — see Menu Design in Sprint 8; the
+  dashboard itself has no user-facing theme switch)
 
 ---
 
@@ -253,7 +276,8 @@ Dedicated `/kitchen` route + KitchenLayout with live polling and per-item advanc
 ## Testing
 
 * [ ] Unit Tests (backend Unit suite is placeholder only)
-* [x] Feature Tests (auth, dashboard, dining, order transitions — ~12 files)
+* [x] Feature Tests (18 files, 167 tests — auth, dashboard, admin, dining,
+  order transitions, menu theme, image uploads, customer order tracking)
 * [x] API Tests (covered by the Laravel feature suite)
 * [ ] Browser Tests
 * [ ] Frontend Tests (none yet)
@@ -261,7 +285,9 @@ Dedicated `/kitchen` route + KitchenLayout with live polling and per-item advanc
 ## Deployment
 
 * [ ] Docker
-* [ ] CI/CD
+* [x] CI (GitHub Actions: backend suite on MySQL across PHP 8.2/8.3, plus
+  frontend lint & build, on every push to main and every PR)
+* [ ] CD (nothing deploys anywhere yet)
 * [ ] Production Deployment
 * [ ] Monitoring
 * [ ] Logging
@@ -269,13 +295,49 @@ Dedicated `/kitchen` route + KitchenLayout with live polling and per-item advanc
 
 ---
 
+# Sprint 16 - Subscriptions & Billing 🟡
+
+Restaurants pay to use the platform. Owners get a free trial on registration,
+then choose monthly or yearly. The dashboard is gated on an active
+subscription; the customer menu deliberately is not, so a billing lapse never
+stops a diner mid-meal.
+
+* [x] Plans (monthly + yearly pricing, feature list, seedable)
+* [x] Subscriptions (trial / active / cancelled / expired, period tracking)
+* [x] Free trial on registration (14 days, `billing.trial_days`)
+* [x] Checkout screen (interval toggle, savings, plan selection)
+* [x] Access gating (402 on dashboard routes; public menu untouched)
+* [x] Trial countdown banner
+* [x] Billing panel in settings (plan, renewal date, cancel)
+* [x] Payment records & billing history
+* [x] Manual payment confirmation (super-admin)
+* [x] Provider-agnostic gateway interface
+* [x] Stripe card payments (hosted Checkout + signed webhook, idempotent and
+  replay-safe; needs STRIPE_SECRET / STRIPE_WEBHOOK_SECRET to go live)
+* [ ] Dunning / retry on failed payment
+* [ ] Auto-renew (each period is charged as a one-off today; the owner pays
+  again rather than being billed automatically)
+* [x] Admin payment queue (confirm payments, outstanding total, stale-request
+  flag, recently-confirmed history, nav badge)
+* [ ] Invoices & receipts
+
+---
+
 # Future Features
 
 ## Payments
 
-* [ ] Stripe
+Money is currently taken out of band and confirmed by a super-admin. Swapping
+in a provider means implementing `App\Services\Billing\PaymentGateway` and
+changing `billing.gateway` — nothing else moves.
+
+Note: Stripe does not support businesses based in Armenia, so it is only an
+option via an entity registered elsewhere.
+
+* [ ] Paddle / Lemon Squeezy (merchant of record; supports Armenian sellers)
+* [ ] Local Payment Gateway (Ameriabank / Arca / Idram — charges in AMD)
+* [ ] Stripe (requires a non-Armenian entity)
 * [ ] PayPal
-* [ ] Local Payment Gateway
 
 ## Reservations
 

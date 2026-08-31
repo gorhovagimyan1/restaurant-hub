@@ -1,4 +1,5 @@
 <script setup>
+/* oxlint-disable no-useless-escape -- see printQr(): the `<\/script>` escape is required. */
 import { ref, computed, watchEffect } from 'vue'
 import QRCode from 'qrcode'
 import { X } from 'lucide-vue-next'
@@ -44,6 +45,10 @@ function print() {
   if (!dataUrl.value) return
   const win = window.open('', '_blank')
   if (!win) return
+  // The `<\/script>` below MUST keep its backslash: an unescaped closing tag
+  // would terminate this component's own script block when the SFC is parsed.
+  // no-useless-escape flags it and its autofix breaks the build, so the rule
+  // is turned off for this file rather than obeyed.
   win.document.write(`
     <html><head><title>${props.table.name} — QR</title>
     <style>

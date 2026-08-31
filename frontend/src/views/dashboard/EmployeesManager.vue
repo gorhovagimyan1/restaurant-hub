@@ -126,7 +126,7 @@ onMounted(load)
             v-model="form.first_name"
             type="text"
             required
-            class="mt-1 w-full field"
+            class="field mt-1 w-full"
           />
           <p v-if="formErrors.first_name" class="mt-1 text-xs text-red-600">
             {{ formErrors.first_name[0] }}
@@ -138,7 +138,7 @@ onMounted(load)
             v-model="form.last_name"
             type="text"
             required
-            class="mt-1 w-full field"
+            class="field mt-1 w-full"
           />
           <p v-if="formErrors.last_name" class="mt-1 text-xs text-red-600">
             {{ formErrors.last_name[0] }}
@@ -150,7 +150,7 @@ onMounted(load)
             v-model="form.email"
             type="email"
             required
-            class="mt-1 w-full field"
+            class="field mt-1 w-full"
           />
           <p v-if="formErrors.email" class="mt-1 text-xs text-red-600">
             {{ formErrors.email[0] }}
@@ -161,14 +161,14 @@ onMounted(load)
           <input
             v-model="form.phone"
             type="text"
-            class="mt-1 w-full field"
+            class="field mt-1 w-full"
           />
         </div>
         <div>
           <label class="block text-xs font-medium text-ink-500">Role</label>
           <select
             v-model="form.role"
-            class="mt-1 w-full field"
+            class="field field-select mt-1 w-full"
           >
             <option v-for="r in ASSIGNABLE_ROLES" :key="r.value" :value="r.value">
               {{ r.label }}
@@ -238,7 +238,7 @@ onMounted(load)
             <select
               v-else
               :value="employee.role"
-              class="field px-2.5 py-1 text-xs"
+              class="field field-select-sm py-1 pl-2.5 text-xs"
               @change="changeRole(employee, $event.target.value)"
             >
               <option v-for="r in ASSIGNABLE_ROLES" :key="r.value" :value="r.value">

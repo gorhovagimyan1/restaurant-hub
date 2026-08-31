@@ -53,7 +53,11 @@ watch(page, load)
 
 function toggle(id) {
   const set = new Set(expanded.value)
-  set.has(id) ? set.delete(id) : set.add(id)
+  if (set.has(id)) {
+    set.delete(id)
+  } else {
+    set.add(id)
+  }
   expanded.value = set
 }
 
@@ -94,7 +98,7 @@ onMounted(load)
         />
         <select
           v-model="status"
-          class="rounded-full border border-hairline px-3 py-2 text-sm outline-none focus:border-brand-400"
+          class="field-select rounded-full border border-hairline py-2 pl-3 text-sm outline-none focus:border-brand-400"
         >
           <option value="">All statuses</option>
           <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>

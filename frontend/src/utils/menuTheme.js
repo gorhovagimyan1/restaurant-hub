@@ -120,7 +120,7 @@ function fontStack(key) {
  * class, which derives the rest of the palette from these.
  */
 export function themeVars(theme) {
-  const t = { ...DEFAULT_THEME, ...(theme || {}) }
+  const t = { ...DEFAULT_THEME, ...theme }
   const radius = Math.max(0, Math.min(32, Number(t.radius) || 0))
 
   return {

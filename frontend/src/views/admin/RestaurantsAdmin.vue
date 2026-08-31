@@ -104,7 +104,7 @@ onMounted(load)
       </div>
       <select
         v-model="statusFilter"
-        class="field"
+        class="field field-select"
       >
         <option value="">All statuses</option>
         <option v-for="s in RESTAURANT_STATUSES" :key="s.value" :value="s.value">{{ s.label }}</option>
@@ -153,7 +153,7 @@ onMounted(load)
                 <select
                   :value="r.status"
                   :disabled="busyId === r.id"
-                  class="rounded-lg border border-hairline bg-white px-2 py-1 text-xs font-medium outline-none focus:border-brand-400"
+                  class="field-select-sm rounded-lg border border-hairline bg-white py-1 pl-2 text-xs font-medium outline-none focus:border-brand-400"
                   @change="changeStatus(r, $event.target.value)"
                 >
                   <option v-for="s in RESTAURANT_STATUSES" :key="s.value" :value="s.value">
@@ -208,7 +208,7 @@ onMounted(load)
             <select
               :value="r.status"
               :disabled="busyId === r.id"
-              class="flex-1 rounded-lg border border-hairline bg-white px-2 py-1.5 text-xs font-medium outline-none focus:border-brand-400"
+              class="field-select-sm flex-1 rounded-lg border border-hairline bg-white py-1.5 pl-2 text-xs font-medium outline-none focus:border-brand-400"
               @change="changeStatus(r, $event.target.value)"
             >
               <option v-for="s in RESTAURANT_STATUSES" :key="s.value" :value="s.value">{{ s.label }}</option>

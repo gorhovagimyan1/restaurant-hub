@@ -8,12 +8,14 @@ import {
   Users,
   ShieldCheck,
   KeyRound,
+  CreditCard,
   CircleUserRound,
   LogOut,
   Menu as MenuIcon,
   X,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
+import { useBillingStore } from '@/stores/billing'
 
 const route = useRoute()
 const router = useRouter()
@@ -28,8 +30,15 @@ const nav = [
   { name: 'admin-overview', label: 'Overview', icon: LayoutDashboard, exact: true },
   { name: 'admin-restaurants', label: 'Restaurants', icon: Store },
   { name: 'admin-users', label: 'Users', icon: Users },
+  { name: 'admin-payments', label: 'Payments', icon: CreditCard },
   { name: 'admin-roles', label: 'Roles & Permissions', icon: KeyRound },
 ]
+
+// Unconfirmed payments are money not yet recognised, so the count sits in the
+// nav rather than waiting to be discovered on the screen itself. It lives in
+// the store so confirming one on the queue screen clears the badge here.
+const billing = useBillingStore()
+const { pendingCount: pendingPayments } = storeToRefs(billing)
 
 const linkClass =
   'flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-ink-600 transition hover:bg-canvas'
@@ -41,9 +50,14 @@ onMounted(async () => {
       await auth.fetchMe()
     } catch {
       // interceptor handles the redirect on 401
+      return
     }
   }
+  billing.refreshPendingCount()
 })
+
+// Keep the badge honest after an admin confirms something on the queue screen.
+watch(() => route.fullPath, () => billing.refreshPendingCount())
 
 async function logout() {
   await auth.logout()
@@ -97,7 +111,13 @@ async function logout() {
           :exact-active-class="item.exact ? activeClass : undefined"
         >
           <component :is="item.icon" :size="18" class="shrink-0" />
-          {{ item.label }}
+          <span class="min-w-0 flex-1">{{ item.label }}</span>
+          <span
+            v-if="item.name === 'admin-payments' && pendingPayments"
+            class="shrink-0 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800"
+          >
+            {{ pendingPayments }}
+          </span>
         </RouterLink>
       </nav>
 

@@ -25,7 +25,7 @@ export const useMenuStore = defineStore('menu', () => {
 
   // The restaurant's own design for this menu. The API always sends a complete
   // theme; the defaults only cover the window before the menu has loaded.
-  const theme = computed(() => ({ ...DEFAULT_THEME, ...(restaurant.value?.menu_theme || {}) }))
+  const theme = computed(() => ({ ...DEFAULT_THEME, ...restaurant.value?.menu_theme }))
 
   const totalProducts = computed(() =>
     categories.value.reduce((total, category) => total + category.products.length, 0),

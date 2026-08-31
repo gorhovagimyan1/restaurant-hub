@@ -93,7 +93,7 @@ async function submit() {
             <label class="mb-1 block text-sm font-medium text-ink-700">Category</label>
             <select
               v-model="form.category_id"
-              class="w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm outline-none focus:border-brand-500"
+              class="field-select w-full rounded-lg border border-hairline-strong py-2 pl-3 text-sm outline-none focus:border-brand-500"
             >
               <option v-for="c in categories" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>

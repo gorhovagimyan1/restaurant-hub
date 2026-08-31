@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Admin\PlatformOverviewController;
 use App\Http\Controllers\Api\Admin\RestaurantController as AdminRestaurantController;
 use App\Http\Controllers\Api\Admin\RoleController as AdminRoleController;
+use App\Http\Controllers\Api\Admin\SubscriptionAdminController;
 use App\Http\Controllers\Api\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Auth\PasswordResetController;
@@ -18,12 +19,15 @@ use App\Http\Controllers\Api\Dashboard\OverviewController;
 use App\Http\Controllers\Api\Dashboard\ProductController;
 use App\Http\Controllers\Api\Dashboard\ProductImageController;
 use App\Http\Controllers\Api\Dashboard\RestaurantImageController;
+use App\Http\Controllers\Api\Dashboard\SandboxPaymentController;
 use App\Http\Controllers\Api\Dashboard\SettingsController;
 use App\Http\Controllers\Api\Dashboard\SpecialHoursController;
+use App\Http\Controllers\Api\Dashboard\SubscriptionController;
 use App\Http\Controllers\Api\Dashboard\TableController;
 use App\Http\Controllers\Api\Public\MenuController;
 use App\Http\Controllers\Api\Public\OrderController as PublicOrderController;
 use App\Http\Controllers\Api\Public\TableController as PublicTableController;
+use App\Http\Controllers\Api\Webhooks\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -40,6 +44,9 @@ Route::prefix('public')->group(function () {
     Route::post('tables/{tableQrCode}/session', [PublicTableController::class, 'openSession']);
     Route::post('tables/{tableQrCode}/orders', [PublicOrderController::class, 'store']);
 
+    // Live progress of the guest's own orders (polled by the tracking screen).
+    Route::get('tables/{tableQrCode}/orders', [PublicTableController::class, 'orders']);
+
     // The table's running bill (all orders this visit) + "request bill" signal.
     Route::get('tables/{tableQrCode}/bill', [PublicTableController::class, 'bill']);
     Route::post('tables/{tableQrCode}/bill/request', [PublicTableController::class, 'requestBill']);
@@ -47,6 +54,12 @@ Route::prefix('public')->group(function () {
     // Call a waiter over to the table.
     Route::post('tables/{tableQrCode}/call-waiter', [PublicTableController::class, 'callWaiter']);
 });
+
+/*
+ * Payment provider callbacks. No auth: the caller is Stripe, not a user — the
+ * request is trusted by verifying its signature instead.
+ */
+Route::post('webhooks/stripe', [StripeWebhookController::class, 'handle']);
 
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
@@ -72,8 +85,35 @@ Route::prefix('auth')->group(function () {
  * user's own restaurant.
  */
 Route::prefix('dashboard')->middleware('auth:sanctum')->group(function () {
-    Route::get('restaurant', [DashboardController::class, 'restaurant']);
+    /*
+     * Billing sits OUTSIDE the `subscribed` gate below — an owner whose trial
+     * has run out must still be able to see the plans and pay for one.
+     *
+     * It is gated on billing.manage instead: money is the owner's business,
+     * not something a waiter on shift should be able to cancel or commit to.
+     */
+    Route::middleware('can:billing.manage')->group(function () {
+        Route::get('subscription', [SubscriptionController::class, 'show']);
+        Route::post('subscription/checkout', [SubscriptionController::class, 'checkout']);
+        Route::post('subscription/cancel', [SubscriptionController::class, 'cancel']);
 
+        // Stands in for a provider's webhook while developing. 404s unless the
+        // sandbox gateway is active in a local environment.
+        Route::get('sandbox-payments/{payment}', [SandboxPaymentController::class, 'show']);
+        Route::post('sandbox-payments/{payment}/pay', [SandboxPaymentController::class, 'pay']);
+    });
+
+    // Identifies the tenant; the dashboard chrome needs it even while locked,
+    // and it exposes nothing an unpaid owner shouldn't see.
+    Route::get('restaurant', [DashboardController::class, 'restaurant']);
+});
+
+/*
+ * Everything a restaurant actually does day to day. Gated on an active trial
+ * or subscription: lapse, and these answer 402 while the public customer
+ * endpoints above keep serving diners.
+ */
+Route::prefix('dashboard')->middleware(['auth:sanctum', 'subscribed'])->group(function () {
     // At-a-glance overview (owners/managers with reporting access).
     Route::middleware('can:reports.view')->group(function () {
         Route::get('overview', [OverviewController::class, 'index']);
@@ -179,4 +219,8 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'super-admin'])->group(funct
     // Role & permission matrix.
     Route::get('roles', [AdminRoleController::class, 'index']);
     Route::patch('roles/{role}/permissions', [AdminRoleController::class, 'updatePermissions']);
+
+    // Billing: confirm payments that arrived out of band.
+    Route::get('subscription-payments', [SubscriptionAdminController::class, 'pending']);
+    Route::post('subscription-payments/{payment}/confirm', [SubscriptionAdminController::class, 'confirm']);
 });

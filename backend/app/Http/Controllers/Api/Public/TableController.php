@@ -105,6 +105,45 @@ class TableController extends Controller
     }
 
     /**
+     * Live progress of every order placed this visit, for the guest's own
+     * "where is my food" screen.
+     *
+     * Deliberately separate from the bill: this one keeps cancelled orders (a
+     * guest needs to know something was rejected) and carries per-item status,
+     * because the kitchen advances dishes individually. It is polled, so it
+     * stays lean — no restaurant or product payload.
+     */
+    public function orders(Request $request, TableQrCode $tableQrCode): JsonResponse
+    {
+        $table = $tableQrCode->table()->with('restaurant')->firstOrFail();
+        $session = $this->requireOpenSession($table, $request->query('session_token'));
+
+        $orders = $session->orders()
+            ->with('items')
+            ->latest('created_at')
+            ->get();
+
+        return ApiResponse::success([
+            'currency' => $table->restaurant->currency,
+            'orders' => $orders->map(fn ($order) => [
+                'order_number' => $order->order_number,
+                'status' => $order->status->value,
+                'is_final' => $order->status->isFinal(),
+                'total' => (float) $order->total,
+                'created_at' => $order->created_at?->toIso8601String(),
+                'items' => $order->items->map(fn ($item) => [
+                    'product_name' => $item->product_name,
+                    'quantity' => $item->quantity,
+                    'status' => $item->status->value,
+                    'total_price' => (float) $item->total_price,
+                ]),
+            ]),
+            // Lets the client stop polling once nothing can change again.
+            'has_active' => $orders->contains(fn ($order) => ! $order->status->isFinal()),
+        ], 'Orders retrieved.');
+    }
+
+    /**
      * Signal staff that the guest is ready to pay and leave.
      */
     public function requestBill(Request $request, TableQrCode $tableQrCode): JsonResponse
