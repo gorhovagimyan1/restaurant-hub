@@ -23,7 +23,9 @@ const paying = ref(false)
 
 const paymentId = computed(() => route.query.payment)
 
-const form = ref({ number: '4242 4242 4242 4242', month: '12', year: '', cvc: '123', name: '' })
+// Empty to start: the sample values are shown as placeholders, so the fields
+// have to be filled in like a real card page rather than arriving pre-answered.
+const form = ref({ number: '', month: '', year: '', cvc: '', name: '' })
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'))
 
@@ -33,8 +35,6 @@ const YEARS = (() => {
   const first = new Date().getFullYear()
   return Array.from({ length: 11 }, (_, i) => String(first + i))
 })()
-
-form.value.year = YEARS[0]
 
 /**
  * Digits only, and never more than a CVC actually has.
@@ -139,6 +139,8 @@ onMounted(load)
                 v-model="form.number"
                 class="field py-2.5 pl-9 font-mono tracking-[0.08em]"
                 inputmode="numeric"
+                placeholder="4242 4242 4242 4242"
+                required
                 aria-label="Card number"
               />
             </div>
@@ -148,18 +150,26 @@ onMounted(load)
             <div class="min-w-0 flex-1">
               <label class="block text-xs font-medium text-ink-600">Expiry</label>
               <div class="mt-1 flex gap-2">
+                <!-- A select has no placeholder, so an empty first option
+                     stands in for one; `required` rejects it. -->
                 <select
                   v-model="form.month"
                   class="field field-select w-[4.75rem] shrink-0 py-2.5 font-mono"
+                  :class="!form.month && 'text-ink-400'"
+                  required
                   aria-label="Expiry month"
                 >
+                  <option value="" disabled>MM</option>
                   <option v-for="m in MONTHS" :key="m" :value="m">{{ m }}</option>
                 </select>
                 <select
                   v-model="form.year"
                   class="field field-select min-w-0 flex-1 py-2.5 font-mono sm:max-w-[6.5rem]"
+                  :class="!form.year && 'text-ink-400'"
+                  required
                   aria-label="Expiry year"
                 >
+                  <option value="" disabled>YYYY</option>
                   <option v-for="y in YEARS" :key="y" :value="y">{{ y }}</option>
                 </select>
               </div>
@@ -172,6 +182,7 @@ onMounted(load)
                 inputmode="numeric"
                 maxlength="3"
                 placeholder="123"
+                required
                 aria-label="Card security code"
                 @input="onCvcInput"
               />
