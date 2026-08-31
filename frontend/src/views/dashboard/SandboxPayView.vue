@@ -23,7 +23,31 @@ const paying = ref(false)
 
 const paymentId = computed(() => route.query.payment)
 
-const form = ref({ number: '4242 4242 4242 4242', expiry: '12/34', cvc: '123', name: '' })
+const form = ref({ number: '4242 4242 4242 4242', month: '12', year: '', cvc: '123', name: '' })
+
+const MONTHS = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'))
+
+// Ten years ahead, like a real card form — an expiry in the past is not a
+// choice worth offering.
+const YEARS = (() => {
+  const first = new Date().getFullYear()
+  return Array.from({ length: 11 }, (_, i) => String(first + i))
+})()
+
+form.value.year = YEARS[0]
+
+/**
+ * Digits only, and never more than a CVC actually has.
+ *
+ * The cleaned value is written straight back to the element as well as to the
+ * model: when stripping leaves the value unchanged from what Vue last
+ * rendered, it skips the DOM patch and the rejected characters stay on screen.
+ */
+function onCvcInput(event) {
+  const cleaned = event.target.value.replace(/\D/g, '').slice(0, 3)
+  event.target.value = cleaned
+  form.value.cvc = cleaned
+}
 
 async function load() {
   // Reached without a payment in the URL — a refresh, a back-button, or the
@@ -115,14 +139,30 @@ onMounted(load)
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-3">
-            <div>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="col-span-2">
               <label class="block text-xs font-medium text-ink-600">Expiry</label>
-              <input v-model="form.expiry" class="field mt-1 py-2.5 font-mono" placeholder="MM/YY" />
+              <div class="mt-1 flex items-center gap-2">
+                <select v-model="form.month" class="field py-2.5 font-mono" aria-label="Expiry month">
+                  <option v-for="m in MONTHS" :key="m" :value="m">{{ m }}</option>
+                </select>
+                <span class="text-ink-400">/</span>
+                <select v-model="form.year" class="field py-2.5 font-mono" aria-label="Expiry year">
+                  <option v-for="y in YEARS" :key="y" :value="y">{{ y }}</option>
+                </select>
+              </div>
             </div>
             <div>
               <label class="block text-xs font-medium text-ink-600">CVC</label>
-              <input v-model="form.cvc" class="field mt-1 py-2.5 font-mono" placeholder="123" />
+              <input
+                :value="form.cvc"
+                class="field mt-1 py-2.5 font-mono"
+                inputmode="numeric"
+                maxlength="3"
+                placeholder="123"
+                aria-label="Card security code"
+                @input="onCvcInput"
+              />
             </div>
           </div>
 
