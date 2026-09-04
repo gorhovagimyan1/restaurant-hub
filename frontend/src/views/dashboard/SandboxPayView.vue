@@ -49,6 +49,83 @@ function onCvcInput(event) {
   form.value.cvc = cleaned
 }
 
+// Visa, Mastercard and friends are 16; the shortest cards still in use are 13.
+const CARD_MAX_DIGITS = 16
+const CARD_MIN_DIGITS = 13
+
+const cardDigits = computed(() => form.value.number.replace(/\D/g, ''))
+
+/** Group in fours, the way the digits are printed on the card itself. */
+function groupDigits(digits) {
+  return digits.replace(/(.{4})/g, '$1 ').trim()
+}
+
+/**
+ * Digits only, capped at a card's length, grouped as you type.
+ *
+ * The caret is restored by counting digits rather than characters, so editing
+ * mid-number doesn't throw it to the end each time an inserted space shifts
+ * everything along.
+ */
+function onCardInput(event) {
+  const el = event.target
+  const digitsBeforeCaret = el.value.slice(0, el.selectionStart).replace(/\D/g, '').length
+
+  const digits = el.value.replace(/\D/g, '').slice(0, CARD_MAX_DIGITS)
+  const formatted = groupDigits(digits)
+
+  el.value = formatted
+  form.value.number = formatted
+
+  let caret = 0
+  for (let seen = 0; caret < formatted.length && seen < digitsBeforeCaret; caret++) {
+    if (/\d/.test(formatted[caret])) seen++
+  }
+  el.setSelectionRange(caret, caret)
+}
+
+/**
+ * The Luhn checksum every real card number satisfies. Catches transposed and
+ * mistyped digits — a number of the right length is not necessarily a number
+ * any bank ever issued.
+ */
+function passesLuhn(digits) {
+  let sum = 0
+  let double = false
+
+  for (let i = digits.length - 1; i >= 0; i--) {
+    let digit = Number(digits[i])
+    if (double) {
+      digit *= 2
+      if (digit > 9) digit -= 9
+    }
+    sum += digit
+    double = !double
+  }
+
+  return sum % 10 === 0
+}
+
+// Errors stay quiet until the field is left, so a half-typed number is not
+// reported as wrong while it is still being entered.
+const cardTouched = ref(false)
+
+const cardError = computed(() => {
+  if (!cardDigits.value) return null
+  if (cardDigits.value.length < CARD_MIN_DIGITS) return 'Card number is too short.'
+  return passesLuhn(cardDigits.value) ? null : 'That card number is not valid.'
+})
+
+const expiryError = computed(() => {
+  if (!form.value.month || !form.value.year) return null
+
+  const now = new Date()
+  const expired =
+    Number(form.value.year) === now.getFullYear() && Number(form.value.month) < now.getMonth() + 1
+
+  return expired ? 'That expiry date has passed.' : null
+})
+
 async function load() {
   // Reached without a payment in the URL — a refresh, a back-button, or the
   // page opened directly. There is nothing to pay for, so say so plainly
@@ -73,6 +150,12 @@ async function load() {
 }
 
 async function pay() {
+  // Reveal any error the field was holding back, and refuse to submit a card
+  // that could not exist. `required` only catches empty fields.
+  cardTouched.value = true
+
+  if (cardError.value || expiryError.value) return
+
   paying.value = true
   error.value = null
   try {
@@ -136,14 +219,23 @@ onMounted(load)
             <div class="relative mt-1">
               <CreditCard :size="16" class="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400" />
               <input
-                v-model="form.number"
+                :value="form.number"
                 class="field py-2.5 pl-9 font-mono tracking-[0.08em]"
+                :class="cardTouched && cardError && 'border-red-400 focus:border-red-400'"
                 inputmode="numeric"
+                autocomplete="cc-number"
+                maxlength="19"
                 placeholder="4242 4242 4242 4242"
                 required
                 aria-label="Card number"
+                :aria-invalid="cardTouched && !!cardError"
+                @input="onCardInput"
+                @blur="cardTouched = true"
               />
             </div>
+            <p v-if="cardTouched && cardError" class="mt-1 text-xs text-red-600">
+              {{ cardError }}
+            </p>
           </div>
 
           <div class="flex items-start gap-3">
@@ -173,6 +265,7 @@ onMounted(load)
                   <option v-for="y in YEARS" :key="y" :value="y">{{ y }}</option>
                 </select>
               </div>
+              <p v-if="expiryError" class="mt-1 text-xs text-red-600">{{ expiryError }}</p>
             </div>
             <div class="w-[5.5rem] shrink-0">
               <label class="block text-xs font-medium text-ink-600">CVC</label>
