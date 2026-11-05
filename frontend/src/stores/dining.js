@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { saveRatingTicket } from '@/utils/ratingTicket'
 
 const KEY = 'rh_dining'
 
@@ -42,6 +43,17 @@ export const useDiningStore = defineStore('dining', () => {
   function setSessionToken(value) {
     sessionToken.value = value || null
     persist()
+
+    // Remember how to rate this visit even after the session ends — see
+    // utils/ratingTicket.js. Overwritten by the next visit's scan.
+    if (value && token.value) {
+      saveRatingTicket({
+        token: token.value,
+        sessionToken: value,
+        slug: slug.value,
+        tableName: tableName.value,
+      })
+    }
   }
 
   function end() {

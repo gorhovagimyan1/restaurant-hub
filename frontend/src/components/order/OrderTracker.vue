@@ -1,9 +1,12 @@
 <script setup>
-import { onMounted, onBeforeUnmount } from 'vue'
+import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
 import { storeToRefs } from 'pinia'
 import { X, RefreshCw, CookingPot, Check, XCircle } from 'lucide-vue-next'
 import { useOrderTrackingStore } from '@/stores/orderTracking'
 import { formatPrice } from '@/utils/format'
+import { submitReviews } from '@/services/orders'
+import { useDiningStore } from '@/stores/dining'
+import StarRating from '@/components/ui/StarRating.vue'
 import { CUSTOMER_STEPS, progressIndex, customerLine, itemStatusMeta } from '@/utils/orderStatus'
 
 defineProps({
@@ -13,7 +16,38 @@ defineProps({
 const emit = defineEmits(['close'])
 
 const tracking = useOrderTrackingStore()
+const dining = useDiningStore()
 const { orders, currency, loading, error, loadedOnce } = storeToRefs(tracking)
+
+// Rating drafts, keyed by order item id: { rating, comment, sending, error }.
+const drafts = reactive({})
+const rating = ref(null) // id of the item whose rating form is open
+
+function openRating(item) {
+  drafts[item.id] ??= { rating: 0, comment: '', sending: false, error: null }
+  rating.value = rating.value === item.id ? null : item.id
+}
+
+async function sendRating(item) {
+  const draft = drafts[item.id]
+  if (!draft.rating) {
+    draft.error = 'Tap a star to rate.'
+    return
+  }
+  draft.sending = true
+  draft.error = null
+  try {
+    await submitReviews(dining.token, dining.sessionToken, [
+      { order_item_id: item.id, rating: draft.rating, comment: draft.comment.trim() || null },
+    ])
+    rating.value = null
+    await tracking.refresh()
+  } catch (err) {
+    draft.error = err?.response?.data?.message || 'Could not send your rating.'
+  } finally {
+    draft.sending = false
+  }
+}
 
 function timeAgo(iso) {
   if (!iso) return ''
@@ -142,24 +176,56 @@ onBeforeUnmount(() => {
 
               <!-- Items, each with its own kitchen progress -->
               <ul class="m-divide mt-3">
-                <li
-                  v-for="(item, i) in order.items"
-                  :key="i"
-                  class="flex items-center gap-2 py-2 text-sm"
-                >
-                  <span class="m-muted-card min-w-0 flex-1 truncate">
-                    <span class="font-semibold">{{ item.quantity }}×</span>
-                    {{ item.product_name }}
-                  </span>
-                  <span
-                    v-if="item.status !== 'cancelled'"
-                    class="m-elevated m-muted-card shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                  >
-                    {{ itemStatusMeta(item.status).label }}
-                  </span>
-                  <span class="m-muted-card w-20 shrink-0 text-right tabular-nums">
-                    {{ formatPrice(item.total_price, currency) }}
-                  </span>
+                <li v-for="(item, i) in order.items" :key="i" class="py-2 text-sm">
+                  <div class="flex items-center gap-2">
+                    <span class="m-muted-card min-w-0 flex-1 truncate">
+                      <span class="font-semibold">{{ item.quantity }}×</span>
+                      {{ item.product_name }}
+                    </span>
+                    <span
+                      v-if="item.status !== 'cancelled'"
+                      class="m-elevated m-muted-card shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                    >
+                      {{ itemStatusMeta(item.status).label }}
+                    </span>
+                    <span class="m-muted-card w-20 shrink-0 text-right tabular-nums">
+                      {{ formatPrice(item.total_price, currency) }}
+                    </span>
+                  </div>
+
+                  <!-- Rate a dish once it has been served -->
+                  <div v-if="item.can_review" class="mt-1.5">
+                    <button
+                      class="m-accent text-xs font-semibold underline-offset-2 hover:underline"
+                      @click="openRating(item)"
+                    >
+                      {{ rating === item.id ? 'Cancel' : 'Rate this dish' }}
+                    </button>
+
+                    <div v-if="rating === item.id" class="m-elevated mt-2 rounded-xl p-3">
+                      <StarRating v-model="drafts[item.id].rating" editable :size="26" class="m-accent" />
+                      <textarea
+                        v-model="drafts[item.id].comment"
+                        rows="2"
+                        maxlength="500"
+                        placeholder="Tell us more (optional)"
+                        class="m-card-border m-panel mt-2 w-full rounded-lg border px-3 py-2 text-sm outline-none"
+                      />
+                      <p v-if="drafts[item.id].error" class="mt-1 text-xs text-red-500">
+                        {{ drafts[item.id].error }}
+                      </p>
+                      <button
+                        class="m-btn mt-2 px-4 py-1.5 text-sm font-semibold disabled:opacity-60"
+                        :disabled="drafts[item.id].sending"
+                        @click="sendRating(item)"
+                      >
+                        {{ drafts[item.id].sending ? 'Sending…' : 'Send' }}
+                      </button>
+                    </div>
+                  </div>
+                  <p v-else-if="item.rating" class="m-accent mt-1 flex items-center gap-1 text-xs">
+                    <StarRating :model-value="item.rating" :size="12" /> Thanks for rating!
+                  </p>
                 </li>
               </ul>
 

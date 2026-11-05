@@ -2,6 +2,7 @@
 // Shown when someone tries to reach the customer portal without having
 // scanned a table QR code. The menu is only available at the table.
 import { QrCode } from 'lucide-vue-next'
+import RateDishesCard from '@/components/order/RateDishesCard.vue'
 </script>
 
 <template>
@@ -14,6 +15,9 @@ import { QrCode } from 'lucide-vue-next'
       <p class="mt-2 text-sm text-ink-500">
         Please scan the QR code on your table to browse the menu and place an order.
       </p>
+
+      <!-- After a visit: only appears if there are dishes left to rate. -->
+      <RateDishesCard />
     </div>
   </div>
 </template>

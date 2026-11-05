@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\Dashboard\OverviewController;
 use App\Http\Controllers\Api\Dashboard\ProductController;
 use App\Http\Controllers\Api\Dashboard\ProductImageController;
 use App\Http\Controllers\Api\Dashboard\RestaurantImageController;
+use App\Http\Controllers\Api\Dashboard\ReviewController;
 use App\Http\Controllers\Api\Dashboard\SandboxPaymentController;
 use App\Http\Controllers\Api\Dashboard\SettingsController;
 use App\Http\Controllers\Api\Dashboard\SpecialHoursController;
@@ -26,6 +27,7 @@ use App\Http\Controllers\Api\Dashboard\SubscriptionController;
 use App\Http\Controllers\Api\Dashboard\TableController;
 use App\Http\Controllers\Api\Public\MenuController;
 use App\Http\Controllers\Api\Public\OrderController as PublicOrderController;
+use App\Http\Controllers\Api\Public\ReviewController as PublicReviewController;
 use App\Http\Controllers\Api\Public\TableController as PublicTableController;
 use App\Http\Controllers\Api\Webhooks\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
@@ -53,6 +55,10 @@ Route::prefix('public')->group(function () {
 
     // Call a waiter over to the table.
     Route::post('tables/{tableQrCode}/call-waiter', [PublicTableController::class, 'callWaiter']);
+
+    // Rate dishes that were served this visit (one review per ordered line).
+    Route::get('tables/{tableQrCode}/reviews/pending', [PublicReviewController::class, 'pending'])->middleware('throttle:60,1');
+    Route::post('tables/{tableQrCode}/reviews', [PublicReviewController::class, 'store'])->middleware('throttle:20,1');
 });
 
 /*
@@ -163,8 +169,13 @@ Route::prefix('dashboard')->middleware(['auth:sanctum', 'subscribed'])->group(fu
     Route::middleware('can:products.manage')->group(function () {
         Route::get('products', [ProductController::class, 'index']);
         Route::post('products', [ProductController::class, 'store']);
+        // Declared before products/{product} so "stock" isn't read as an id.
+        Route::put('products/stock', [ProductController::class, 'updateStock']);
         Route::put('products/{product}', [ProductController::class, 'update']);
         Route::delete('products/{product}', [ProductController::class, 'destroy']);
+
+        Route::get('reviews', [ReviewController::class, 'index']);
+        Route::delete('reviews/{review}', [ReviewController::class, 'destroy']);
 
         Route::post('products/{product}/images', [ProductImageController::class, 'store']);
         Route::delete('product-images/{productImage}', [ProductImageController::class, 'destroy']);
@@ -176,6 +187,8 @@ Route::prefix('dashboard')->middleware(['auth:sanctum', 'subscribed'])->group(fu
         Route::get('orders/history', [OrderController::class, 'history']);
         // Tables asking for a waiter / bill.
         Route::get('service-calls', [TableController::class, 'serviceCalls']);
+        // Desserts etc. that are running low or out (in-app stock banner).
+        Route::get('stock-alerts', [ProductController::class, 'stockAlerts']);
     });
 
     Route::middleware('can:orders.update-status')->group(function () {

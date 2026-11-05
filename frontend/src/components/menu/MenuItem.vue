@@ -54,7 +54,11 @@ const { allowOrders } = storeToRefs(dining)
       <p class="m-muted-card mt-1 line-clamp-2 text-sm">{{ product.description }}</p>
 
       <div class="m-faint mt-1.5 flex items-center gap-3 text-xs">
-        <span v-if="product.preparation_time">⏱ {{ product.preparation_time }} min</span>
+        <span v-if="product.rating" class="m-accent inline-flex items-center gap-1 font-semibold">
+            <Star :size="12" style="fill: currentColor" /> {{ product.rating.toFixed(1) }}
+            <span class="m-faint font-normal">({{ product.reviews_count }})</span>
+          </span>
+          <span v-if="product.preparation_time">⏱ {{ product.preparation_time }} min</span>
         <span v-if="!product.is_available" class="font-semibold text-red-500">Sold out</span>
       </div>
 
@@ -126,6 +130,10 @@ const { allowOrders } = storeToRefs(dining)
         </div>
         <p class="m-muted mt-1 line-clamp-2 text-sm">{{ product.description }}</p>
         <div class="m-faint mt-1.5 flex items-center gap-3 text-xs">
+          <span v-if="product.rating" class="m-accent inline-flex items-center gap-1 font-semibold">
+            <Star :size="12" style="fill: currentColor" /> {{ product.rating.toFixed(1) }}
+            <span class="m-faint font-normal">({{ product.reviews_count }})</span>
+          </span>
           <span v-if="product.preparation_time">⏱ {{ product.preparation_time }} min</span>
           <span v-if="!product.is_available" class="font-semibold text-red-500">Sold out</span>
         </div>

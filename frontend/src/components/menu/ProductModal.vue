@@ -5,6 +5,7 @@ import { useMenuStore } from '@/stores/menu'
 import { useDiningStore } from '@/stores/dining'
 import { useCartStore } from '@/stores/cart'
 import { X, Star } from 'lucide-vue-next'
+import StarRating from '@/components/ui/StarRating.vue'
 import AppImage from '@/components/ui/AppImage.vue'
 import { formatPrice } from '@/utils/format'
 import { themeVars } from '@/utils/menuTheme'
@@ -104,6 +105,11 @@ onBeforeUnmount(() => {
                 class="m-accent-soft inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold"
               >
                 <Star :size="11" style="fill: currentColor" /> Chef's pick
+              </span>
+              <span v-if="selectedProduct.rating" class="m-accent inline-flex items-center gap-1 font-semibold">
+                <StarRating :model-value="selectedProduct.rating" :size="13" />
+                {{ selectedProduct.rating.toFixed(1) }}
+                <span class="m-faint font-normal">({{ selectedProduct.reviews_count }})</span>
               </span>
               <span v-if="selectedProduct.preparation_time" class="m-faint">
                 ⏱ {{ selectedProduct.preparation_time }} min

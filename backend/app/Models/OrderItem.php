@@ -6,6 +6,7 @@ use App\Traits\BelongsToRestaurant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class OrderItem extends Model
 {
@@ -54,6 +55,16 @@ class OrderItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * The guest's rating of this line, if they left one.
+     *
+     * @return HasOne<ProductReview, $this>
+     */
+    public function review(): HasOne
+    {
+        return $this->hasOne(ProductReview::class);
     }
 
     /**

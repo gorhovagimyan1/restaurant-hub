@@ -26,6 +26,9 @@ const form = reactive({
   preparation_time: props.product?.preparation_time ?? '',
   is_available: props.product?.is_available ?? true,
   is_featured: props.product?.is_featured ?? false,
+  stock_quantity: props.product?.stock_quantity ?? '',
+  low_stock_threshold: props.product?.low_stock_threshold ?? '',
+  daily_stock: props.product?.daily_stock ?? '',
 })
 
 function onFile(event) {
@@ -50,6 +53,10 @@ async function submit() {
       preparation_time: form.preparation_time ? Number(form.preparation_time) : null,
       is_available: form.is_available,
       is_featured: form.is_featured,
+      // Empty = stock not tracked.
+      stock_quantity: form.stock_quantity === '' ? null : Number(form.stock_quantity),
+      low_stock_threshold: form.low_stock_threshold === '' ? null : Number(form.low_stock_threshold),
+      daily_stock: form.daily_stock === '' ? null : Number(form.daily_stock),
     }
     await dashboard.saveProduct(payload, props.product?.id, file.value)
     emit('close')
@@ -147,6 +154,48 @@ async function submit() {
               <input v-model="form.is_featured" type="checkbox" class="h-4 w-4" /> Chef's pick
             </label>
           </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="mb-1 block text-sm font-medium text-ink-700">Stock (portions)</label>
+            <input
+              v-model="form.stock_quantity"
+              type="number"
+              min="0"
+              placeholder="Not tracked"
+              class="w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm outline-none focus:border-brand-500"
+            />
+          </div>
+          <div>
+            <label class="mb-1 block text-sm font-medium text-ink-700">Low-stock warning at</label>
+            <input
+              v-model="form.low_stock_threshold"
+              type="number"
+              min="0"
+              placeholder="Default (5)"
+              class="w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm outline-none focus:border-brand-500"
+            />
+          </div>
+          <div class="col-span-2">
+            <label class="mb-1 block text-sm font-medium text-ink-700">Made fresh daily</label>
+            <input
+              v-model="form.daily_stock"
+              type="number"
+              min="1"
+              placeholder="No daily refill"
+              class="w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm outline-none focus:border-brand-500"
+            />
+            <p class="mt-1 text-xs text-ink-400">
+              Stock refills to this number every morning, so nobody has to retype it. Setting it also fills stock now.
+            </p>
+          </div>
+          <p class="col-span-2 -mt-1 text-xs text-ink-400">
+            <strong>Stock</strong> is how many portions are left; each order takes one off, and guests see “Sold out” at 0.
+            Leave it empty to not count this item.
+            <strong>Low-stock warning</strong>: when this many portions or fewer are left, a “Low stock” banner
+            shows for staff and owners/managers get an email. Example: 3 means “warn me when 3 are left”.
+          </p>
         </div>
 
         <p v-if="error" class="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{{ error }}</p>

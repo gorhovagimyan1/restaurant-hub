@@ -118,6 +118,21 @@ export async function updateProduct(id, payload) {
   return data.data
 }
 
+/**
+ * Set stock for many products at once. `items` is [{ id, stock_quantity }];
+ * a null quantity stops tracking that product.
+ */
+export async function updateStock(items) {
+  const { data } = await http.put('/dashboard/products/stock', { items })
+  return data.data
+}
+
+/** Products that are low or out of stock: [{ id, name, quantity, status }]. */
+export async function getStockAlerts() {
+  const { data } = await http.get('/dashboard/stock-alerts')
+  return data.data
+}
+
 export async function deleteProduct(id) {
   await http.delete(`/dashboard/products/${id}`)
 }
@@ -129,4 +144,14 @@ export async function uploadProductImage(productId, file) {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
   return data.data
+}
+
+/** Guest reviews, newest first. params: { product_id?, rating?, page? }. Returns { reviews, meta }. */
+export async function getReviews(params = {}) {
+  const { data } = await http.get('/dashboard/reviews', { params })
+  return data.data
+}
+
+export async function deleteReview(id) {
+  await http.delete(`/dashboard/reviews/${id}`)
 }

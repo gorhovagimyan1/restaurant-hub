@@ -11,8 +11,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Dashboard\UpdateOrderStatusRequest;
 use App\Http\Resources\Dashboard\OrderResource;
 use App\Models\Order;
+use App\Services\Stock\StockService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -88,7 +90,7 @@ class OrderController extends Controller
      * shortcut. The action cascades to every item so per-item state stays in
      * sync with the order.
      */
-    public function updateStatus(UpdateOrderStatusRequest $request, Order $order): JsonResponse
+    public function updateStatus(UpdateOrderStatusRequest $request, Order $order, StockService $stock): JsonResponse
     {
         $restaurant = $this->currentRestaurant($request);
         $this->guardTenant($restaurant, $order);
@@ -113,15 +115,27 @@ class OrderController extends Controller
             );
         }
 
-        $this->cascadeToItems($order, $status);
+        DB::transaction(function () use ($order, $status, $stock) {
+            // Cancelling puts the portions back — except dishes already served,
+            // which the guest has had.
+            if ($status === OrderStatus::Cancelled) {
+                $stock->restore(
+                    $order->items()
+                        ->whereNotIn('status', [OrderItemStatus::Cancelled->value, OrderItemStatus::Served->value])
+                        ->get(),
+                );
+            }
 
-        $order->status = $status;
+            $this->cascadeToItems($order, $status);
 
-        if ($status === OrderStatus::Completed && $order->completed_at === null) {
-            $order->completed_at = now();
-        }
+            $order->status = $status;
 
-        $order->save();
+            if ($status === OrderStatus::Completed && $order->completed_at === null) {
+                $order->completed_at = now();
+            }
+
+            $order->save();
+        });
 
         // Free the table once it has no more active orders.
         if ($status->isFinal()) {

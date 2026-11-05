@@ -1,7 +1,7 @@
 # Notification Flow
 
 > **Status: there is no notification system.** There are no push
-> notifications, no SMS, and exactly two transactional emails. Everything
+> notifications, no SMS, and three transactional emails. Everything
 > "live" is HTTP polling from staff screens.
 
 This document describes what actually happens, so nobody builds on the
@@ -15,8 +15,9 @@ assumption that a broadcast layer exists.
 |---|---|---|
 | `POST /api/auth/forgot-password` | `ResetPasswordNotification` | The user |
 | Owner invites an employee | Laravel password-reset link ("set your password") | The new employee |
+| A stock-tracked product falls to its alert level (once per crossing) | `LowStockNotification` (queued) | Active staff with `products.manage` (owners, managers) |
 
-Both go through Laravel's mailer. Nothing else in the system sends mail.
+All go through Laravel's mailer. The stock alert is queued, so it needs a queue worker (`php artisan queue:work`) running. Nothing else in the system sends mail.
 
 ---
 
@@ -27,6 +28,11 @@ a staff screen is mounted:
 
 - `GET /api/dashboard/orders` — live board
 - `GET /api/dashboard/service-calls` — tables wanting a waiter or the bill
+
+`StockAlertsBanner` (dashboard layout and kitchen display) also polls
+`GET /api/dashboard/stock-alerts` every **30 seconds** for tracked products that
+are low or out. That in-app banner is the primary stock alert; the email is a
+backup.
 
 The store keeps two sets — `knownIds` for orders and `knownCallKeys` for service
 calls — and diffs each poll. Anything unseen is flagged `fresh`, which is what

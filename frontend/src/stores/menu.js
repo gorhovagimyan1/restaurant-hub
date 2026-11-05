@@ -6,6 +6,8 @@ import { DEFAULT_THEME } from '@/utils/menuTheme'
 export const useMenuStore = defineStore('menu', () => {
   const restaurant = ref(null)
   const categories = ref([])
+  // Top-rated dishes (computed server-side from guest reviews).
+  const bestChoices = ref([])
   const slug = ref(null)
   const loading = ref(false)
   const error = ref(null)
@@ -54,12 +56,14 @@ export const useMenuStore = defineStore('menu', () => {
       const data = await fetchMenu(targetSlug)
       restaurant.value = data.restaurant
       categories.value = data.categories ?? []
+      bestChoices.value = data.best_choices ?? []
       slug.value = targetSlug
     } catch (err) {
       error.value =
         err?.response?.data?.message || 'We could not load the menu. Please try again.'
       restaurant.value = null
       categories.value = []
+      bestChoices.value = []
       slug.value = null
     } finally {
       loading.value = false
@@ -69,6 +73,7 @@ export const useMenuStore = defineStore('menu', () => {
   return {
     restaurant,
     categories,
+    bestChoices,
     slug,
     loading,
     error,

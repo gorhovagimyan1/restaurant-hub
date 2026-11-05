@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Dashboard\UpdateOrderItemStatusRequest;
 use App\Http\Resources\Dashboard\OrderResource;
 use App\Models\OrderItem;
+use App\Services\Stock\StockService;
 use Illuminate\Http\JsonResponse;
 
 class OrderItemController extends Controller
@@ -19,7 +20,7 @@ class OrderItemController extends Controller
      * Advance a single item (cook it, mark it ready, deliver it). The parent
      * order's overall status is recomputed from its items afterwards.
      */
-    public function updateStatus(UpdateOrderItemStatusRequest $request, OrderItem $orderItem): JsonResponse
+    public function updateStatus(UpdateOrderItemStatusRequest $request, OrderItem $orderItem, StockService $stock): JsonResponse
     {
         $restaurant = $this->currentRestaurant($request);
         $this->guardTenant($restaurant, $orderItem);
@@ -32,6 +33,12 @@ class OrderItemController extends Controller
             422,
             "An item that is {$orderItem->status->value} cannot be marked {$status->value}.",
         );
+
+        // A cancelled dish goes back on the shelf, unless it was already served.
+        if ($status === OrderItemStatus::Cancelled
+            && ! in_array($orderItem->status, [OrderItemStatus::Cancelled, OrderItemStatus::Served], true)) {
+            $stock->restore([$orderItem]);
+        }
 
         $orderItem->update(['status' => $status]);
 

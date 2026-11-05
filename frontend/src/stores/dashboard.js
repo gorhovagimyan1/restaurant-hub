@@ -86,6 +86,11 @@ export const useDashboardStore = defineStore('dashboard', () => {
     return product
   }
 
+  async function saveStock(items) {
+    await api.updateStock(items)
+    await loadProducts()
+  }
+
   async function removeProduct(id) {
     await api.deleteProduct(id)
     await loadProducts()
@@ -109,5 +114,6 @@ export const useDashboardStore = defineStore('dashboard', () => {
     removeCategory,
     saveProduct,
     removeProduct,
+    saveStock,
   }
 })

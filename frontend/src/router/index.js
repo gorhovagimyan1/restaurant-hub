@@ -98,6 +98,11 @@ const router = createRouter({
           component: () => import('@/views/dashboard/OrdersHistory.vue'),
         },
         {
+          path: 'reviews',
+          name: 'dashboard-reviews',
+          component: () => import('@/views/dashboard/ReviewsManager.vue'),
+        },
+        {
           path: 'tables',
           name: 'dashboard-tables',
           component: () => import('@/views/dashboard/TablesManager.vue'),

@@ -10,6 +10,7 @@ import {
   BookOpen,
   Palette,
   QrCode,
+  MessageSquareText,
   Users,
   Settings,
   ExternalLink,
@@ -23,6 +24,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useDashboardStore } from '@/stores/dashboard'
 import { useBillingStore } from '@/stores/billing'
 import TrialBanner from '@/components/dashboard/TrialBanner.vue'
+import StockAlertsBanner from '@/components/dashboard/StockAlertsBanner.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -59,6 +61,7 @@ const sections = computed(() =>
           icon: Palette,
           show: auth.can('restaurant.manage'),
         },
+        { name: 'dashboard-reviews', label: 'Reviews', icon: MessageSquareText, show: auth.can('products.manage') },
         { name: 'dashboard-tables', label: 'Tables & QR', icon: QrCode },
         { name: 'dashboard-team', label: 'Team', icon: Users, show: auth.can('employees.manage') },
         {
@@ -260,6 +263,7 @@ async function logout() {
       <main class="flex-1 overflow-y-auto p-5 sm:p-8">
         <div class="mx-auto w-full max-w-[84rem]">
           <TrialBanner />
+          <StockAlertsBanner v-if="auth.can('orders.view')" />
           <RouterView />
         </div>
       </main>

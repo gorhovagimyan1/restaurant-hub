@@ -11,6 +11,7 @@ use App\Http\Requests\Public\PlaceOrderRequest;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\TableQrCode;
+use App\Services\Stock\StockService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -25,7 +26,7 @@ class OrderController extends Controller
      * Line prices/names are snapshotted from the current products and totals
      * are computed server-side from the restaurant's tax/service settings.
      */
-    public function store(PlaceOrderRequest $request, TableQrCode $tableQrCode): JsonResponse
+    public function store(PlaceOrderRequest $request, TableQrCode $tableQrCode, StockService $stock): JsonResponse
     {
         $table = $tableQrCode->table()->with('restaurant.settings')->firstOrFail();
         $restaurant = $table->restaurant;
@@ -54,7 +55,7 @@ class OrderController extends Controller
             $product = $products->get($item['product_id']);
 
             abort_if($product === null, 422, 'One of the selected items is unavailable.');
-            abort_unless($product->is_available, 422, "\"{$product->name}\" is currently sold out.");
+            abort_unless($product->isOrderable(), 422, "\"{$product->name}\" is currently sold out.");
 
             $quantity = (int) $item['quantity'];
             $unitPrice = (float) $product->price;
@@ -74,9 +75,15 @@ class OrderController extends Controller
         $serviceCharge = round($subtotal * ((float) ($settings?->service_charge ?? 0)) / 100, 2);
         $total = round($subtotal + $tax + $serviceCharge, 2);
 
+        $lowStock = collect();
+
         $order = DB::transaction(function () use (
-            $request, $restaurant, $table, $session, $lines, $subtotal, $tax, $serviceCharge, $total, $settings
+            $request, $restaurant, $table, $session, $lines, $subtotal, $tax, $serviceCharge, $total, $settings, $stock, &$lowStock
         ) {
+            // Take the portions first: if another guest got the last one, this
+            // aborts and the whole order rolls back.
+            $lowStock = $stock->deduct($restaurant, $lines);
+
             $order = Order::create([
                 'restaurant_id' => $restaurant->id,
                 'restaurant_table_id' => $table->id,
@@ -103,6 +110,13 @@ class OrderController extends Controller
 
             return $order;
         });
+
+        // After commit, so a mail hiccup can never cost the guest their order.
+        try {
+            $stock->notifyLow($restaurant, $lowStock);
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         return ApiResponse::created([
             'order_number' => $order->order_number,

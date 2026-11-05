@@ -12,6 +12,7 @@ import ProductModal from '@/components/menu/ProductModal.vue'
 import CartSheet from '@/components/order/CartSheet.vue'
 import BillSheet from '@/components/order/BillSheet.vue'
 import OrderTracker from '@/components/order/OrderTracker.vue'
+import RateDishesSheet from '@/components/order/RateDishesSheet.vue'
 import { BellRing, ReceiptText, UtensilsCrossed, Check, Eye, CookingPot } from 'lucide-vue-next'
 import { callWaiter } from '@/services/orders'
 import { formatPrice } from '@/utils/format'
@@ -42,11 +43,43 @@ const themeStyle = computed(() => themeVars(theme.value))
 watch(theme, (value) => ensureThemeFonts(value), { immediate: true })
 
 const tracking = useOrderTrackingStore()
-const { activeCount, count: orderCount } = storeToRefs(tracking)
+const { activeCount, count: orderCount, orders: trackedOrders } = storeToRefs(tracking)
+
+// Dishes served and not yet rated. A gentle, dismissible nudge: never blocks
+// ordering, the bill or calling a waiter, and stays gone once dismissed.
+const DISMISS_KEY = 'rh_rate_prompt_dismissed'
+const ratePromptDismissed = ref(readDismissed())
+
+function readDismissed() {
+  try {
+    return sessionStorage.getItem(DISMISS_KEY) === dining.sessionToken
+  } catch {
+    return false
+  }
+}
+
+const toRateCount = computed(() =>
+  trackedOrders.value.reduce((n, order) => n + order.items.filter((i) => i.can_review).length, 0),
+)
+const showRatePrompt = computed(() => diningActive.value && toRateCount.value > 0 && !ratePromptDismissed.value)
+
+function dismissRatePrompt() {
+  ratePromptDismissed.value = true
+  try {
+    sessionStorage.setItem(DISMISS_KEY, dining.sessionToken || '1')
+  } catch {
+    // dismissed for this page view only
+  }
+}
+
+function openRatings() {
+  rateOpen.value = true
+}
 
 const cartOpen = ref(false)
 const billOpen = ref(false)
 const trackerOpen = ref(false)
+const rateOpen = ref(false)
 const placedOrder = ref(null)
 
 // Staff/owner/super-admin reach this portal without a scanned-QR session — a
@@ -227,6 +260,18 @@ function trackFromConfirmation() {
       Staff preview — this is what customers see after scanning a table QR. Ordering is disabled here.
     </div>
 
+    <!-- Gentle nudge to rate served dishes -->
+    <div
+      v-if="showRatePrompt"
+      class="m-bar m-card-border flex items-center justify-center gap-3 border-b px-4 py-2 text-xs"
+    >
+      <span class="m-muted">
+        Enjoyed your meal? Rate {{ toRateCount === 1 ? 'your dish' : `${toRateCount} dishes` }}
+      </span>
+      <button class="m-accent font-semibold hover:underline" @click="openRatings">Rate</button>
+      <button class="m-faint hover:opacity-70" aria-label="Dismiss" @click="dismissRatePrompt">✕</button>
+    </div>
+
     <main class="flex-1" :class="{ 'pb-24': allowOrders && count > 0 }">
       <!-- Loading -->
       <div v-if="loading && !ready" class="flex h-[60vh] items-center justify-center">
@@ -300,6 +345,8 @@ function trackFromConfirmation() {
       :can-request="canRequestBill"
       @close="billOpen = false"
     />
+
+    <RateDishesSheet v-if="rateOpen" @close="rateOpen = false" />
 
     <OrderTracker
       v-if="trackerOpen"

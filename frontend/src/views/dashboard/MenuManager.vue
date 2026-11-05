@@ -1,12 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
-import { Plus, Pencil, Trash2, Star } from 'lucide-vue-next'
+import { Plus, Pencil, Trash2, Star, Boxes } from 'lucide-vue-next'
 import { useDashboardStore } from '@/stores/dashboard'
 import { formatPrice } from '@/utils/format'
 import AppImage from '@/components/ui/AppImage.vue'
 import CategoryFormModal from '@/components/dashboard/CategoryFormModal.vue'
 import ProductFormModal from '@/components/dashboard/ProductFormModal.vue'
+import StockModal from '@/components/dashboard/StockModal.vue'
 
 const dashboard = useDashboardStore()
 const {
@@ -20,6 +21,7 @@ const {
 
 const categoryModal = ref(null) // null | { category }
 const productModal = ref(null) // null | { product }
+const stockModal = ref(false)
 
 onMounted(() => {
   if (!categories.value.length) dashboard.init()
@@ -53,6 +55,12 @@ async function toggleAvailability(product) {
         <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">Menu Management</h1>
         <p class="text-sm text-ink-500">Manage your categories and dishes.</p>
       </div>
+      <button
+        class="flex items-center gap-1.5 rounded-lg border border-hairline-strong px-3 py-2 text-sm font-semibold text-ink-700 transition hover:bg-canvas"
+        @click="stockModal = true"
+      >
+        <Boxes :size="16" /> Update stock
+      </button>
     </div>
 
     <div class="grid grid-cols-1 gap-5 lg:grid-cols-[280px_1fr]">
@@ -132,6 +140,26 @@ async function toggleAvailability(product) {
               <span class="shrink-0 text-sm font-semibold text-ink-700">
                 {{ formatPrice(product.price, currency()) }}
               </span>
+              <span
+                v-if="product.rating"
+                class="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-amber-600"
+                :title="`${product.reviews_count} guest rating(s)`"
+              >
+                <Star :size="12" class="fill-current" /> {{ product.rating.toFixed(1) }}
+                <span class="font-normal text-ink-400">({{ product.reviews_count }})</span>
+              </span>
+              <span
+                v-if="product.stock_status !== 'untracked'"
+                class="shrink-0 rounded-full px-2 py-1 text-xs font-semibold"
+                :class="{
+                  'bg-red-100 text-red-600': product.stock_status === 'out',
+                  'bg-amber-100 text-amber-700': product.stock_status === 'low',
+                  'bg-hairline text-ink-600': product.stock_status === 'ok',
+                }"
+                title="Portions left (staff only)"
+              >
+                {{ product.stock_status === 'out' ? 'Out of stock' : `${product.stock_quantity} left` }}
+              </span>
               <button
                 class="shrink-0 rounded-full px-2 py-1 text-xs font-semibold"
                 :class="product.is_available ? 'bg-green-100 text-green-700' : 'bg-hairline text-ink-500'"
@@ -158,6 +186,7 @@ async function toggleAvailability(product) {
       :category="categoryModal.category"
       @close="categoryModal = null"
     />
+    <StockModal v-if="stockModal" @close="stockModal = false" />
     <ProductFormModal
       v-if="productModal"
       :product="productModal.product"

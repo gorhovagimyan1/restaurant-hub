@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { Bell, BellOff, CookingPot, Check } from 'lucide-vue-next'
 import { useOrdersStore } from '@/stores/orders'
 import ServiceCallsBanner from '@/components/dashboard/ServiceCallsBanner.vue'
+import StockAlertsBanner from '@/components/dashboard/StockAlertsBanner.vue'
 import { nextItemStep } from '@/utils/orderStatus'
 
 const store = useOrdersStore()
@@ -121,6 +122,9 @@ onBeforeUnmount(() => store.stop())
 
     <!-- Waiter / bill calls -->
     <ServiceCallsBanner dark />
+
+    <!-- Items running low or out -->
+    <StockAlertsBanner dark />
 
     <div
       v-if="!loading && !tickets.length"

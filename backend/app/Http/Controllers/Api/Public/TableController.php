@@ -119,7 +119,7 @@ class TableController extends Controller
         $session = $this->requireOpenSession($table, $request->query('session_token'));
 
         $orders = $session->orders()
-            ->with('items')
+            ->with('items.review')
             ->latest('created_at')
             ->get();
 
@@ -132,10 +132,16 @@ class TableController extends Controller
                 'total' => (float) $order->total,
                 'created_at' => $order->created_at?->toIso8601String(),
                 'items' => $order->items->map(fn ($item) => [
+                    'id' => $item->id,
                     'product_name' => $item->product_name,
                     'quantity' => $item->quantity,
                     'status' => $item->status->value,
                     'total_price' => (float) $item->total_price,
+                    // Served and not yet rated: the guest can leave a review.
+                    'can_review' => $item->status === \App\Enums\OrderItemStatus::Served
+                        && $item->product_id !== null
+                        && $item->review === null,
+                    'rating' => $item->review?->rating,
                 ]),
             ]),
             // Lets the client stop polling once nothing can change again.
