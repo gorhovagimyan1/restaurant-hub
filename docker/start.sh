@@ -8,6 +8,10 @@ mkdir -p storage/app/public storage/framework/cache storage/framework/sessions \
          storage/framework/views storage/logs
 php artisan storage:link --force >/dev/null 2>&1 || true
 
+# Single replica, so migrating on boot is safe and doesn't depend on
+# Railway's pre-deploy hook.
+php artisan migrate --force
+
 php artisan optimize
 
 # Background workers: queued notifications and the scheduler
