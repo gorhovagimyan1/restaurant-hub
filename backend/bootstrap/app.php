@@ -21,6 +21,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Railway (and any hosting) terminates TLS at its proxy; trust it so
+        // generated URLs use https and the real client IP.
+        $middleware->trustProxies(at: '*');
+
         $middleware->alias([
             'super-admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
             'subscribed' => \App\Http\Middleware\EnsureSubscribed::class,

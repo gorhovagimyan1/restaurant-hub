@@ -1,0 +1,16 @@
+.git
+.github
+.idea
+docs
+**/node_modules
+**/.env
+frontend/dist
+backend/vendor
+backend/public/storage
+backend/storage/logs/*
+backend/storage/framework/cache/*
+backend/storage/framework/sessions/*
+backend/storage/framework/views/*
+backend/storage/app/public/*
+backend/bootstrap/cache/*.php
+backend/.phpunit.result.cache
