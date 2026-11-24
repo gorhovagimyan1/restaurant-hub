@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Search, Trash2, RefreshCw, ExternalLink } from 'lucide-vue-next'
 import {
   getRestaurants,
@@ -8,6 +9,8 @@ import {
   restaurantStatusMeta,
   RESTAURANT_STATUSES,
 } from '@/services/admin'
+
+const { t } = useI18n()
 
 const restaurants = ref([])
 const loading = ref(true)
@@ -28,7 +31,7 @@ async function load() {
       status: statusFilter.value || undefined,
     })
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not load restaurants.'
+    error.value = err?.response?.data?.message || t('admin.restaurants.loadError')
   } finally {
     loading.value = false
   }
@@ -47,7 +50,7 @@ async function changeStatus(restaurant, status) {
     const updated = await updateRestaurantStatus(restaurant.id, status)
     Object.assign(restaurant, updated)
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not update the restaurant.'
+    error.value = err?.response?.data?.message || t('admin.restaurants.updateError')
   } finally {
     busyId.value = null
   }
@@ -56,7 +59,7 @@ async function changeStatus(restaurant, status) {
 async function remove(restaurant) {
   if (
     !window.confirm(
-      `Remove ${restaurant.name} from the platform? This soft-deletes the restaurant and hides it from everyone.`,
+      t('admin.restaurants.confirmRemove', { name: restaurant.name }),
     )
   )
     return
@@ -65,7 +68,7 @@ async function remove(restaurant) {
     await deleteRestaurant(restaurant.id)
     restaurants.value = restaurants.value.filter((r) => r.id !== restaurant.id)
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not remove the restaurant.'
+    error.value = err?.response?.data?.message || t('admin.restaurants.removeError')
   } finally {
     busyId.value = null
   }
@@ -78,8 +81,8 @@ onMounted(load)
   <div>
     <header class="mb-5 flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">Restaurants</h1>
-        <p class="text-sm text-ink-500">Every restaurant on the platform.</p>
+        <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">{{ t('admin.restaurants.title') }}</h1>
+        <p class="text-sm text-ink-500">{{ t('admin.restaurants.subtitle') }}</p>
       </div>
       <button
         class="flex items-center gap-2 rounded-xl border border-hairline bg-white px-3.5 py-2 text-sm font-medium text-ink-600 transition hover:bg-canvas disabled:opacity-60"
@@ -87,7 +90,7 @@ onMounted(load)
         @click="load"
       >
         <RefreshCw :size="16" :class="loading && 'animate-spin'" />
-        Refresh
+        {{ t('admin.refresh') }}
       </button>
     </header>
 
@@ -98,7 +101,7 @@ onMounted(load)
         <input
           v-model="search"
           type="search"
-          placeholder="Search by name, slug or email…"
+          :placeholder="t('admin.restaurants.searchPlaceholder')"
           class="w-full field py-2 pl-9 pr-3"
         />
       </div>
@@ -106,18 +109,18 @@ onMounted(load)
         v-model="statusFilter"
         class="field field-select"
       >
-        <option value="">All statuses</option>
+        <option value="">{{ t('admin.allStatuses') }}</option>
         <option v-for="s in RESTAURANT_STATUSES" :key="s.value" :value="s.value">{{ s.label }}</option>
       </select>
     </div>
 
     <p v-if="error" class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{{ error }}</p>
-    <p v-if="loading && !restaurants.length" class="text-sm text-ink-400">Loading…</p>
+    <p v-if="loading && !restaurants.length" class="text-sm text-ink-400">{{ t('common.loading') }}</p>
     <p
       v-else-if="!restaurants.length"
       class="card p-8 text-center text-sm text-ink-400"
     >
-      No restaurants match your filters.
+      {{ t('admin.restaurants.empty') }}
     </p>
 
     <!-- Table (desktop) -->
@@ -126,12 +129,12 @@ onMounted(load)
         <table class="w-full text-left text-sm">
           <thead class="border-b border-hairline text-xs uppercase tracking-wide text-ink-400">
             <tr>
-              <th class="px-4 py-3 font-medium">Restaurant</th>
-              <th class="px-4 py-3 font-medium">Owner</th>
-              <th class="px-4 py-3 font-medium text-center">Users</th>
-              <th class="px-4 py-3 font-medium text-center">Orders</th>
-              <th class="px-4 py-3 font-medium">Status</th>
-              <th class="px-4 py-3 font-medium text-right">Actions</th>
+              <th class="px-4 py-3 font-medium">{{ t('admin.restaurants.restaurant') }}</th>
+              <th class="px-4 py-3 font-medium">{{ t('admin.restaurants.owner') }}</th>
+              <th class="px-4 py-3 font-medium text-center">{{ t('admin.restaurants.users') }}</th>
+              <th class="px-4 py-3 font-medium text-center">{{ t('admin.restaurants.orders') }}</th>
+              <th class="px-4 py-3 font-medium">{{ t('admin.status') }}</th>
+              <th class="px-4 py-3 font-medium text-right whitespace-normal">{{ t('admin.actions') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-hairline">
@@ -167,14 +170,14 @@ onMounted(load)
                     :href="`/r/${r.slug}`"
                     target="_blank"
                     class="rounded-lg p-1.5 text-ink-400 transition hover:bg-canvas hover:text-ink-600"
-                    title="View customer menu"
+                    :title="t('admin.restaurants.viewMenu')"
                   >
                     <ExternalLink :size="16" />
                   </a>
                   <button
                     class="rounded-lg p-1.5 text-red-400 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
                     :disabled="busyId === r.id"
-                    title="Remove restaurant"
+                    :title="t('admin.restaurants.remove')"
                     @click="remove(r)"
                   >
                     <Trash2 :size="16" />
@@ -192,9 +195,9 @@ onMounted(load)
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
               <p class="truncate font-semibold text-ink-800">{{ r.name }}</p>
-              <p class="truncate text-xs text-ink-400">{{ r.owner?.email || 'No owner' }}</p>
+              <p class="truncate text-xs text-ink-400">{{ r.owner?.email || t('admin.restaurants.noOwner') }}</p>
               <p class="mt-1 text-xs text-ink-400">
-                {{ r.users_count }} users · {{ r.orders_count }} orders
+                {{ t('admin.userCount', r.users_count) }} · {{ t('admin.orderCount', r.orders_count) }}
               </p>
             </div>
             <span
@@ -214,6 +217,7 @@ onMounted(load)
               <option v-for="s in RESTAURANT_STATUSES" :key="s.value" :value="s.value">{{ s.label }}</option>
             </select>
             <button
+              :aria-label="t('admin.restaurants.remove')"
               class="rounded-lg border border-red-200 p-2 text-red-500 transition hover:bg-red-50 disabled:opacity-50"
               :disabled="busyId === r.id"
               @click="remove(r)"

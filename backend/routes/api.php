@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\CategoryPresetController as AdminCategoryPresetController;
 use App\Http\Controllers\Api\Admin\PlatformOverviewController;
+use App\Http\Controllers\Api\Dashboard\CategoryImageController;
+use App\Http\Controllers\Api\Dashboard\CategoryPresetController;
 use App\Http\Controllers\Api\Admin\RestaurantController as AdminRestaurantController;
 use App\Http\Controllers\Api\Admin\RoleController as AdminRoleController;
 use App\Http\Controllers\Api\Admin\SubscriptionAdminController;
@@ -161,9 +164,14 @@ Route::prefix('dashboard')->middleware(['auth:sanctum', 'subscribed'])->group(fu
 
     Route::middleware('can:categories.manage')->group(function () {
         Route::get('categories', [CategoryController::class, 'index']);
+        // The platform catalog owners pick categories from.
+        Route::get('category-presets', [CategoryPresetController::class, 'index']);
         Route::post('categories', [CategoryController::class, 'store']);
         Route::put('categories/{category}', [CategoryController::class, 'update']);
         Route::delete('categories/{category}', [CategoryController::class, 'destroy']);
+        // Category photo, uploaded from the owner's device.
+        Route::post('categories/{category}/image', [CategoryImageController::class, 'store']);
+        Route::delete('categories/{category}/image', [CategoryImageController::class, 'destroy']);
     });
 
     Route::middleware('can:products.manage')->group(function () {
@@ -232,6 +240,12 @@ Route::prefix('admin')->middleware(['auth:sanctum', 'super-admin'])->group(funct
     // Role & permission matrix.
     Route::get('roles', [AdminRoleController::class, 'index']);
     Route::patch('roles/{role}/permissions', [AdminRoleController::class, 'updatePermissions']);
+
+    // The category catalog restaurants pick their menu sections from.
+    Route::get('category-presets', [AdminCategoryPresetController::class, 'index']);
+    Route::post('category-presets', [AdminCategoryPresetController::class, 'store']);
+    Route::put('category-presets/{categoryPreset}', [AdminCategoryPresetController::class, 'update']);
+    Route::delete('category-presets/{categoryPreset}', [AdminCategoryPresetController::class, 'destroy']);
 
     // Billing: confirm payments that arrived out of band.
     Route::get('subscription-payments', [SubscriptionAdminController::class, 'pending']);

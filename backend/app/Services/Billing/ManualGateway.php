@@ -48,7 +48,7 @@ final readonly class ManualGateway implements PaymentGateway
 
         return CheckoutResult::instructions(
             $payment,
-            $this->instructions ?: 'Our team will contact you shortly to arrange payment and activate your subscription.',
+            $this->instructions ?: __('Our team will contact you shortly to arrange payment and activate your subscription.'),
         );
     }
 }

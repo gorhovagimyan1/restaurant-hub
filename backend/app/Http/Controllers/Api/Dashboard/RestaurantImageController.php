@@ -37,7 +37,7 @@ class RestaurantImageController extends Controller
         $request->validate([
             'type' => ['required', Rule::in(array_keys(self::COLUMNS))],
             // Covers are displayed large, so allow a heavier file than a logo.
-            'image' => ['required', 'image', 'mimes:jpeg,jpg,png,webp', 'max:6144'],
+            'image' => ['bail', 'required', 'file', 'image', 'mimes:jpeg,jpg,png,webp', 'max:6144'],
         ]);
 
         $restaurant = $this->currentRestaurant($request);

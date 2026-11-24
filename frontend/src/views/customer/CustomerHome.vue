@@ -1,12 +1,14 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
 import { useMenuStore } from '@/stores/menu'
 import AppImage from '@/components/ui/AppImage.vue'
 import CategoryCard from '@/components/menu/CategoryCard.vue'
 import FeaturedCard from '@/components/menu/FeaturedCard.vue'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const store = useMenuStore()
@@ -20,12 +22,12 @@ const status = computed(() => restaurant.value?.open_status || null)
 const statusText = computed(() => {
   const s = status.value
   if (!s) return null
-  if (s.open) return s.closes_at ? `Open now · until ${s.closes_at}` : 'Open now'
+  if (s.open) return s.closes_at ? t('customer.openUntil', { time: s.closes_at }) : t('customer.openNow')
   const today = s.today
   if (today && !today.is_closed && today.open_time) {
-    return `Closed · opens ${today.open_time}`
+    return t('customer.closedOpens', { time: today.open_time })
   }
-  return today?.label ? `Closed · ${today.label}` : 'Closed today'
+  return today?.label ? t('customer.closedLabel', { label: today.label }) : t('customer.closedToday')
 })
 
 // The restaurant's chosen header treatment: a photo hero, the same photo washed
@@ -43,6 +45,11 @@ const heroOverlay = computed(() =>
         backgroundImage:
           'linear-gradient(to top, rgba(0,0,0,.8), rgba(0,0,0,.4) 45%, rgba(0,0,0,.2))',
       },
+)
+
+const statsText = computed(
+  () =>
+    `${t('customer.dishesCount', { count: totalProducts.value }, totalProducts.value)} · ${t('customer.categoriesCount', { count: categories.value.length }, categories.value.length)}`,
 )
 
 function openCategory(category) {
@@ -107,10 +114,10 @@ function openMenu() {
                 class="m-btn px-6 py-2.5 text-sm font-semibold transition hover:-translate-y-0.5"
                 @click="openMenu"
               >
-                View full menu
+                {{ t('customer.viewFullMenu') }}
               </button>
               <span class="text-xs font-medium text-white/70">
-                {{ totalProducts }} dishes · {{ categories.length }} categories
+                {{ statsText }}
               </span>
             </div>
           </div>
@@ -141,10 +148,10 @@ function openMenu() {
       </p>
       <div class="mt-5 flex flex-wrap items-center gap-3">
         <button class="m-btn px-6 py-2.5 text-sm font-semibold" @click="openMenu">
-          View full menu
+          {{ t('customer.viewFullMenu') }}
         </button>
         <span class="m-faint text-xs font-medium">
-          {{ totalProducts }} dishes · {{ categories.length }} categories
+          {{ statsText }}
         </span>
       </div>
     </section>
@@ -154,8 +161,8 @@ function openMenu() {
       <section class="pt-8">
         <div class="flex items-end justify-between">
           <div>
-            <h2 class="m-heading text-xl font-bold">Browse the menu</h2>
-            <p class="m-muted text-sm">Tap a category to jump straight to it.</p>
+            <h2 class="m-heading text-xl font-bold">{{ t('customer.browseTitle') }}</h2>
+            <p class="m-muted text-sm">{{ t('customer.browseHint') }}</p>
           </div>
         </div>
         <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -171,8 +178,8 @@ function openMenu() {
 
       <!-- Featured -->
       <section v-if="featured.length" class="pb-12 pt-10">
-        <h2 class="m-heading text-xl font-bold">Chef's recommendations</h2>
-        <p class="m-muted text-sm">Our most-loved dishes.</p>
+        <h2 class="m-heading text-xl font-bold">{{ t('customer.chefsTitle') }}</h2>
+        <p class="m-muted text-sm">{{ t('customer.chefsHint') }}</p>
         <div class="-mx-4 mt-4 flex gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <FeaturedCard
             v-for="product in featured"

@@ -42,7 +42,7 @@ class MenuController extends Controller
                 ->where('is_active', true)
                 ->orderBy('sort_order')
                 ->orderBy('name')
-                ->with(['products' => function ($query) {
+                ->with(['preset', 'products' => function ($query) {
                     $query->orderBy('sort_order')
                         ->orderBy('name')
                         ->with('images')

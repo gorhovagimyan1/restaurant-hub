@@ -22,9 +22,17 @@ class ProductResource extends JsonResource
         return [
             'id' => $this->id,
             'category_id' => $this->category_id,
-            'name' => $this->name,
-            'description' => $this->description,
-            'ingredients' => $this->ingredients ?? [],
+            // Shown in the dashboard user's language; forms edit `original`
+            // and `translations`.
+            'name' => $this->translated('name'),
+            'description' => $this->translated('description'),
+            'ingredients' => $this->translated('ingredients') ?? [],
+            'original' => [
+                'name' => $this->name,
+                'description' => $this->description,
+                'ingredients' => $this->ingredients ?? [],
+            ],
+            'translations' => (object) ($this->translations ?? []),
             'price' => (float) $this->price,
             'preparation_time' => $this->preparation_time,
             'is_available' => $this->is_available,

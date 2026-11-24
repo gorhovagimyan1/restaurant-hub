@@ -25,7 +25,7 @@ class ProductImageController extends Controller
         $this->guardTenant($restaurant, $product);
 
         $request->validate([
-            'image' => ['required', 'image', 'mimes:jpeg,jpg,png,webp', 'max:4096'],
+            'image' => ['bail', 'required', 'file', 'image', 'mimes:jpeg,jpg,png,webp', 'max:4096'],
         ]);
 
         $path = $request->file('image')->store('products', 'public');

@@ -54,7 +54,7 @@ class StockService
             abort_if(
                 $before < $quantity,
                 422,
-                "Sorry, we don't have enough \"{$product->name}\" right now.",
+                __('Sorry, we don\'t have enough ":name" right now.', ['name' => $product->translated('name')]),
             );
 
             $product->update(['stock_quantity' => $before - $quantity]);
@@ -162,10 +162,16 @@ class StockService
             return;
         }
 
-        Notification::send($recipients, new LowStockNotification(
+        // Queued, so it can't see the request's language: staff get the
+        // restaurant's own default language instead.
+        $locale = $restaurant->settings?->default_language;
+        $locale = in_array($locale, \App\Http\Middleware\SetLocale::SUPPORTED, true) ? $locale : 'en';
+
+        Notification::locale($locale)
+            ->send($recipients, new LowStockNotification(
             $restaurant->name,
             $products->map(fn (Product $p) => [
-                'name' => $p->name,
+                'name' => $p->translated('name', $locale),
                 'quantity' => (int) $p->stock_quantity,
             ])->values()->all(),
         ));

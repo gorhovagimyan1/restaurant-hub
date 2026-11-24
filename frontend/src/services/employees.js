@@ -1,4 +1,5 @@
 import http from './http'
+import i18n from '@/i18n'
 
 /**
  * Fetch the current restaurant's staff.
@@ -34,11 +35,12 @@ export async function deleteEmployee(id) {
 /**
  * Roles an owner/manager may assign to staff, with display labels.
  */
-export const ASSIGNABLE_ROLES = [
-  { value: 'restaurant-manager', label: 'Manager' },
-  { value: 'waiter', label: 'Waiter' },
-  { value: 'kitchen-staff', label: 'Kitchen Staff' },
-]
+export const ASSIGNABLE_ROLES = ['restaurant-manager', 'waiter', 'kitchen-staff'].map((value) => ({
+  value,
+  get label() {
+    return i18n.global.t(`employees.roles.${value}`)
+  },
+}))
 
 export function roleLabel(role) {
   return ASSIGNABLE_ROLES.find((r) => r.value === role)?.label || role

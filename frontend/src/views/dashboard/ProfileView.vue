@@ -1,7 +1,11 @@
 <script setup>
+import { useI18n } from 'vue-i18n'
 import { onMounted, reactive, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher.vue'
+
+const { t } = useI18n()
 
 const auth = useAuthStore()
 const { user } = storeToRefs(auth)
@@ -43,11 +47,11 @@ async function saveProfile() {
   savingProfile.value = true
   try {
     await auth.updateProfile({ ...profile })
-    profileMessage.value = 'Profile updated.'
+    profileMessage.value = t('auth.profile.updated')
   } catch (err) {
     profileErrors.value = err?.response?.data?.errors || {}
     if (!Object.keys(profileErrors.value).length) {
-      profileErrors.value = { _: [err?.response?.data?.message || 'Update failed.'] }
+      profileErrors.value = { _: [err?.response?.data?.message || t('auth.profile.updateFailed')] }
     }
   } finally {
     savingProfile.value = false
@@ -66,7 +70,7 @@ async function savePassword() {
   } catch (err) {
     pwErrors.value = err?.response?.data?.errors || {}
     if (!Object.keys(pwErrors.value).length) {
-      pwErrors.value = { _: [err?.response?.data?.message || 'Change failed.'] }
+      pwErrors.value = { _: [err?.response?.data?.message || t('auth.profile.changeFailed')] }
     }
   } finally {
     savingPassword.value = false
@@ -77,27 +81,27 @@ async function savePassword() {
 <template>
   <div class="min-h-screen bg-canvas text-ink-800">
     <header class="border-b border-hairline bg-white px-5 py-3">
-      <div class="mx-auto flex max-w-2xl items-center justify-between">
+      <div class="mx-auto flex max-w-2xl items-center justify-between gap-3">
         <RouterLink :to="auth.homeRoute" class="text-sm text-ink-500 hover:text-brand-600">
-          ← Back
+          {{ t('auth.profile.back') }}
         </RouterLink>
-        <span class="font-bold">My Profile</span>
-        <span class="w-10"></span>
+        <span class="font-bold">{{ t('auth.profile.title') }}</span>
+        <LanguageSwitcher />
       </div>
     </header>
 
     <main class="mx-auto max-w-2xl space-y-6 p-5">
       <!-- Profile details -->
       <section class="card p-6">
-        <h2 class="text-lg font-bold text-ink-900">Profile details</h2>
+        <h2 class="text-lg font-bold text-ink-900">{{ t('auth.profile.details') }}</h2>
         <p v-if="user?.roles?.length" class="mt-1 text-xs text-ink-400">
-          Role: {{ user.roles.join(', ') }}
+          {{ t('auth.profile.role', { roles: user.roles.join(', ') }) }}
         </p>
 
         <form class="mt-4 space-y-4" @submit.prevent="saveProfile">
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label class="mb-1 block text-sm font-medium text-ink-700">First name</label>
+              <label class="mb-1 block text-sm font-medium text-ink-700">{{ t('auth.firstName') }}</label>
               <input
                 v-model="profile.first_name"
                 type="text"
@@ -109,7 +113,7 @@ async function savePassword() {
               </p>
             </div>
             <div>
-              <label class="mb-1 block text-sm font-medium text-ink-700">Last name</label>
+              <label class="mb-1 block text-sm font-medium text-ink-700">{{ t('auth.lastName') }}</label>
               <input
                 v-model="profile.last_name"
                 type="text"
@@ -122,7 +126,7 @@ async function savePassword() {
             </div>
           </div>
           <div>
-            <label class="mb-1 block text-sm font-medium text-ink-700">Email</label>
+            <label class="mb-1 block text-sm font-medium text-ink-700">{{ t('auth.email') }}</label>
             <input
               v-model="profile.email"
               type="email"
@@ -134,7 +138,7 @@ async function savePassword() {
             </p>
           </div>
           <div>
-            <label class="mb-1 block text-sm font-medium text-ink-700">Phone</label>
+            <label class="mb-1 block text-sm font-medium text-ink-700">{{ t('auth.phone') }}</label>
             <input
               v-model="profile.phone"
               type="text"
@@ -157,21 +161,21 @@ async function savePassword() {
             :disabled="savingProfile"
             class="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
           >
-            {{ savingProfile ? 'Saving…' : 'Save changes' }}
+            {{ savingProfile ? t('auth.profile.saving') : t('auth.profile.save') }}
           </button>
         </form>
       </section>
 
       <!-- Change password -->
       <section class="card p-6">
-        <h2 class="text-lg font-bold text-ink-900">Change password</h2>
+        <h2 class="text-lg font-bold text-ink-900">{{ t('auth.profile.changePassword') }}</h2>
         <p class="mt-1 text-xs text-ink-400">
-          Changing your password signs out your other devices.
+          {{ t('auth.profile.changeHint') }}
         </p>
 
         <form class="mt-4 space-y-4" @submit.prevent="savePassword">
           <div>
-            <label class="mb-1 block text-sm font-medium text-ink-700">Current password</label>
+            <label class="mb-1 block text-sm font-medium text-ink-700">{{ t('auth.profile.current') }}</label>
             <input
               v-model="pw.current_password"
               type="password"
@@ -184,7 +188,7 @@ async function savePassword() {
             </p>
           </div>
           <div>
-            <label class="mb-1 block text-sm font-medium text-ink-700">New password</label>
+            <label class="mb-1 block text-sm font-medium text-ink-700">{{ t('auth.profile.newPassword') }}</label>
             <input
               v-model="pw.password"
               type="password"
@@ -197,7 +201,7 @@ async function savePassword() {
             </p>
           </div>
           <div>
-            <label class="mb-1 block text-sm font-medium text-ink-700">Confirm new password</label>
+            <label class="mb-1 block text-sm font-medium text-ink-700">{{ t('auth.profile.confirmNew') }}</label>
             <input
               v-model="pw.password_confirmation"
               type="password"
@@ -219,7 +223,7 @@ async function savePassword() {
             :disabled="savingPassword"
             class="rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
           >
-            {{ savingPassword ? 'Updating…' : 'Change password' }}
+            {{ savingPassword ? t('auth.profile.updating') : t('auth.profile.changePassword') }}
           </button>
         </form>
       </section>

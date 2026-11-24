@@ -1,7 +1,10 @@
 <script setup>
 import { Star } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import AppImage from '@/components/ui/AppImage.vue'
 import { formatPrice } from '@/utils/format'
+
+const { t } = useI18n()
 
 defineProps({
   product: { type: Object, required: true },
@@ -22,7 +25,7 @@ defineEmits(['select'])
       <span
         class="m-btn absolute left-3 top-3 inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-semibold shadow"
       >
-        <Star :size="11" style="fill: currentColor" /> Chef's pick
+        <Star :size="11" style="fill: currentColor" /> {{ t('customer.chefsPick') }}
       </span>
     </div>
     <div class="flex flex-1 flex-col p-4">

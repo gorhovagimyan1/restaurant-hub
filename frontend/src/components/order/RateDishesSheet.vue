@@ -1,5 +1,6 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
 import { X, Check } from 'lucide-vue-next'
 import { useOrderTrackingStore } from '@/stores/orderTracking'
@@ -13,6 +14,8 @@ import StarRating from '@/components/ui/StarRating.vue'
  * under the header, so rating never means digging through order details.
  */
 const emit = defineEmits(['close'])
+
+const { t } = useI18n()
 
 const tracking = useOrderTrackingStore()
 const dining = useDiningStore()
@@ -42,7 +45,7 @@ async function send() {
     }))
 
   if (!reviews.length) {
-    error.value = 'Tap the stars on at least one dish.'
+    error.value = t('cart.tapStars')
     return
   }
 
@@ -53,7 +56,7 @@ async function send() {
     await tracking.refresh()
     done.value = true
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not send your rating.'
+    error.value = err?.response?.data?.message || t('cart.rateError')
   } finally {
     sending.value = false
   }
@@ -68,10 +71,10 @@ async function send() {
       class="m-panel relative flex max-h-[90vh] w-full flex-col overflow-hidden rounded-t-2xl shadow-xl sm:max-w-md sm:rounded-2xl"
     >
       <header class="m-card-border flex items-center justify-between border-b px-5 py-3.5">
-        <h2 class="m-heading font-bold">Rate your dishes</h2>
+        <h2 class="m-heading font-bold">{{ t('cart.rateTitle') }}</h2>
         <button
           class="m-faint rounded-full p-1.5 transition hover:opacity-70"
-          aria-label="Close"
+          :aria-label="t('common.close')"
           @click="emit('close')"
         >
           <X :size="20" />
@@ -83,15 +86,15 @@ async function send() {
         <div class="m-accent-soft mx-auto grid h-14 w-14 place-items-center rounded-full">
           <Check :size="28" :stroke-width="2.5" />
         </div>
-        <p class="m-heading mt-3 text-lg font-bold">Thank you!</p>
-        <p class="m-muted-card mt-1 text-sm">Your feedback helps us and other guests.</p>
-        <button class="m-btn mt-5 px-6 py-2 text-sm font-semibold" @click="emit('close')">Done</button>
+        <p class="m-heading mt-3 text-lg font-bold">{{ t('cart.rateThankYou') }}</p>
+        <p class="m-muted-card mt-1 text-sm">{{ t('cart.rateHelps') }}</p>
+        <button class="m-btn mt-5 px-6 py-2 text-sm font-semibold" @click="emit('close')">{{ t('cart.done') }}</button>
       </div>
 
       <template v-else>
         <div class="min-h-0 flex-1 overflow-y-auto px-5 py-2">
           <p v-if="!items.length" class="m-faint py-10 text-center text-sm">
-            Nothing left to rate right now.
+            {{ t('cart.nothingToRate') }}
           </p>
 
           <ul v-else class="m-divide">
@@ -111,7 +114,7 @@ async function send() {
                 v-model="draft(item.id).comment"
                 rows="2"
                 maxlength="500"
-                placeholder="Tell us more (optional)"
+                :placeholder="t('cart.commentPlaceholder')"
                 class="m-card-border m-panel mt-2 w-full rounded-lg border px-3 py-2 text-sm outline-none"
               />
             </li>
@@ -122,14 +125,14 @@ async function send() {
           <p v-if="error" class="mb-2 text-sm text-red-500">{{ error }}</p>
           <div class="flex items-center justify-between gap-3">
             <button class="m-faint text-sm font-medium hover:opacity-70" @click="emit('close')">
-              Not now
+              {{ t('cart.notNow') }}
             </button>
             <button
               class="m-btn px-6 py-2 text-sm font-semibold disabled:opacity-60"
               :disabled="sending"
               @click="send"
             >
-              {{ sending ? 'Sending…' : 'Send' }}
+              {{ sending ? t('cart.sending') : t('cart.send') }}
             </button>
           </div>
         </footer>

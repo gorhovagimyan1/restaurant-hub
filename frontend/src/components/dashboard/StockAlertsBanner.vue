@@ -1,7 +1,10 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { PackageX } from 'lucide-vue-next'
 import * as api from '@/services/dashboard'
+
+const { t, locale } = useI18n()
 
 defineProps({
   dark: { type: Boolean, default: false },
@@ -21,6 +24,9 @@ async function refresh() {
   }
 }
 
+// Dish names come from the API in the current language: re-fetch on a switch.
+watch(locale, () => refresh())
+
 onMounted(() => {
   refresh()
   timer = setInterval(refresh, POLL_MS)
@@ -38,7 +44,7 @@ onBeforeUnmount(() => clearInterval(timer))
         class="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide"
         :class="dark ? 'text-amber-300' : 'text-amber-700'"
       >
-        <PackageX :size="16" /> Low stock
+        <PackageX :size="16" /> {{ t('banners.lowStock') }}
         <span class="rounded-full px-2 py-0.5 text-xs" :class="dark ? 'bg-amber-500/30' : 'bg-amber-100'">
           {{ items.length }}
         </span>
@@ -62,7 +68,7 @@ onBeforeUnmount(() => clearInterval(timer))
                   : 'bg-amber-100 text-amber-700'
             "
           >
-            {{ item.status === 'out' ? 'Out of stock' : `${item.quantity} left` }}
+            {{ item.status === 'out' ? t('banners.outOfStock') : t('banners.left', { n: item.quantity }) }}
           </span>
         </div>
       </div>

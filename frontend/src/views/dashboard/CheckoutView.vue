@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
 import {
   UtensilsCrossed,
@@ -17,7 +18,9 @@ import { useAuthStore } from '@/stores/auth'
 import { useBillingStore } from '@/stores/billing'
 import { startCheckout } from '@/services/billing'
 import { formatPrice } from '@/utils/format'
+import { intlLocale } from '@/i18n'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
@@ -73,18 +76,18 @@ const status = computed(() => {
     return {
       tone: 'info',
       icon: Clock,
-      text: `${s.days_remaining} day${s.days_remaining === 1 ? '' : 's'} left in your free trial.`,
+      text: t('billing.trialLeft', s.days_remaining),
     }
   }
   if (s.has_access && s.status === 'cancelled') {
     return {
       tone: 'info',
       icon: Clock,
-      text: `Your subscription is cancelled but stays active for ${s.days_remaining} more day${s.days_remaining === 1 ? '' : 's'}.`,
+      text: t('billing.cancelledActive', s.days_remaining),
     }
   }
   if (s.has_access && s.status === 'active') {
-    return { tone: 'good', icon: BadgeCheck, text: 'Your subscription is active.' }
+    return { tone: 'good', icon: BadgeCheck, text: t('billing.active') }
   }
   // No plan has ever been paid for, so what ran out was the trial — say so
   // rather than talking about a subscription they never had.
@@ -92,8 +95,8 @@ const status = computed(() => {
     tone: 'warn',
     icon: CircleAlert,
     text: s.plan
-      ? 'Your subscription has ended. Choose a plan to continue.'
-      : 'Your free trial has ended. Choose a plan to get back in.',
+      ? t('billing.endedChoose')
+      : t('billing.trialEndedChoose'),
   }
 })
 
@@ -110,10 +113,10 @@ async function pay() {
       window.location.href = result.redirect_url
       return
     }
-    arranged.value = result.instructions || 'We have received your request.'
+    arranged.value = result.instructions || t('billing.receivedRequest')
   } catch (err) {
     checkoutError.value =
-      err?.response?.data?.message || 'Could not start checkout. Please try again.'
+      err?.response?.data?.message || t('billing.checkoutError')
   } finally {
     submitting.value = false
   }
@@ -128,7 +131,7 @@ onMounted(async () => {
   await billing.load({ force: true })
 
   if (returnedCancelled.value) {
-    checkoutError.value = 'Payment was cancelled — nothing has been charged.'
+    checkoutError.value = t('billing.payCancelled')
   }
 
   // Give the webhook a moment to land before showing the result.
@@ -157,12 +160,12 @@ onBeforeUnmount(() => clearTimeout(pollTimer))
           class="flex items-center gap-1.5 text-sm text-ink-500 transition hover:text-ink-800"
           @click="signOut"
         >
-          <LogOut :size="15" /> Sign out
+          <LogOut :size="15" /> {{ t('billing.signOut') }}
         </button>
       </div>
 
       <p v-if="loading && !plans.length && !forbidden" class="text-sm text-ink-400">
-        Loading plans…
+        {{ t('billing.loadingPlans') }}
       </p>
 
       <!--
@@ -175,15 +178,13 @@ onBeforeUnmount(() => clearTimeout(pollTimer))
           <CircleAlert :size="28" />
         </div>
         <h1 class="mt-4 text-xl font-semibold tracking-tight text-ink-900">
-          This restaurant's subscription has ended
+          {{ t('billing.endedTitle') }}
         </h1>
         <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink-600">
-          Ask the restaurant owner to renew it — they can do that from
-          Settings. Your customer menu and table QR codes keep working in the
-          meantime.
+          {{ t('billing.endedBody') }}
         </p>
         <button class="btn-ghost mt-6 rounded-xl px-4 py-2 text-sm font-medium" @click="signOut">
-          Sign out
+          {{ t('billing.signOut') }}
         </button>
       </section>
 
@@ -200,16 +201,19 @@ onBeforeUnmount(() => clearTimeout(pollTimer))
           <div class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-brand-50 text-brand-600">
             <Check :size="28" :stroke-width="2.5" />
           </div>
-          <h1 class="mt-4 text-xl font-semibold tracking-tight text-ink-900">You're all set</h1>
+          <h1 class="mt-4 text-xl font-semibold tracking-tight text-ink-900">{{ t('billing.allSet') }}</h1>
           <p class="mt-2 text-sm text-ink-600">
-            Payment received. Your subscription runs until
-            {{ new Date(subscription.current_period_end).toLocaleDateString() }}.
+            {{
+              t('billing.paymentReceived', {
+                date: new Date(subscription.current_period_end).toLocaleDateString(intlLocale()),
+              })
+            }}
           </p>
           <button
             class="btn-brand mt-6 rounded-xl px-5 py-2.5 text-sm font-semibold"
             @click="router.push({ name: 'dashboard-overview' })"
           >
-            Go to the dashboard
+            {{ t('billing.goDashboard') }}
           </button>
         </section>
 
@@ -219,11 +223,10 @@ onBeforeUnmount(() => clearTimeout(pollTimer))
             <Loader2 :size="26" class="animate-spin" />
           </div>
           <h1 class="mt-4 text-xl font-semibold tracking-tight text-ink-900">
-            Confirming your payment
+            {{ t('billing.confirming') }}
           </h1>
           <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink-600">
-            This usually takes a few seconds. You can safely leave this page —
-            your subscription activates as soon as the payment clears.
+            {{ t('billing.confirmingBody') }}
           </p>
         </section>
 
@@ -233,30 +236,30 @@ onBeforeUnmount(() => clearTimeout(pollTimer))
             <Check :size="28" :stroke-width="2.5" />
           </div>
           <h1 class="mt-4 text-xl font-semibold tracking-tight text-ink-900">
-            Almost there
+            {{ t('billing.almostThere') }}
           </h1>
           <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink-600">
             {{ arranged }}
           </p>
           <p class="mt-4 text-xs text-ink-400">
-            Your access opens as soon as the payment is confirmed.
+            {{ t('billing.accessOpens') }}
           </p>
           <button
             v-if="subscription?.has_access"
             class="btn-ghost mt-6 rounded-xl px-4 py-2 text-sm font-medium"
             @click="router.push({ name: 'dashboard-overview' })"
           >
-            Back to the dashboard
+            {{ t('billing.backDashboard') }}
           </button>
         </section>
 
         <template v-else>
           <header class="mb-6">
             <h1 class="text-2xl font-semibold tracking-tight text-ink-900">
-              {{ welcome ? 'Welcome to Restaurant Hub' : 'Choose your plan' }}
+              {{ welcome ? t('billing.welcomeTitle') : t('billing.choosePlan') }}
             </h1>
             <p v-if="welcome" class="mt-1 text-sm text-ink-500">
-              Here's what it costs. You can start with a free trial and decide later.
+              {{ t('billing.welcomeHint') }}
             </p>
             <p
               v-if="status"
@@ -278,7 +281,7 @@ onBeforeUnmount(() => clearTimeout(pollTimer))
               v-for="option in ['monthly', 'yearly']"
               :key="option"
               type="button"
-              class="rounded-lg px-4 py-1.5 text-sm font-medium capitalize transition"
+              class="rounded-lg px-4 py-1.5 text-sm font-medium transition"
               :class="
                 interval === option
                   ? 'bg-brand-500 text-white shadow-sm'
@@ -286,7 +289,7 @@ onBeforeUnmount(() => clearTimeout(pollTimer))
               "
               @click="interval = option"
             >
-              {{ option }}
+              {{ t(`billing.${option}`) }}
               <span
                 v-if="option === 'yearly' && plan?.yearly_saving_percent > 0"
                 class="ml-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold"
@@ -314,10 +317,10 @@ onBeforeUnmount(() => clearTimeout(pollTimer))
                 <span class="text-3xl font-bold tracking-tight text-ink-900">
                   {{ formatPrice(interval === 'yearly' ? p.yearly_price : p.monthly_price, p.currency) }}
                 </span>
-                <span class="text-sm text-ink-500">/ {{ interval === 'yearly' ? 'year' : 'month' }}</span>
+                <span class="text-sm text-ink-500">{{ interval === 'yearly' ? t('billing.perYear') : t('billing.perMonth') }}</span>
               </div>
               <p v-if="interval === 'yearly'" class="mt-1 text-xs text-ink-400">
-                {{ formatPrice(p.yearly_monthly_equivalent, p.currency) }} per month, billed yearly
+                {{ t('billing.monthlyEquivalent', { price: formatPrice(p.yearly_monthly_equivalent, p.currency) }) }}
               </p>
 
               <ul class="mt-5 space-y-2">
@@ -342,7 +345,7 @@ onBeforeUnmount(() => clearTimeout(pollTimer))
             :disabled="submitting || !plan"
             @click="pay"
           >
-            {{ submitting ? 'Please wait…' : `Continue · ${formatPrice(price, plan?.currency)}` }}
+            {{ submitting ? t('billing.pleaseWait') : t('billing.continue', { price: formatPrice(price, plan?.currency) }) }}
           </button>
 
           <!-- Only offered while they still have access to go back to. -->
@@ -352,11 +355,11 @@ onBeforeUnmount(() => clearTimeout(pollTimer))
             @click="router.push({ name: 'dashboard-overview' })"
           >
             <template v-if="welcome">
-              Start my {{ subscription.days_remaining }}-day free trial
+              {{ t('billing.startTrial', { n: subscription.days_remaining }) }}
               <ArrowRight :size="15" />
             </template>
             <template v-else>
-              <ArrowLeft :size="15" /> Back to the dashboard
+              <ArrowLeft :size="15" /> {{ t('billing.backDashboard') }}
             </template>
           </button>
         </template>

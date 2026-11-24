@@ -87,6 +87,12 @@ export async function getCategories() {
   return data.data
 }
 
+/** The platform's category catalog (active options, named in the current language). */
+export async function getCategoryPresets() {
+  const { data } = await http.get('/dashboard/category-presets')
+  return data.data
+}
+
 export async function createCategory(payload) {
   const { data } = await http.post('/dashboard/categories', payload)
   return data.data
@@ -135,6 +141,24 @@ export async function getStockAlerts() {
 
 export async function deleteProduct(id) {
   await http.delete(`/dashboard/products/${id}`)
+}
+
+export async function uploadCategoryImage(categoryId, file) {
+  const form = new FormData()
+  form.append('image', file)
+  const { data } = await http.post(`/dashboard/categories/${categoryId}/image`, form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return data.data
+}
+
+export async function deleteCategoryImage(categoryId) {
+  const { data } = await http.delete(`/dashboard/categories/${categoryId}/image`)
+  return data.data
+}
+
+export async function deleteProductImage(imageId) {
+  await http.delete(`/dashboard/product-images/${imageId}`)
 }
 
 export async function uploadProductImage(productId, file) {

@@ -34,5 +34,8 @@ class DatabaseSeeder extends Seeder
         $this->call(SecondRestaurantSeeder::class);
         $this->call(DemoTablesSeeder::class);
         $this->call(DemoStaffSeeder::class);
+        $this->call(DemoTranslationsSeeder::class);
+        // The category catalog; also links the demo categories to it.
+        $this->call(CategoryPresetsSeeder::class);
     }
 }

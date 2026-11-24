@@ -31,7 +31,10 @@ class OrderItemController extends Controller
         abort_unless(
             $orderItem->status->canTransitionTo($status),
             422,
-            "An item that is {$orderItem->status->value} cannot be marked {$status->value}.",
+            __('An item that is :from cannot be marked :to.', [
+                'from' => __($orderItem->status->value),
+                'to' => __($status->value),
+            ]),
         );
 
         // A cancelled dish goes back on the shelf, unless it was already served.
@@ -46,7 +49,7 @@ class OrderItemController extends Controller
         $order->syncStatusFromItems();
 
         return ApiResponse::success(
-            new OrderResource($order->load(['items', 'table'])),
+            new OrderResource($order->load(['items.product', 'table'])),
             'Item updated.',
         );
     }

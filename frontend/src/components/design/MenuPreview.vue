@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Star, BellRing, ShoppingBag } from 'lucide-vue-next'
 import AppImage from '@/components/ui/AppImage.vue'
 import { formatPrice } from '@/utils/format'
@@ -18,34 +19,36 @@ const props = defineProps({
   categories: { type: Array, default: () => [] },
 })
 
-const SAMPLE = [
+const { t } = useI18n()
+
+const SAMPLE = computed(() => [
   {
     id: -1,
-    name: 'Starters',
+    name: t('customer.sampleStarters'),
     products: [
-      { id: -11, name: 'Burrata & heirloom tomato', description: 'Basil oil, aged balsamic, sourdough crisp.', price: 3200, is_featured: true, image: null },
-      { id: -12, name: 'Charred octopus', description: 'Smoked paprika, confit potato, lemon aioli.', price: 4800, image: null },
+      { id: -11, name: t('customer.sampleDishes.burrata.name'), description: t('customer.sampleDishes.burrata.description'), price: 3200, is_featured: true, image: null },
+      { id: -12, name: t('customer.sampleDishes.octopus.name'), description: t('customer.sampleDishes.octopus.description'), price: 4800, image: null },
     ],
   },
   {
     id: -2,
-    name: 'Mains',
+    name: t('customer.sampleMains'),
     products: [
-      { id: -21, name: 'Dry-aged ribeye', description: 'Bone marrow butter, watercress, triple-cooked chips.', price: 12500, image: null },
-      { id: -22, name: 'Saffron risotto', description: 'Aged parmesan, wild mushrooms, thyme.', price: 6400, image: null },
+      { id: -21, name: t('customer.sampleDishes.ribeye.name'), description: t('customer.sampleDishes.ribeye.description'), price: 12500, image: null },
+      { id: -22, name: t('customer.sampleDishes.risotto.name'), description: t('customer.sampleDishes.risotto.description'), price: 6400, image: null },
     ],
   },
-]
+])
 
 const style = computed(() => themeVars(props.theme))
 
-const name = computed(() => props.restaurant?.name || 'Your Restaurant')
+const name = computed(() => props.restaurant?.name || t('customer.sampleRestaurant'))
 const currency = computed(() => props.restaurant?.currency || 'AMD')
 
 // Fall back to sample dishes so a brand-new restaurant can still design a menu.
 const sections = computed(() => {
   const real = props.categories.filter((c) => c.products?.length)
-  return (real.length ? real : SAMPLE).slice(0, 2).map((category) => ({
+  return (real.length ? real : SAMPLE.value).slice(0, 2).map((category) => ({
     ...category,
     products: category.products.slice(0, 2),
   }))
@@ -53,7 +56,7 @@ const sections = computed(() => {
 
 const chips = computed(() => {
   const real = props.categories.filter((c) => c.products?.length)
-  return (real.length ? real : SAMPLE).slice(0, 4)
+  return (real.length ? real : SAMPLE.value).slice(0, 4)
 })
 
 const cover = computed(() => props.restaurant?.cover_image || null)
@@ -70,7 +73,7 @@ const isCompact = computed(() => props.theme.hero_style === 'compact')
       <span class="m-heading truncate text-[13px] font-bold">{{ name }}</span>
       <div class="flex items-center gap-1.5">
         <span class="m-btn-quiet grid h-6 w-6 place-items-center"><BellRing :size="11" /></span>
-        <span class="m-accent-soft rounded-full px-2 py-0.5 text-[10px] font-semibold">Table 4</span>
+        <span class="m-accent-soft rounded-full px-2 py-0.5 text-[10px] font-semibold">{{ t('customer.sampleTable') }}</span>
       </div>
     </div>
 
@@ -96,13 +99,13 @@ const isCompact = computed(() => props.theme.hero_style === 'compact')
         ></div>
         <div class="absolute inset-x-0 bottom-0 p-3.5">
           <p class="m-heading text-base font-bold leading-tight text-white drop-shadow-sm">{{ name }}</p>
-          <p class="mt-0.5 text-[10px] text-white/85">Open now · until 23:00</p>
+          <p class="mt-0.5 text-[10px] text-white/85">{{ t('customer.openUntil', { time: '23:00' }) }}</p>
         </div>
       </div>
       <div v-else class="px-3.5 pt-5">
         <p class="m-heading text-lg font-bold leading-tight">{{ name }}</p>
-        <p class="m-muted mt-1 text-[10px]">Open now · until 23:00</p>
-        <button class="m-btn mt-3 px-4 py-1.5 text-[10px] font-semibold">View full menu</button>
+        <p class="m-muted mt-1 text-[10px]">{{ t('customer.openUntil', { time: '23:00' }) }}</p>
+        <button class="m-btn mt-3 px-4 py-1.5 text-[10px] font-semibold">{{ t('customer.viewFullMenu') }}</button>
       </div>
 
       <!-- Category rail -->
@@ -122,7 +125,7 @@ const isCompact = computed(() => props.theme.hero_style === 'compact')
         <section v-for="category in sections" :key="category.id" class="pt-4">
           <div class="m-border flex items-baseline justify-between border-b pb-1.5">
             <h3 class="m-heading text-[13px] font-bold">{{ category.name }}</h3>
-            <span class="m-faint text-[9px] font-medium">{{ category.products.length }} items</span>
+            <span class="m-faint text-[9px] font-medium">{{ t('customer.itemsCount', { count: category.products.length }, category.products.length) }}</span>
           </div>
 
           <!-- Grid layout -->
@@ -179,7 +182,7 @@ const isCompact = computed(() => props.theme.hero_style === 'compact')
               </div>
               <div class="flex shrink-0 flex-col items-end gap-1">
                 <span class="text-[11px] font-bold">{{ formatPrice(product.price, currency) }}</span>
-                <span class="m-btn-outline px-2 py-0.5 text-[9px] font-semibold">+ Add</span>
+                <span class="m-btn-outline px-2 py-0.5 text-[9px] font-semibold">{{ t('customer.add') }}</span>
               </div>
             </article>
           </div>
@@ -191,7 +194,7 @@ const isCompact = computed(() => props.theme.hero_style === 'compact')
     <div class="m-bar absolute inset-x-0 bottom-0 border-t px-3.5 py-2.5 backdrop-blur">
       <div class="m-btn flex items-center justify-between px-3 py-2">
         <span class="flex items-center gap-1.5 text-[10px] font-semibold">
-          <ShoppingBag :size="11" /> View order
+          <ShoppingBag :size="11" /> {{ t('customer.viewOrder') }}
         </span>
         <span class="text-[10px] font-semibold">{{ formatPrice(9600, currency) }}</span>
       </div>

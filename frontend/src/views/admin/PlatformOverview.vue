@@ -4,6 +4,9 @@ import { useRouter } from 'vue-router'
 import { Store, Users, ReceiptText, Wallet, RefreshCw } from 'lucide-vue-next'
 import { getPlatformOverview, restaurantStatusMeta } from '@/services/admin'
 import { formatPrice } from '@/utils/format'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const router = useRouter()
 
@@ -16,30 +19,30 @@ const tiles = computed(() => {
   if (!d) return []
   return [
     {
-      label: "Today's revenue",
+      label: t('admin.overview.revenueToday'),
       value: formatPrice(d.orders.revenue_today, 'AMD'),
-      hint: `${d.orders.completed_today} completed`,
+      hint: t('admin.overview.completedCount', { n: d.orders.completed_today }),
       icon: Wallet,
       featured: true,
     },
     {
-      label: 'Restaurants',
+      label: t('admin.overview.restaurants'),
       value: d.restaurants.total,
-      hint: `${d.restaurants.active} active · ${d.restaurants.suspended} suspended`,
+      hint: t('admin.overview.restaurantsHint', { active: d.restaurants.active, suspended: d.restaurants.suspended }),
       icon: Store,
       to: 'admin-restaurants',
     },
     {
-      label: 'Users',
+      label: t('admin.overview.users'),
       value: d.users.total,
-      hint: `${d.users.active} active`,
+      hint: t('admin.overview.usersHint', { n: d.users.active }),
       icon: Users,
       to: 'admin-users',
     },
     {
-      label: "Today's orders",
+      label: t('admin.overview.ordersToday'),
       value: d.orders.today,
-      hint: `${d.orders.total} all-time`,
+      hint: t('admin.overview.ordersTotal', { n: d.orders.total }),
       icon: ReceiptText,
     },
   ]
@@ -48,11 +51,11 @@ const tiles = computed(() => {
 function timeAgo(iso) {
   if (!iso) return ''
   const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000)
-  if (mins < 1) return 'just now'
-  if (mins < 60) return `${mins}m ago`
+  if (mins < 1) return t('admin.time.justNow')
+  if (mins < 60) return t('admin.time.minutesAgo', { n: mins })
   const hrs = Math.round(mins / 60)
-  if (hrs < 24) return `${hrs}h ago`
-  return `${Math.round(hrs / 24)}d ago`
+  if (hrs < 24) return t('admin.time.hoursAgo', { n: hrs })
+  return t('admin.time.daysAgo', Math.round(hrs / 24))
 }
 
 async function load() {
@@ -61,7 +64,7 @@ async function load() {
   try {
     data.value = await getPlatformOverview()
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not load the platform overview.'
+    error.value = err?.response?.data?.message || t('admin.overview.loadError')
   } finally {
     loading.value = false
   }
@@ -76,23 +79,23 @@ onMounted(load)
 
 <template>
   <div>
-    <header class="mb-5 flex items-center justify-between">
+    <header class="mb-5 flex items-center justify-between gap-3">
       <div>
-        <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">Platform Overview</h1>
-        <p class="text-sm text-ink-500">Every restaurant and user, at a glance.</p>
+        <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">{{ t('admin.overview.title') }}</h1>
+        <p class="text-sm text-ink-500">{{ t('admin.overview.subtitle') }}</p>
       </div>
       <button
-        class="flex items-center gap-2 rounded-xl border border-hairline bg-white px-3.5 py-2 text-sm font-medium text-ink-600 transition hover:bg-canvas disabled:opacity-60"
+        class="flex shrink-0 items-center gap-2 rounded-xl border border-hairline bg-white px-3.5 py-2 text-sm font-medium text-ink-600 transition hover:bg-canvas disabled:opacity-60"
         :disabled="loading"
         @click="load"
       >
         <RefreshCw :size="16" :class="loading && 'animate-spin'" />
-        {{ loading ? 'Refreshing…' : 'Refresh' }}
+        {{ loading ? t('admin.refreshing') : t('admin.refresh') }}
       </button>
     </header>
 
     <p v-if="error" class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{{ error }}</p>
-    <p v-if="loading && !data" class="text-sm text-ink-400">Loading…</p>
+    <p v-if="loading && !data" class="text-sm text-ink-400">{{ t('common.loading') }}</p>
 
     <div v-else-if="data" class="space-y-6">
       <!-- Stat tiles -->
@@ -134,14 +137,14 @@ onMounted(load)
       <!-- Recent restaurants -->
       <section class="card p-5">
         <div class="mb-3 flex items-center justify-between">
-          <h2 class="font-bold text-ink-900">Newest restaurants</h2>
+          <h2 class="font-bold text-ink-900">{{ t('admin.overview.newest') }}</h2>
           <button class="text-xs text-brand-600 hover:underline" @click="go('admin-restaurants')">
-            View all
+            {{ t('admin.overview.viewAll') }}
           </button>
         </div>
 
         <p v-if="!data.recent_restaurants.length" class="py-4 text-sm text-ink-400">
-          No restaurants yet.
+          {{ t('admin.overview.none') }}
         </p>
         <ul v-else class="divide-y divide-hairline">
           <li
@@ -152,13 +155,13 @@ onMounted(load)
             <div class="min-w-0 flex-1">
               <p class="truncate text-sm font-medium text-ink-800">{{ r.name }}</p>
               <p class="text-xs text-ink-400">
-                {{ r.users_count }} user{{ r.users_count === 1 ? '' : 's' }}
-                · {{ r.orders_count }} order{{ r.orders_count === 1 ? '' : 's' }}
+                {{ t('admin.userCount', r.users_count) }}
+                · {{ t('admin.orderCount', r.orders_count) }}
                 · {{ timeAgo(r.created_at) }}
               </p>
             </div>
             <span
-              class="rounded-full px-2 py-0.5 text-xs font-medium"
+              class="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
               :class="restaurantStatusMeta(r.status).tone"
             >
               {{ restaurantStatusMeta(r.status).label }}

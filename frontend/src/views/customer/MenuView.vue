@@ -2,10 +2,12 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { Trophy } from 'lucide-vue-next'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
 import { useMenuStore } from '@/stores/menu'
 import MenuItem from '@/components/menu/MenuItem.vue'
 
+const { t } = useI18n()
 const route = useRoute()
 const store = useMenuStore()
 const { categories, bestChoices, currency, theme } = storeToRefs(store)
@@ -17,8 +19,8 @@ const sections = computed(() => [
   ...(bestChoices.value.length
     ? [{
         id: BEST_ID,
-        name: 'Best choices',
-        description: 'Top-rated by our guests',
+        name: t('customer.bestChoices'),
+        description: t('customer.bestChoicesHint'),
         products: bestChoices.value,
         best: true,
       }]
@@ -104,7 +106,7 @@ onBeforeUnmount(() => observer?.disconnect())
           <h2 :id="`cat-${category.id}`" class="m-heading text-xl font-bold">
             <Trophy v-if="category.best" :size="18" class="m-accent mr-1 inline -mt-1" />{{ category.name }}
           </h2>
-          <span class="m-faint text-xs font-medium">{{ category.products.length }} items</span>
+          <span class="m-faint text-xs font-medium">{{ t('customer.itemsCount', { count: category.products.length }, category.products.length) }}</span>
         </div>
         <p v-if="category.description" class="m-muted mt-2 text-sm">
           {{ category.description }}

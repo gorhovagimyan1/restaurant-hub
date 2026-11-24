@@ -25,6 +25,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // generated URLs use https and the real client IP.
         $middleware->trustProxies(at: '*');
 
+        // Answer in the visitor's language (Accept-Language: en | ru | hy).
+        $middleware->api(prepend: [
+            \App\Http\Middleware\SetLocale::class,
+        ]);
+
         $middleware->alias([
             'super-admin' => \App\Http\Middleware\EnsureSuperAdmin::class,
             'subscribed' => \App\Http\Middleware\EnsureSubscribed::class,
@@ -38,7 +43,15 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             return match (true) {
-                $e instanceof ValidationException => ApiResponse::validationError($e->errors()),
+                // Rule messages come from lang/<locale>/validation.php already;
+                // hand-written ones (withMessages, closures) are English text
+                // looked up in lang/<locale>.json.
+                $e instanceof ValidationException => ApiResponse::validationError(
+                    array_map(
+                        fn (array $messages) => array_map(fn (string $m) => __($m), $messages),
+                        $e->errors(),
+                    ),
+                ),
                 $e instanceof AuthenticationException => ApiResponse::unauthorized(),
                 $e instanceof AuthorizationException => ApiResponse::forbidden(),
                 $e instanceof ModelNotFoundException,

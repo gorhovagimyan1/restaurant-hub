@@ -58,6 +58,16 @@ class OrderItem extends Model
     }
 
     /**
+     * The dish name in the viewer's language (guest or staff): the menu's
+     * current wording while the dish exists, else the name captured when it
+     * was ordered. Load `product` first to avoid a query per line.
+     */
+    public function localizedName(): string
+    {
+        return $this->product?->translated('name') ?? $this->product_name;
+    }
+
+    /**
      * The guest's rating of this line, if they left one.
      *
      * @return HasOne<ProductReview, $this>

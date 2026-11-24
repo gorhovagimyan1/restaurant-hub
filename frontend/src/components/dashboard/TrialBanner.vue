@@ -1,9 +1,12 @@
 <script setup>
+import { useI18n } from 'vue-i18n'
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { Clock, ArrowRight } from 'lucide-vue-next'
 import { useBillingStore } from '@/stores/billing'
+
+const { t } = useI18n()
 
 /**
  * Countdown shown in the dashboard as a trial nears its end, or once a
@@ -17,14 +20,9 @@ const message = computed(() => {
   const s = subscription.value
   if (!s) return ''
   const days = daysRemaining.value
-  const unit = `day${days === 1 ? '' : 's'}`
 
-  if (s.status === 'cancelled') {
-    return `Your subscription is cancelled — access ends in ${days} ${unit}.`
-  }
-  return days === 0
-    ? 'Your free trial ends today.'
-    : `${days} ${unit} left in your free trial.`
+  if (s.status === 'cancelled') return t('banners.cancelled', { n: days }, days)
+  return days === 0 ? t('banners.trialToday') : t('banners.trialLeft', { n: days }, days)
 })
 </script>
 
@@ -55,7 +53,7 @@ const message = computed(() => {
       class="hidden shrink-0 items-center gap-1 text-sm font-semibold sm:flex"
       :class="bannerUrgent ? 'text-amber-800' : 'text-brand-600'"
     >
-      Choose a plan <ArrowRight :size="14" />
+      {{ t('banners.choosePlan') }} <ArrowRight :size="14" />
     </span>
   </RouterLink>
 </template>

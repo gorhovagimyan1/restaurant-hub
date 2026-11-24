@@ -33,13 +33,14 @@ class ReviewController extends Controller
             ->where('status', OrderItemStatus::Served->value)
             ->whereNotNull('product_id')
             ->whereDoesntHave('review')
+            ->with('product')
             ->orderBy('id')
             ->get();
 
         return ApiResponse::success([
             'items' => $items->map(fn (OrderItem $item) => [
                 'id' => $item->id,
-                'product_name' => $item->product_name,
+                'product_name' => $item->localizedName(),
                 'quantity' => $item->quantity,
             ])->values(),
         ], 'Dishes to rate retrieved.');
@@ -62,7 +63,7 @@ class ReviewController extends Controller
         $items = OrderItem::query()
             ->whereIn('id', $submitted->keys())
             ->whereHas('order', fn ($q) => $q->where('dining_session_id', $session->id))
-            ->with('review')
+            ->with(['review', 'product'])
             ->get();
 
         abort_unless($items->count() === $submitted->count(), 422, 'One of the dishes could not be found.');
@@ -71,10 +72,10 @@ class ReviewController extends Controller
             abort_unless(
                 $item->status === OrderItemStatus::Served,
                 422,
-                "You can rate \"{$item->product_name}\" once it has been served.",
+                __('You can rate ":name" once it has been served.', ['name' => $item->localizedName()]),
             );
-            abort_if($item->review !== null, 422, "You have already rated \"{$item->product_name}\".");
-            abort_if($item->product_id === null, 422, "\"{$item->product_name}\" can no longer be rated.");
+            abort_if($item->review !== null, 422, __('You have already rated ":name".', ['name' => $item->localizedName()]));
+            abort_if($item->product_id === null, 422, __('":name" can no longer be rated.', ['name' => $item->localizedName()]));
         }
 
         try {

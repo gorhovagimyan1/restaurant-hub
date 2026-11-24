@@ -1,9 +1,11 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { Search, RefreshCw, Power } from 'lucide-vue-next'
-import { getUsers, updateUserStatus, updateUserRoles, roleLabel, ROLE_LABELS } from '@/services/admin'
+import { getUsers, updateUserStatus, updateUserRoles, roleLabel, ROLE_SLUGS } from '@/services/admin'
 import { useAuthStore } from '@/stores/auth'
 
+const { t } = useI18n()
 const auth = useAuthStore()
 
 const users = ref([])
@@ -14,7 +16,7 @@ const busyId = ref(null)
 const search = ref('')
 const roleFilter = ref('')
 
-const roleOptions = Object.entries(ROLE_LABELS).map(([value, label]) => ({ value, label }))
+const roleOptions = computed(() => ROLE_SLUGS.map((value) => ({ value, label: roleLabel(value) })))
 
 let debounce = null
 
@@ -27,7 +29,7 @@ async function load() {
       role: roleFilter.value || undefined,
     })
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not load users.'
+    error.value = err?.response?.data?.message || t('admin.users.loadError')
   } finally {
     loading.value = false
   }
@@ -55,7 +57,7 @@ async function changeRole(user, role) {
     const updated = await updateUserRoles(user.id, role ? [role] : [])
     Object.assign(user, updated)
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not update the user’s role.'
+    error.value = err?.response?.data?.message || t('admin.users.roleError')
   } finally {
     busyId.value = null
   }
@@ -63,14 +65,14 @@ async function changeRole(user, role) {
 
 async function toggleActive(user) {
   const next = !user.is_active
-  if (!next && !window.confirm(`Deactivate ${user.full_name}? They will be signed out and unable to log in.`))
+  if (!next && !window.confirm(t('admin.users.confirmDeactivate', { name: user.full_name })))
     return
   busyId.value = user.id
   try {
     const updated = await updateUserStatus(user.id, next)
     Object.assign(user, updated)
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not update the user.'
+    error.value = err?.response?.data?.message || t('admin.users.updateError')
   } finally {
     busyId.value = null
   }
@@ -83,8 +85,8 @@ onMounted(load)
   <div>
     <header class="mb-5 flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">Users</h1>
-        <p class="text-sm text-ink-500">Every account across the platform.</p>
+        <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">{{ t('admin.users.title') }}</h1>
+        <p class="text-sm text-ink-500">{{ t('admin.users.subtitle') }}</p>
       </div>
       <button
         class="flex items-center gap-2 rounded-xl border border-hairline bg-white px-3.5 py-2 text-sm font-medium text-ink-600 transition hover:bg-canvas disabled:opacity-60"
@@ -92,7 +94,7 @@ onMounted(load)
         @click="load"
       >
         <RefreshCw :size="16" :class="loading && 'animate-spin'" />
-        Refresh
+        {{ t('admin.refresh') }}
       </button>
     </header>
 
@@ -103,7 +105,7 @@ onMounted(load)
         <input
           v-model="search"
           type="search"
-          placeholder="Search by name or email…"
+          :placeholder="t('admin.users.searchPlaceholder')"
           class="w-full field py-2 pl-9 pr-3"
         />
       </div>
@@ -111,18 +113,18 @@ onMounted(load)
         v-model="roleFilter"
         class="field field-select"
       >
-        <option value="">All roles</option>
+        <option value="">{{ t('admin.allRoles') }}</option>
         <option v-for="r in roleOptions" :key="r.value" :value="r.value">{{ r.label }}</option>
       </select>
     </div>
 
     <p v-if="error" class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{{ error }}</p>
-    <p v-if="loading && !users.length" class="text-sm text-ink-400">Loading…</p>
+    <p v-if="loading && !users.length" class="text-sm text-ink-400">{{ t('common.loading') }}</p>
     <p
       v-else-if="!users.length"
       class="card p-8 text-center text-sm text-ink-400"
     >
-      No users match your filters.
+      {{ t('admin.users.empty') }}
     </p>
 
     <div v-else class="overflow-hidden card">
@@ -130,11 +132,11 @@ onMounted(load)
         <table class="w-full text-left text-sm">
           <thead class="border-b border-hairline text-xs uppercase tracking-wide text-ink-400">
             <tr>
-              <th class="px-4 py-3 font-medium">User</th>
-              <th class="px-4 py-3 font-medium">Roles</th>
-              <th class="px-4 py-3 font-medium">Restaurant</th>
-              <th class="px-4 py-3 font-medium">Status</th>
-              <th class="px-4 py-3 font-medium text-right">Actions</th>
+              <th class="px-4 py-3 font-medium">{{ t('admin.users.user') }}</th>
+              <th class="px-4 py-3 font-medium">{{ t('admin.users.roles') }}</th>
+              <th class="px-4 py-3 font-medium">{{ t('admin.users.restaurant') }}</th>
+              <th class="px-4 py-3 font-medium">{{ t('admin.status') }}</th>
+              <th class="px-4 py-3 font-medium text-right">{{ t('admin.actions') }}</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-hairline">
@@ -151,7 +153,7 @@ onMounted(load)
                   class="field-select-sm rounded-lg border border-hairline bg-white py-1 pl-2 text-xs font-medium outline-none focus:border-brand-400"
                   @change="changeRole(u, $event.target.value)"
                 >
-                  <option value="">No role</option>
+                  <option value="">{{ t('admin.noRole') }}</option>
                   <option v-for="r in roleOptions" :key="r.value" :value="r.value">{{ r.label }}</option>
                 </select>
                 <div v-else class="flex flex-wrap gap-1">
@@ -173,7 +175,7 @@ onMounted(load)
                   class="rounded-full px-2 py-0.5 text-xs font-medium"
                   :class="u.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-hairline text-ink-500'"
                 >
-                  {{ u.is_active ? 'Active' : 'Inactive' }}
+                  {{ u.is_active ? t('admin.active') : t('admin.inactive') }}
                 </span>
               </td>
               <td class="px-4 py-3">
@@ -190,9 +192,9 @@ onMounted(load)
                     @click="toggleActive(u)"
                   >
                     <Power :size="14" />
-                    {{ u.is_active ? 'Deactivate' : 'Activate' }}
+                    {{ u.is_active ? t('admin.users.deactivate') : t('admin.users.activate') }}
                   </button>
-                  <span v-else class="text-xs text-ink-300">You</span>
+                  <span v-else class="text-xs text-ink-300">{{ t('admin.you') }}</span>
                 </div>
               </td>
             </tr>
@@ -221,7 +223,7 @@ onMounted(load)
               class="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
               :class="u.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-hairline text-ink-500'"
             >
-              {{ u.is_active ? 'Active' : 'Inactive' }}
+              {{ u.is_active ? t('admin.active') : t('admin.inactive') }}
             </span>
           </div>
           <div v-if="!isSelf(u)" class="mt-3 flex items-center gap-2">
@@ -231,11 +233,11 @@ onMounted(load)
               class="field-select-sm flex-1 rounded-lg border border-hairline bg-white py-1.5 pl-2 text-xs font-medium outline-none focus:border-brand-400"
               @change="changeRole(u, $event.target.value)"
             >
-              <option value="">No role</option>
+              <option value="">{{ t('admin.noRole') }}</option>
               <option v-for="r in roleOptions" :key="r.value" :value="r.value">{{ r.label }}</option>
             </select>
             <button
-              class="rounded-lg border px-3 py-1.5 text-xs font-medium transition disabled:opacity-50"
+              class="shrink-0 rounded-lg border px-3 py-1.5 text-xs font-medium transition disabled:opacity-50"
               :class="
                 u.is_active
                   ? 'border-hairline text-ink-600 hover:bg-canvas'
@@ -244,7 +246,7 @@ onMounted(load)
               :disabled="busyId === u.id"
               @click="toggleActive(u)"
             >
-              {{ u.is_active ? 'Deactivate' : 'Activate' }}
+              {{ u.is_active ? t('admin.users.deactivate') : t('admin.users.activate') }}
             </button>
           </div>
         </li>

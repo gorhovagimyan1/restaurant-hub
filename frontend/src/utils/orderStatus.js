@@ -1,24 +1,28 @@
+import i18n from '@/i18n'
+
+const tr = (key) => i18n.global.t(key)
+
 /**
  * Order status metadata shared by the dashboard board:
  * label, badge classes, and the natural "next step" a staff member advances to.
  */
 export const ORDER_STATUS = {
-  pending: { label: 'New', badge: 'bg-slate-200 text-slate-700', dot: 'bg-slate-500' },
-  accepted: { label: 'Accepted', badge: 'bg-sky-100 text-sky-700', dot: 'bg-sky-500' },
-  preparing: { label: 'Preparing', badge: 'bg-indigo-100 text-indigo-700', dot: 'bg-indigo-500' },
-  ready: { label: 'Ready', badge: 'bg-emerald-100 text-emerald-700', dot: 'bg-emerald-500' },
-  served: { label: 'Served', badge: 'bg-teal-100 text-teal-700', dot: 'bg-teal-500' },
-  completed: { label: 'Paid', badge: 'bg-stone-200 text-stone-600', dot: 'bg-stone-400' },
-  cancelled: { label: 'Cancelled', badge: 'bg-red-100 text-red-600', dot: 'bg-red-400' },
+  pending: { get label() { return tr('orders.status.pending') }, badge: 'bg-slate-200 text-slate-700', dot: 'bg-slate-500' },
+  accepted: { get label() { return tr('orders.status.accepted') }, badge: 'bg-sky-100 text-sky-700', dot: 'bg-sky-500' },
+  preparing: { get label() { return tr('orders.status.preparing') }, badge: 'bg-indigo-100 text-indigo-700', dot: 'bg-indigo-500' },
+  ready: { get label() { return tr('orders.status.ready') }, badge: 'bg-emerald-100 text-emerald-700', dot: 'bg-emerald-500' },
+  served: { get label() { return tr('orders.status.served') }, badge: 'bg-teal-100 text-teal-700', dot: 'bg-teal-500' },
+  completed: { get label() { return tr('orders.status.completed') }, badge: 'bg-stone-200 text-stone-600', dot: 'bg-stone-400' },
+  cancelled: { get label() { return tr('orders.status.cancelled') }, badge: 'bg-red-100 text-red-600', dot: 'bg-red-400' },
 }
 
 // The kitchen workflow. Ends at "served" (food delivered) — payment is handled
 // separately at the table level when the customer leaves.
 const FLOW = {
-  pending: { next: 'accepted', action: 'Accept' },
-  accepted: { next: 'preparing', action: 'Start preparing' },
-  preparing: { next: 'ready', action: 'Mark ready' },
-  ready: { next: 'served', action: 'Mark served' },
+  pending: { next: 'accepted', get action() { return tr('orders.flow.accept') } },
+  accepted: { next: 'preparing', get action() { return tr('orders.flow.startPreparing') } },
+  preparing: { next: 'ready', get action() { return tr('orders.flow.markReady') } },
+  ready: { next: 'served', get action() { return tr('orders.flow.markServed') } },
 }
 
 export function statusMeta(status) {
@@ -51,10 +55,10 @@ export function isOpen(status) {
  * they collapse into one step rather than a timeline that barely moves.
  */
 export const CUSTOMER_STEPS = [
-  { key: 'sent', label: 'Sent' },
-  { key: 'cooking', label: 'Cooking' },
-  { key: 'ready', label: 'Ready' },
-  { key: 'served', label: 'Served' },
+  { key: 'sent', get label() { return tr('orders.steps.sent') } },
+  { key: 'cooking', get label() { return tr('orders.steps.cooking') } },
+  { key: 'ready', get label() { return tr('orders.steps.ready') } },
+  { key: 'served', get label() { return tr('orders.steps.served') } },
 ]
 
 const STEP_INDEX = {
@@ -73,35 +77,27 @@ export function progressIndex(status) {
 }
 
 // What the guest is told, in plain language rather than workflow jargon.
-const CUSTOMER_LINE = {
-  pending: 'Sent to the kitchen',
-  accepted: 'The kitchen has your order',
-  preparing: 'Being cooked now',
-  ready: 'Ready — on its way over',
-  served: 'Delivered to your table',
-  completed: 'Completed',
-  cancelled: 'This order was cancelled',
-}
+const CUSTOMER_LINES = ['pending', 'accepted', 'preparing', 'ready', 'served', 'completed', 'cancelled']
 
 export function customerLine(status) {
-  return CUSTOMER_LINE[status] || CUSTOMER_LINE.pending
+  return tr(`orders.customerLine.${CUSTOMER_LINES.includes(status) ? status : 'pending'}`)
 }
 
 /* ---- Per-item status (kitchen cooks & waiter delivers each dish) ---- */
 
 export const ITEM_STATUS = {
-  pending: { label: 'Queued', badge: 'bg-stone-200 text-stone-600' },
-  preparing: { label: 'Cooking', badge: 'bg-indigo-100 text-indigo-700' },
-  ready: { label: 'Ready', badge: 'bg-emerald-100 text-emerald-700' },
-  served: { label: 'Delivered', badge: 'bg-teal-100 text-teal-700' },
-  cancelled: { label: 'Cancelled', badge: 'bg-red-100 text-red-600' },
+  pending: { get label() { return tr('orders.itemStatus.pending') }, badge: 'bg-stone-200 text-stone-600' },
+  preparing: { get label() { return tr('orders.itemStatus.preparing') }, badge: 'bg-indigo-100 text-indigo-700' },
+  ready: { get label() { return tr('orders.itemStatus.ready') }, badge: 'bg-emerald-100 text-emerald-700' },
+  served: { get label() { return tr('orders.itemStatus.served') }, badge: 'bg-teal-100 text-teal-700' },
+  cancelled: { get label() { return tr('orders.itemStatus.cancelled') }, badge: 'bg-red-100 text-red-600' },
 }
 
 // The single action that moves an item forward, with a button colour.
 const ITEM_FLOW = {
-  pending: { next: 'preparing', action: 'Start', btn: 'bg-stone-800 hover:bg-stone-900' },
-  preparing: { next: 'ready', action: 'Ready', btn: 'bg-emerald-500 hover:bg-emerald-600' },
-  ready: { next: 'served', action: 'Deliver', btn: 'bg-sky-500 hover:bg-sky-600' },
+  pending: { next: 'preparing', get action() { return tr('orders.itemFlow.start') }, btn: 'bg-stone-800 hover:bg-stone-900' },
+  preparing: { next: 'ready', get action() { return tr('orders.itemFlow.ready') }, btn: 'bg-emerald-500 hover:bg-emerald-600' },
+  ready: { next: 'served', get action() { return tr('orders.itemFlow.deliver') }, btn: 'bg-sky-500 hover:bg-sky-600' },
 }
 
 export function itemStatusMeta(status) {

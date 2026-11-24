@@ -1,7 +1,9 @@
 <script setup>
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ImagePlus, Trash2, Loader2 } from 'lucide-vue-next'
 import AppImage from '@/components/ui/AppImage.vue'
+import { IMAGE_ACCEPT, imageFileError } from '@/utils/imageFile'
 
 /**
  * Drop-or-browse image field with an inline preview.
@@ -18,9 +20,13 @@ const props = defineProps({
   /** `square` for logos, `wide` for cover photos. */
   shape: { type: String, default: 'wide' },
   error: { type: String, default: '' },
+  /** Largest file accepted, in MB (keep in step with the server's limit). */
+  maxMb: { type: Number, default: 4 },
 })
 
 const emit = defineEmits(['select', 'remove'])
+
+const { t } = useI18n()
 
 const input = ref(null)
 const dragging = ref(false)
@@ -29,9 +35,15 @@ const frameClass = computed(() =>
   props.shape === 'square' ? 'aspect-square w-28' : 'aspect-[16/9] w-full max-w-sm',
 )
 
+// A wrong file (not a JPG/PNG/WebP image, or too big) never reaches the parent.
+const localError = ref('')
+const shownError = computed(() => localError.value || props.error)
+
 function choose(fileList) {
   const file = fileList?.[0]
-  if (file) emit('select', file)
+  if (!file) return
+  localError.value = imageFileError(file, props.maxMb) || ''
+  if (!localError.value) emit('select', file)
 }
 
 function onDrop(event) {
@@ -56,7 +68,7 @@ function onPick(event) {
         class="flex items-center gap-1 text-[11px] font-medium text-ink-400 transition hover:text-red-600"
         @click="emit('remove')"
       >
-        <Trash2 :size="12" /> Remove
+        <Trash2 :size="12" /> {{ t('ui.remove') }}
       </button>
     </div>
 
@@ -98,7 +110,7 @@ function onPick(event) {
         <template v-else>
           <ImagePlus :size="20" />
           <span class="px-3 text-[11px] font-medium leading-tight">
-            {{ src ? 'Replace' : 'Click or drop an image' }}
+            {{ src ? t('ui.replace') : t('ui.dropImage') }}
           </span>
         </template>
       </button>
@@ -114,13 +126,15 @@ function onPick(event) {
       <input
         ref="input"
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        :accept="IMAGE_ACCEPT"
         class="hidden"
         @change="onPick"
       />
     </div>
 
-    <p v-if="error" class="mt-1 text-[11px] text-red-600">{{ error }}</p>
-    <p v-else-if="hint" class="mt-1 text-[11px] text-ink-400">{{ hint }}</p>
+    <p v-if="shownError" class="mt-1 text-[11px] text-red-600">{{ shownError }}</p>
+    <p v-else class="mt-1 text-[11px] text-ink-400">
+      {{ hint ? `${hint} ` : '' }}{{ t('ui.imageFormats', { max: maxMb }) }}
+    </p>
   </div>
 </template>

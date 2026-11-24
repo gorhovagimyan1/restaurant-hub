@@ -1,4 +1,5 @@
 <script setup>
+import { useI18n } from 'vue-i18n'
 import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
 import { storeToRefs } from 'pinia'
 import { X, RefreshCw, CookingPot, Check, XCircle } from 'lucide-vue-next'
@@ -14,6 +15,7 @@ defineProps({
 })
 
 const emit = defineEmits(['close'])
+const { t } = useI18n()
 
 const tracking = useOrderTrackingStore()
 const dining = useDiningStore()
@@ -31,7 +33,7 @@ function openRating(item) {
 async function sendRating(item) {
   const draft = drafts[item.id]
   if (!draft.rating) {
-    draft.error = 'Tap a star to rate.'
+    draft.error = t('orders.tapStar')
     return
   }
   draft.sending = true
@@ -43,7 +45,7 @@ async function sendRating(item) {
     rating.value = null
     await tracking.refresh()
   } catch (err) {
-    draft.error = err?.response?.data?.message || 'Could not send your rating.'
+    draft.error = err?.response?.data?.message || t('orders.ratingError')
   } finally {
     draft.sending = false
   }
@@ -52,9 +54,9 @@ async function sendRating(item) {
 function timeAgo(iso) {
   if (!iso) return ''
   const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000)
-  if (mins < 1) return 'just now'
-  if (mins < 60) return `${mins} min ago`
-  return `${Math.round(mins / 60)}h ago`
+  if (mins < 1) return t('orders.justNow')
+  if (mins < 60) return t('orders.minAgo', { n: mins })
+  return t('orders.hAgo', { n: Math.round(mins / 60) })
 }
 
 // Opening the sheet is an explicit "is it coming?" — always re-check.
@@ -78,21 +80,21 @@ onBeforeUnmount(() => {
     >
       <header class="m-card-border flex items-center justify-between border-b px-5 py-3.5">
         <div class="min-w-0">
-          <h2 class="m-heading font-bold">Your order</h2>
+          <h2 class="m-heading font-bold">{{ t('orders.yourOrder') }}</h2>
           <p v-if="tableName" class="m-muted-card text-xs">{{ tableName }}</p>
         </div>
         <div class="flex items-center gap-1">
           <button
             class="m-faint rounded-full p-1.5 transition hover:opacity-70 disabled:opacity-40"
             :disabled="loading"
-            aria-label="Refresh"
+            :aria-label="t('orders.refreshAria')"
             @click="tracking.refresh()"
           >
             <RefreshCw :size="16" :class="loading && 'animate-spin'" />
           </button>
           <button
             class="m-faint rounded-full p-1.5 transition hover:opacity-70"
-            aria-label="Close"
+            :aria-label="t('common.close')"
             @click="emit('close')"
           >
             <X :size="20" />
@@ -101,10 +103,10 @@ onBeforeUnmount(() => {
       </header>
 
       <div class="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-        <p v-if="!loadedOnce && loading" class="m-faint py-10 text-center text-sm">Checking…</p>
+        <p v-if="!loadedOnce && loading" class="m-faint py-10 text-center text-sm">{{ t('orders.checking') }}</p>
         <p v-else-if="error" class="py-6 text-center text-sm text-red-500">{{ error }}</p>
         <p v-else-if="!orders.length" class="m-faint py-10 text-center text-sm">
-          You haven't ordered anything yet.
+          {{ t('orders.nothingOrdered') }}
         </p>
 
         <div v-else class="space-y-6">
@@ -162,7 +164,7 @@ onBeforeUnmount(() => {
                   <span
                     v-for="(step, i) in CUSTOMER_STEPS"
                     :key="step.key"
-                    class="text-[10px] font-medium"
+                    class="min-w-0 break-words text-center text-[10px] font-medium leading-tight"
                     :class="progressIndex(order.status) >= i ? 'm-accent' : 'm-faint'"
                   >
                     {{ step.label }}
@@ -184,7 +186,7 @@ onBeforeUnmount(() => {
                     </span>
                     <span
                       v-if="item.status !== 'cancelled'"
-                      class="m-elevated m-muted-card shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                      class="m-elevated m-muted-card max-w-[40%] shrink-0 truncate rounded-full px-2 py-0.5 text-[10px] font-semibold"
                     >
                       {{ itemStatusMeta(item.status).label }}
                     </span>
@@ -199,7 +201,7 @@ onBeforeUnmount(() => {
                       class="m-accent text-xs font-semibold underline-offset-2 hover:underline"
                       @click="openRating(item)"
                     >
-                      {{ rating === item.id ? 'Cancel' : 'Rate this dish' }}
+                      {{ rating === item.id ? t('orders.cancel') : t('orders.rateDish') }}
                     </button>
 
                     <div v-if="rating === item.id" class="m-elevated mt-2 rounded-xl p-3">
@@ -208,7 +210,7 @@ onBeforeUnmount(() => {
                         v-model="drafts[item.id].comment"
                         rows="2"
                         maxlength="500"
-                        placeholder="Tell us more (optional)"
+                        :placeholder="t('orders.commentPlaceholder')"
                         class="m-card-border m-panel mt-2 w-full rounded-lg border px-3 py-2 text-sm outline-none"
                       />
                       <p v-if="drafts[item.id].error" class="mt-1 text-xs text-red-500">
@@ -219,18 +221,18 @@ onBeforeUnmount(() => {
                         :disabled="drafts[item.id].sending"
                         @click="sendRating(item)"
                       >
-                        {{ drafts[item.id].sending ? 'Sending…' : 'Send' }}
+                        {{ drafts[item.id].sending ? t('orders.sending') : t('orders.send') }}
                       </button>
                     </div>
                   </div>
                   <p v-else-if="item.rating" class="m-accent mt-1 flex items-center gap-1 text-xs">
-                    <StarRating :model-value="item.rating" :size="12" /> Thanks for rating!
+                    <StarRating :model-value="item.rating" :size="12" /> {{ t('orders.thanksRating') }}
                   </p>
                 </li>
               </ul>
 
               <div class="m-border mt-1 flex justify-between border-t pt-2 text-sm font-bold">
-                <span>Total</span>
+                <span>{{ t('orders.total') }}</span>
                 <span class="tabular-nums">{{ formatPrice(order.total, currency) }}</span>
               </div>
             </template>
@@ -239,7 +241,7 @@ onBeforeUnmount(() => {
       </div>
 
       <footer class="m-card-border m-faint border-t px-5 py-3 text-center text-[11px]">
-        Updates automatically while your order is being prepared.
+        {{ t('orders.autoUpdates') }}
       </footer>
     </div>
   </div>

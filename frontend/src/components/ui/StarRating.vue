@@ -1,5 +1,6 @@
 <script setup>
 import { Star } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 
 /**
  * Five stars. Read-only by default (shows `modelValue`, which may be a decimal
@@ -13,6 +14,8 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
+const { t } = useI18n()
+
 function fill(star) {
   // 0..1: how much of this star is lit (so 4.6 lights the fifth star 60%).
   return Math.max(0, Math.min(1, props.modelValue - (star - 1)))
@@ -20,7 +23,7 @@ function fill(star) {
 </script>
 
 <template>
-  <span class="inline-flex items-center gap-0.5" :aria-label="`${modelValue} out of 5 stars`">
+  <span class="inline-flex items-center gap-0.5" :aria-label="t('ui.starsOutOf', { value: modelValue })">
     <component
       :is="editable ? 'button' : 'span'"
       v-for="star in 5"
@@ -28,7 +31,7 @@ function fill(star) {
       :type="editable ? 'button' : undefined"
       class="relative inline-block leading-none"
       :class="editable && 'p-0.5 transition active:scale-90'"
-      :aria-label="editable ? `${star} star${star > 1 ? 's' : ''}` : undefined"
+      :aria-label="editable ? t('ui.starCount', { count: star }, star) : undefined"
       @click="editable && emit('update:modelValue', star)"
     >
       <Star :size="size" class="opacity-30" />

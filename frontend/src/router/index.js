@@ -150,6 +150,11 @@ const router = createRouter({
           name: 'admin-roles',
           component: () => import('@/views/admin/RolesAdmin.vue'),
         },
+        {
+          path: 'categories',
+          name: 'admin-categories',
+          component: () => import('@/views/admin/CategoryCatalogAdmin.vue'),
+        },
       ],
     },
     {

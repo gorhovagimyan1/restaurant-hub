@@ -17,6 +17,7 @@ class StoreProductRequest extends FormRequest
     public function rules(): array
     {
         return [
+            ...$this->translationRules(),
             'category_id' => ['required', 'integer'],
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:2000'],
@@ -31,5 +32,20 @@ class StoreProductRequest extends FormRequest
             'is_featured' => ['boolean'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
         ];
+    }
+
+    /**
+     * Optional wording in other languages; blanks fall back to the original.
+     *
+     * @return array<string, array<int, mixed>>
+     */
+    private function translationRules(): array
+    {
+        return \App\Models\Product::translationRules([
+            'name' => ['nullable', 'string', 'max:255'],
+            'description' => ['nullable', 'string', 'max:2000'],
+            'ingredients' => ['nullable', 'array'],
+            'ingredients.*' => ['nullable', 'string', 'max:100'],
+        ]);
     }
 }

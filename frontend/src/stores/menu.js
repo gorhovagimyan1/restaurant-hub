@@ -1,7 +1,9 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { fetchMenu } from '@/services/menu'
 import { DEFAULT_THEME } from '@/utils/menuTheme'
+import i18n, { suggestLocale } from '@/i18n'
+import { useCartStore } from '@/stores/cart'
 
 export const useMenuStore = defineStore('menu', () => {
   const restaurant = ref(null)
@@ -46,21 +48,26 @@ export const useMenuStore = defineStore('menu', () => {
     return categories.value.find((category) => category.id === id) || null
   }
 
-  async function load(targetSlug, { force = false } = {}) {
+  async function load(targetSlug, { force = false, silent = false } = {}) {
     if (!targetSlug) return
     if (!force && slug.value === targetSlug && restaurant.value) return
 
-    loading.value = true
+    // A silent reload keeps the current menu on screen instead of a skeleton.
+    if (!silent) loading.value = true
     error.value = null
     try {
       const data = await fetchMenu(targetSlug)
       restaurant.value = data.restaurant
+      if (data.restaurant?.default_language) suggestLocale(data.restaurant.default_language)
       categories.value = data.categories ?? []
       bestChoices.value = data.best_choices ?? []
       slug.value = targetSlug
+      useCartStore().refreshProducts(categories.value.flatMap((c) => c.products ?? []))
     } catch (err) {
+      // A failed background refresh keeps the menu already on screen.
+      if (silent) return
       error.value =
-        err?.response?.data?.message || 'We could not load the menu. Please try again.'
+        err?.response?.data?.message || i18n.global.t('customer.loadError')
       restaurant.value = null
       categories.value = []
       bestChoices.value = []
@@ -69,6 +76,15 @@ export const useMenuStore = defineStore('menu', () => {
       loading.value = false
     }
   }
+
+  // Dish names and descriptions come from the API in the visitor's language,
+  // so switching language re-fetches the menu.
+  watch(
+    () => i18n.global.locale.value,
+    () => {
+      if (slug.value) load(slug.value, { force: true, silent: true })
+    },
+  )
 
   return {
     restaurant,

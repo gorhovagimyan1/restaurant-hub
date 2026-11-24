@@ -1,7 +1,8 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { fetchOrders, updateOrderStatus, updateOrderItemStatus } from '@/services/orders'
 import { settleTable, fetchServiceCalls, acknowledgeCall } from '@/services/tables'
+import i18n from '@/i18n'
 import { isKitchen, isOpen } from '@/utils/orderStatus'
 
 const POLL_INTERVAL = 4000
@@ -39,7 +40,7 @@ export const useOrdersStore = defineStore('orders', () => {
       if (!groups.has(id)) {
         groups.set(id, {
           id,
-          name: order.table?.name || `Table ${id}`,
+          name: order.table?.name || i18n.global.t('tables.fallbackName', { n: id }),
           billRequested: !!order.table?.bill_requested,
           orders: [],
           total: 0,
@@ -92,7 +93,7 @@ export const useOrdersStore = defineStore('orders', () => {
       error.value = null
       lastUpdated.value = new Date()
     } catch (err) {
-      error.value = err?.response?.data?.message || 'Could not load orders.'
+      error.value = err?.response?.data?.message || i18n.global.t('orders.loadError')
     } finally {
       loading.value = false
     }
@@ -145,6 +146,14 @@ export const useOrdersStore = defineStore('orders', () => {
       timer = null
     }
   }
+
+  // Dish names come in the current language; don't wait for the next poll.
+  watch(
+    () => i18n.global.locale.value,
+    () => {
+      if (timer) refresh({ silent: true })
+    },
+  )
 
   return {
     orders,

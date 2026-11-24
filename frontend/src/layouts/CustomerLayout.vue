@@ -1,6 +1,7 @@
 <script setup>
 import { computed, watch, onMounted, onBeforeUnmount, ref } from 'vue'
 import { useRoute, RouterView, RouterLink } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
 import { useMenuStore } from '@/stores/menu'
 import { useDiningStore } from '@/stores/dining'
@@ -8,6 +9,7 @@ import { useCartStore } from '@/stores/cart'
 import { useAuthStore } from '@/stores/auth'
 import { useOrderTrackingStore } from '@/stores/orderTracking'
 import AppImage from '@/components/ui/AppImage.vue'
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher.vue'
 import ProductModal from '@/components/menu/ProductModal.vue'
 import CartSheet from '@/components/order/CartSheet.vue'
 import BillSheet from '@/components/order/BillSheet.vue'
@@ -16,8 +18,9 @@ import RateDishesSheet from '@/components/order/RateDishesSheet.vue'
 import { BellRing, ReceiptText, UtensilsCrossed, Check, Eye, CookingPot } from 'lucide-vue-next'
 import { callWaiter } from '@/services/orders'
 import { formatPrice } from '@/utils/format'
-import { themeVars, ensureThemeFonts } from '@/utils/menuTheme'
+import { themeVars, ensureThemeFonts, isDarkTheme } from '@/utils/menuTheme'
 
+const { t } = useI18n()
 const route = useRoute()
 const store = useMenuStore()
 const dining = useDiningStore()
@@ -40,6 +43,7 @@ const ready = computed(() => !!restaurant.value)
 // The restaurant's design, as CSS custom properties. Everything under
 // `.menu-theme` derives its palette from these — see assets/main.css.
 const themeStyle = computed(() => themeVars(theme.value))
+const switcherTone = computed(() => (isDarkTheme(theme.value) ? 'dark' : 'light'))
 watch(theme, (value) => ensureThemeFonts(value), { immediate: true })
 
 const tracking = useOrderTrackingStore()
@@ -100,9 +104,9 @@ async function summonWaiter() {
   waiterCalling.value = true
   try {
     await callWaiter(diningToken.value, diningSessionToken.value)
-    toast.value = 'A waiter is on the way'
+    toast.value = t('customer.waiterOnWay')
   } catch (err) {
-    toast.value = err?.response?.data?.message || 'Could not call a waiter. Please try again.'
+    toast.value = err?.response?.data?.message || t('customer.waiterFailed')
   } finally {
     waiterCalling.value = false
     clearTimeout(toastTimer)
@@ -158,6 +162,11 @@ function trackFromConfirmation() {
 
 <template>
   <div class="menu-theme menu-page flex min-h-screen flex-col" :style="themeStyle">
+    <!-- Language: a slim strip on phones (the header is full), in the header from sm up. -->
+    <div class="m-bar m-card-border flex justify-end border-b px-4 py-1.5 sm:hidden">
+      <LanguageSwitcher :tone="switcherTone" />
+    </div>
+
     <!-- Top bar -->
     <header class="m-bar sticky top-0 z-30 border-b backdrop-blur">
       <div class="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">
@@ -177,7 +186,7 @@ function trackFromConfirmation() {
             class="m-card-border hidden h-8 w-8 shrink-0 rounded-full object-cover ring-1 min-[420px]:block"
           />
           <span class="m-heading truncate text-base font-bold tracking-tight sm:text-lg">
-            {{ restaurant?.name || 'Menu' }}
+            {{ restaurant?.name || t('customer.menuFallback') }}
           </span>
         </RouterLink>
 
@@ -189,33 +198,33 @@ function trackFromConfirmation() {
               active-class="m-accent-soft"
               exact-active-class="m-accent-soft"
             >
-              Home
+              {{ t('customer.home') }}
             </RouterLink>
             <RouterLink
               :to="{ name: 'restaurant-menu', params: { slug } }"
               class="m-muted-card rounded-full px-2.5 py-1.5 sm:px-3"
               active-class="m-accent-soft"
             >
-              Menu
+              {{ t('customer.menu') }}
             </RouterLink>
           </nav>
           <button
             v-if="canCallWaiter"
             class="m-btn-quiet flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold disabled:opacity-50"
             :disabled="waiterCalling"
-            aria-label="Call waiter"
+            :aria-label="t('customer.callWaiter')"
             @click="summonWaiter"
           >
-            <BellRing :size="15" /> <span class="hidden sm:inline">Waiter</span>
+            <BellRing :size="15" /> <span class="hidden sm:inline">{{ t('customer.waiter') }}</span>
           </button>
           <!-- Order progress. Only offered once something has been ordered. -->
           <button
             v-if="diningActive && orderCount"
             class="m-btn-quiet relative flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold"
-            aria-label="Track your order"
+            :aria-label="t('customer.trackOrderAria')"
             @click="trackerOpen = true"
           >
-            <CookingPot :size="15" /> <span class="hidden sm:inline">Order</span>
+            <CookingPot :size="15" /> <span class="hidden sm:inline">{{ t('customer.order') }}</span>
             <span
               v-if="activeCount"
               class="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[10px] font-bold"
@@ -230,10 +239,10 @@ function trackFromConfirmation() {
           <button
             v-if="diningActive"
             class="m-btn-quiet flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold"
-            aria-label="Request bill"
+            :aria-label="t('customer.requestBill')"
             @click="billOpen = true"
           >
-            <ReceiptText :size="15" /> <span class="hidden sm:inline">Bill</span>
+            <ReceiptText :size="15" /> <span class="hidden sm:inline">{{ t('customer.bill') }}</span>
           </button>
           <span
             v-if="tableName"
@@ -245,8 +254,9 @@ function trackFromConfirmation() {
             v-else-if="isPreview"
             class="flex shrink-0 items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700 sm:px-3"
           >
-            <Eye :size="13" /> Preview
+            <Eye :size="13" /> {{ t('customer.preview') }}
           </span>
+          <LanguageSwitcher :tone="switcherTone" class="hidden sm:inline-flex" />
         </div>
       </div>
     </header>
@@ -257,7 +267,7 @@ function trackFromConfirmation() {
       v-if="isPreview"
       class="border-b border-amber-200 bg-amber-50 px-4 py-2 text-center text-xs font-medium text-amber-800"
     >
-      Staff preview — this is what customers see after scanning a table QR. Ordering is disabled here.
+      {{ t('customer.previewNotice') }}
     </div>
 
     <!-- Gentle nudge to rate served dishes -->
@@ -266,10 +276,10 @@ function trackFromConfirmation() {
       class="m-bar m-card-border flex items-center justify-center gap-3 border-b px-4 py-2 text-xs"
     >
       <span class="m-muted">
-        Enjoyed your meal? Rate {{ toRateCount === 1 ? 'your dish' : `${toRateCount} dishes` }}
+        {{ t('customer.rateNudge', { count: toRateCount }, toRateCount) }}
       </span>
-      <button class="m-accent font-semibold hover:underline" @click="openRatings">Rate</button>
-      <button class="m-faint hover:opacity-70" aria-label="Dismiss" @click="dismissRatePrompt">✕</button>
+      <button class="m-accent font-semibold hover:underline" @click="openRatings">{{ t('customer.rate') }}</button>
+      <button class="m-faint hover:opacity-70" :aria-label="t('customer.dismiss')" @click="dismissRatePrompt">✕</button>
     </div>
 
     <main class="flex-1" :class="{ 'pb-24': allowOrders && count > 0 }">
@@ -280,17 +290,17 @@ function trackFromConfirmation() {
             class="m-border h-8 w-8 animate-spin rounded-full border-2"
             style="border-top-color: var(--m-primary)"
           />
-          <span class="text-sm">Loading menu…</span>
+          <span class="text-sm">{{ t('customer.loadingMenu') }}</span>
         </div>
       </div>
 
       <!-- Error -->
       <div v-else-if="error && !ready" class="mx-auto max-w-md px-4 py-24 text-center">
         <UtensilsCrossed :size="44" class="m-faint mx-auto" />
-        <h2 class="m-heading mt-4 text-lg font-semibold">Menu unavailable</h2>
+        <h2 class="m-heading mt-4 text-lg font-semibold">{{ t('customer.menuUnavailable') }}</h2>
         <p class="m-muted mt-1 text-sm">{{ error }}</p>
         <button class="m-btn mt-6 px-5 py-2 text-sm font-semibold" @click="retry">
-          Try again
+          {{ t('customer.tryAgain') }}
         </button>
       </div>
 
@@ -309,7 +319,7 @@ function trackFromConfirmation() {
         <p v-if="restaurant.phone" class="mt-1">
           <a :href="`tel:${restaurant.phone}`" class="hover:underline">{{ restaurant.phone }}</a>
         </p>
-        <p class="m-faint mt-4 text-xs">Powered by Restaurant Hub</p>
+        <p class="m-faint mt-4 text-xs">{{ t('customer.poweredBy') }}</p>
       </div>
     </footer>
 
@@ -324,7 +334,7 @@ function trackFromConfirmation() {
             <span class="grid h-6 w-6 place-items-center rounded-full bg-white/25 text-xs font-bold">
               {{ count }}
             </span>
-            View order
+            {{ t('customer.viewOrder') }}
           </span>
           <span>{{ formatPrice(total, currency) }}</span>
         </button>
@@ -364,15 +374,15 @@ function trackFromConfirmation() {
         <div class="m-accent-soft mx-auto grid h-16 w-16 place-items-center rounded-full">
           <Check :size="32" :stroke-width="2.5" />
         </div>
-        <h2 class="m-heading mt-4 text-xl font-bold">Order sent!</h2>
+        <h2 class="m-heading mt-4 text-xl font-bold">{{ t('customer.orderSent') }}</h2>
         <p class="m-muted-card mt-1 text-sm">
-          {{ tableName }} · your order is on its way to the kitchen.
+          {{ tableName ? t('customer.orderOnWay', { table: tableName }) : t('customer.orderOnWayNoTable') }}
         </p>
         <div class="m-elevated m-radius-sm mt-4 p-3">
-          <p class="m-faint text-xs uppercase tracking-wide">Order number</p>
+          <p class="m-faint text-xs uppercase tracking-wide">{{ t('customer.orderNumber') }}</p>
           <p class="m-heading mt-1 text-lg font-bold">{{ placedOrder.order_number }}</p>
           <p class="m-muted-card mt-1 text-sm">
-            Total
+            {{ t('customer.total') }}
             <span class="font-semibold" style="color: var(--m-text-card)">
               {{ formatPrice(placedOrder.total, currency) }}
             </span>
@@ -383,10 +393,10 @@ function trackFromConfirmation() {
             class="m-btn-quiet flex-1 py-2.5 text-sm font-semibold"
             @click="placedOrder = null"
           >
-            Order more
+            {{ t('customer.orderMore') }}
           </button>
           <button class="m-btn flex-1 py-2.5 text-sm font-semibold" @click="trackFromConfirmation">
-            Track order
+            {{ t('customer.trackOrder') }}
           </button>
         </div>
       </div>

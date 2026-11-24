@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { fetchOrderProgress } from '@/services/orders'
 import { useDiningStore } from '@/stores/dining'
+import i18n from '@/i18n'
 
 /** How often to re-check while something can still change. */
 const POLL_MS = 10000
@@ -52,9 +53,9 @@ export const useOrderTrackingStore = defineStore('orderTracking', () => {
       // was auto-closed). Polling on is pointless and would spam the API.
       if (err?.response?.status === 409) {
         stopPolling()
-        error.value = 'Your dining session has ended.'
+        error.value = i18n.global.t('customer.sessionEnded')
       } else {
-        error.value = err?.response?.data?.message || 'Could not check your order.'
+        error.value = err?.response?.data?.message || i18n.global.t('customer.orderCheckFailed')
       }
     } finally {
       loading.value = false

@@ -24,7 +24,7 @@ class ReviewController extends Controller
             ->where('restaurant_id', $restaurant->id)
             ->when($request->filled('product_id'), fn ($q) => $q->where('product_id', $request->integer('product_id')))
             ->when($request->filled('rating'), fn ($q) => $q->where('rating', $request->integer('rating')))
-            ->with(['product:id,name', 'orderItem.order.table:id,name'])
+            ->with(['product:id,name,translations', 'orderItem.order.table:id,name'])
             ->latest()
             ->paginate(20)
             ->withQueryString();
@@ -33,7 +33,7 @@ class ReviewController extends Controller
             'reviews' => $reviews->getCollection()->map(fn (ProductReview $r) => [
                 'id' => $r->id,
                 'product_id' => $r->product_id,
-                'product_name' => $r->product?->name,
+                'product_name' => $r->product?->translated('name'),
                 'rating' => $r->rating,
                 'comment' => $r->comment,
                 'table' => $r->orderItem?->order?->table?->name,

@@ -25,7 +25,7 @@ class ApiResponse
     ): JsonResponse {
         return response()->json([
             'success' => true,
-            'message' => $message,
+            'message' => __($message),
             'data' => $data,
         ], $status);
     }
@@ -60,7 +60,7 @@ class ApiResponse
     ): JsonResponse {
         return response()->json([
             'success' => false,
-            'message' => $message,
+            'message' => __($message),
             // Cast to object so an empty bag serializes as {} rather than [].
             'errors' => (object) $errors,
         ], $status);

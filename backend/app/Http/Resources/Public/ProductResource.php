@@ -23,9 +23,10 @@ class ProductResource extends JsonResource
 
         return [
             'id' => $this->id,
-            'name' => $this->name,
-            'description' => $this->description,
-            'ingredients' => $this->ingredients ?? [],
+            // In the visitor's language, falling back to the original wording.
+            'name' => $this->translated('name'),
+            'description' => $this->translated('description'),
+            'ingredients' => $this->translated('ingredients') ?? [],
             'price' => (float) $this->price,
             'preparation_time' => $this->preparation_time,
             // Effective availability: the manual toggle AND stock. The stock count

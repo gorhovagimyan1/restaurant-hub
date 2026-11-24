@@ -1,9 +1,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RefreshCw, Check, CircleAlert, Clock, ExternalLink } from 'lucide-vue-next'
 import { getPendingPayments, confirmPayment } from '@/services/billing'
 import { useBillingStore } from '@/stores/billing'
 import { formatPrice } from '@/utils/format'
+import { intlLocale } from '@/i18n'
+
+const { t, te } = useI18n()
 
 // This screen owns the freshest count, so it keeps the nav badge in step.
 const billing = useBillingStore()
@@ -41,7 +45,7 @@ async function load() {
     recent.value = data.recently_confirmed || []
     billing.setPendingCount(pending.value.length)
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not load payments.'
+    error.value = err?.response?.data?.message || t('admin.payments.loadError')
   } finally {
     loading.value = false
   }
@@ -52,11 +56,14 @@ async function confirm(payment) {
   error.value = null
   try {
     const result = await confirmPayment(payment.id)
-    notice.value = `${payment.restaurant.name} is now active until ${formatDate(result.current_period_end)}.`
+    notice.value = t('admin.payments.confirmedNotice', {
+      name: payment.restaurant.name,
+      date: formatDate(result.current_period_end),
+    })
     confirmingId.value = null
     await load()
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not confirm the payment.'
+    error.value = err?.response?.data?.message || t('admin.payments.confirmError')
   } finally {
     busyId.value = null
   }
@@ -64,7 +71,7 @@ async function confirm(payment) {
 
 function formatDate(iso) {
   if (!iso) return '—'
-  return new Date(iso).toLocaleDateString(undefined, {
+  return new Date(iso).toLocaleDateString(intlLocale(), {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -74,10 +81,15 @@ function formatDate(iso) {
 function waitingFor(iso) {
   if (!iso) return ''
   const hours = Math.floor((Date.now() - new Date(iso).getTime()) / 3600000)
-  if (hours < 1) return 'just now'
-  if (hours < 24) return `${hours}h ago`
+  if (hours < 1) return t('admin.time.justNow')
+  if (hours < 24) return t('admin.time.hoursAgo', { n: hours })
   const days = Math.floor(hours / 24)
-  return `${days} day${days === 1 ? '' : 's'} ago`
+  return t('admin.time.daysAgo', days)
+}
+
+function intervalLabel(i) {
+  const key = `admin.payments.interval.${i}`
+  return te(key) ? t(key) : i
 }
 
 /** Anything sitting unconfirmed for over two days deserves a nudge. */
@@ -93,10 +105,10 @@ onMounted(load)
     <header class="mb-5 flex flex-wrap items-center justify-between gap-3">
       <div>
         <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">
-          Payments
+          {{ t('admin.payments.title') }}
         </h1>
         <p class="text-sm text-ink-500">
-          Confirm subscription payments to extend a restaurant's access.
+          {{ t('admin.payments.subtitle') }}
         </p>
       </div>
       <button
@@ -105,7 +117,7 @@ onMounted(load)
         @click="load"
       >
         <RefreshCw :size="16" :class="loading && 'animate-spin'" />
-        Refresh
+        {{ t('admin.refresh') }}
       </button>
     </header>
 
@@ -114,25 +126,25 @@ onMounted(load)
     </p>
     <p v-if="error" class="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{{ error }}</p>
 
-    <p v-if="loading && !pending.length && !recent.length" class="text-sm text-ink-400">Loading…</p>
+    <p v-if="loading && !pending.length && !recent.length" class="text-sm text-ink-400">{{ t('common.loading') }}</p>
 
     <template v-else>
       <!-- Awaiting confirmation -->
       <section class="mb-6">
         <div class="mb-3 flex items-baseline justify-between gap-3">
           <h2 class="font-semibold text-ink-900">
-            Awaiting confirmation
+            {{ t('admin.payments.awaiting') }}
             <span v-if="pending.length" class="ml-1 text-sm font-normal text-ink-500">
               ({{ pending.length }})
             </span>
           </h2>
           <span v-if="pending.length" class="text-sm text-ink-500">
-            {{ formatPrice(total, currency) }} outstanding
+            {{ t('admin.payments.outstanding', { amount: formatPrice(total, currency) }) }}
           </span>
         </div>
 
         <p v-if="!pending.length" class="card p-8 text-center text-sm text-ink-400">
-          Nothing waiting. Payments appear here when a restaurant chooses a plan.
+          {{ t('admin.payments.nothing') }}
         </p>
 
         <div v-else class="card overflow-hidden">
@@ -150,47 +162,47 @@ onMounted(load)
                     :href="`/r/${p.restaurant.slug}`"
                     target="_blank"
                     class="shrink-0 text-ink-300 transition hover:text-brand-600"
-                    :title="`Open /r/${p.restaurant.slug}`"
+                    :title="t('admin.payments.openMenu', { slug: p.restaurant.slug })"
                   >
                     <ExternalLink :size="13" />
                   </a>
                 </div>
                 <p class="mt-0.5 flex items-center gap-1.5 text-xs text-ink-400">
                   <Clock :size="12" />
-                  requested {{ waitingFor(p.requested_at) }}
+                  {{ t('admin.payments.requested', { when: waitingFor(p.requested_at) }) }}
                   <span
                     v-if="isStale(p.requested_at)"
                     class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-1.5 py-0.5 font-semibold text-amber-700"
                   >
-                    <CircleAlert :size="11" /> waiting a while
+                    <CircleAlert :size="11" /> {{ t('admin.payments.waitingAWhile') }}
                   </span>
                 </p>
               </div>
 
               <div class="text-sm">
                 <p class="font-medium text-ink-800">{{ p.plan }}</p>
-                <p class="text-xs capitalize text-ink-400">{{ p.interval }}</p>
+                <p class="text-xs text-ink-400">{{ intervalLabel(p.interval) }}</p>
               </div>
 
               <div class="w-28 text-right text-sm font-semibold tabular-nums text-ink-900">
                 {{ formatPrice(p.amount, p.currency) }}
               </div>
 
-              <div class="flex shrink-0 items-center gap-2">
+              <div class="flex shrink-0 flex-wrap items-center gap-2">
                 <template v-if="confirmingId === p.id">
-                  <span class="text-xs text-ink-500">Confirm payment received?</span>
+                  <span class="text-xs text-ink-500">{{ t('admin.payments.confirmQuestion') }}</span>
                   <button
                     class="rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
                     :disabled="busyId === p.id"
                     @click="confirm(p)"
                   >
-                    {{ busyId === p.id ? 'Confirming…' : 'Yes, confirm' }}
+                    {{ busyId === p.id ? t('admin.payments.confirming') : t('admin.payments.yesConfirm') }}
                   </button>
                   <button
                     class="rounded-lg px-2 py-1.5 text-xs font-medium text-ink-500 transition hover:text-ink-800"
                     @click="confirmingId = null"
                   >
-                    Cancel
+                    {{ t('common.cancel') }}
                   </button>
                 </template>
                 <button
@@ -198,7 +210,7 @@ onMounted(load)
                   class="btn-ghost flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold"
                   @click="confirmingId = p.id"
                 >
-                  <Check :size="14" /> Mark paid
+                  <Check :size="14" /> {{ t('admin.payments.markPaid') }}
                 </button>
               </div>
             </li>
@@ -208,7 +220,7 @@ onMounted(load)
 
       <!-- Recently confirmed, so an admin can see their action landed -->
       <section v-if="recent.length">
-        <h2 class="mb-3 font-semibold text-ink-900">Recently confirmed</h2>
+        <h2 class="mb-3 font-semibold text-ink-900">{{ t('admin.payments.recent') }}</h2>
         <div class="card overflow-hidden">
           <ul class="divide-y divide-hairline">
             <li
@@ -222,12 +234,12 @@ onMounted(load)
               <span class="min-w-0 flex-1 truncate font-medium text-ink-800">
                 {{ p.restaurant.name }}
               </span>
-              <span class="text-xs capitalize text-ink-400">{{ p.plan }} · {{ p.interval }}</span>
+              <span class="text-xs text-ink-400">{{ p.plan }} · {{ intervalLabel(p.interval) }}</span>
               <span class="w-24 text-right tabular-nums text-ink-600">
                 {{ formatPrice(p.amount, p.currency) }}
               </span>
-              <span class="w-40 text-right text-xs text-ink-400">
-                active until {{ formatDate(p.period_end) }}
+              <span class="min-w-40 text-right text-xs text-ink-400">
+                {{ t('admin.payments.activeUntil', { date: formatDate(p.period_end) }) }}
               </span>
             </li>
           </ul>

@@ -1,10 +1,12 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useDashboardStore } from '@/stores/dashboard'
 import * as api from '@/services/dashboard'
 
 const emit = defineEmits(['close'])
 
+const { t } = useI18n()
 const dashboard = useDashboardStore()
 
 const loading = ref(true)
@@ -29,13 +31,13 @@ onMounted(async () => {
     // Nothing tracked yet? Show everything so the owner can start somewhere.
     onlyTracked.value = products.value.some((p) => p.stock_quantity !== null)
   } catch {
-    error.value = 'Could not load products.'
+    error.value = t('menuManager.loadError')
   } finally {
     loading.value = false
   }
 })
 
-const categoryName = (id) => dashboard.categories.find((c) => c.id === id)?.name ?? 'Other'
+const categoryName = (id) => dashboard.categories.find((c) => c.id === id)?.name ?? t('menuManager.other')
 
 const visible = computed(() => {
   const q = search.value.trim().toLowerCase()
@@ -68,7 +70,7 @@ async function save() {
     )
     emit('close')
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not update stock.'
+    error.value = err?.response?.data?.message || t('menuManager.stockError')
   } finally {
     saving.value = false
   }
@@ -79,24 +81,24 @@ async function save() {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="emit('close')">
     <div class="flex max-h-[92vh] w-full max-w-xl flex-col rounded-2xl bg-white shadow-xl">
       <div class="border-b border-hairline p-5">
-        <h2 class="text-lg font-bold text-ink-900">Update stock</h2>
+        <h2 class="text-lg font-bold text-ink-900">{{ t('menuManager.stockTitle') }}</h2>
         <p class="text-sm text-ink-500">
-          Set portions left for each item. Leave empty to stop counting. Guests never see these numbers.
+          {{ t('menuManager.stockIntro') }}
         </p>
         <div class="mt-3 flex items-center gap-3">
           <input
             v-model="search"
-            placeholder="Search…"
+            :placeholder="t('menuManager.search')"
             class="min-w-0 flex-1 rounded-lg border border-hairline-strong px-3 py-2 text-sm outline-none focus:border-brand-500"
           />
           <label class="flex shrink-0 items-center gap-2 text-sm text-ink-700">
-            <input v-model="onlyTracked" type="checkbox" class="h-4 w-4" /> Tracked only
+            <input v-model="onlyTracked" type="checkbox" class="h-4 w-4" /> {{ t('menuManager.trackedOnly') }}
           </label>
         </div>
       </div>
 
       <div class="min-h-0 flex-1 overflow-y-auto px-5">
-        <p v-if="loading" class="py-10 text-center text-sm text-ink-400">Loading…</p>
+        <p v-if="loading" class="py-10 text-center text-sm text-ink-400">{{ t('common.loading') }}</p>
         <ul v-else class="divide-y divide-hairline">
           <li v-for="p in visible" :key="p.id" class="flex items-center gap-3 py-2.5">
             <div class="min-w-0 flex-1">
@@ -116,7 +118,7 @@ async function save() {
             </div>
           </li>
           <li v-if="!visible.length" class="py-10 text-center text-sm text-ink-400">
-            Nothing to show. Untick “Tracked only” to add stock to other items.
+            {{ t('menuManager.nothingToShow') }}
           </li>
         </ul>
       </div>
@@ -124,9 +126,9 @@ async function save() {
       <div class="border-t border-hairline p-5">
         <p v-if="error" class="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{{ error }}</p>
         <div class="flex items-center justify-end gap-2">
-          <span v-if="changed.length" class="mr-auto text-xs text-ink-400">{{ changed.length }} changed</span>
+          <span v-if="changed.length" class="mr-auto text-xs text-ink-400">{{ t('menuManager.changed', { n: changed.length }) }}</span>
           <button type="button" class="rounded-lg px-4 py-2 text-sm font-medium text-ink-600 hover:bg-canvas" @click="emit('close')">
-            Cancel
+            {{ t('common.cancel') }}
           </button>
           <button
             type="button"
@@ -134,7 +136,7 @@ async function save() {
             class="rounded-lg bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-60"
             @click="save"
           >
-            {{ saving ? 'Saving…' : 'Save stock' }}
+            {{ saving ? t('menuManager.saving') : t('menuManager.saveStock') }}
           </button>
         </div>
       </div>

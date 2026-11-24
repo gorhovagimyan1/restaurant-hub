@@ -1,10 +1,13 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { intlLocale } from '@/i18n'
 import { User, StickyNote, ChevronDown, ChevronRight } from 'lucide-vue-next'
 import { fetchOrderHistory } from '@/services/orders'
 import { statusMeta, itemStatusMeta, ORDER_STATUS } from '@/utils/orderStatus'
 import { formatPrice } from '@/utils/format'
 
+const { t, locale } = useI18n()
 const orders = ref([])
 const meta = ref({ current_page: 1, last_page: 1, total: 0 })
 const loading = ref(false)
@@ -15,7 +18,9 @@ const search = ref('')
 const page = ref(1)
 const expanded = ref(new Set())
 
-const statusOptions = Object.entries(ORDER_STATUS).map(([value, m]) => ({ value, label: m.label }))
+const statusOptions = computed(() =>
+  Object.entries(ORDER_STATUS).map(([value, m]) => ({ value, label: m.label })),
+)
 
 let searchTimer = null
 
@@ -31,7 +36,7 @@ async function load() {
     orders.value = data.orders
     meta.value = data.meta
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not load orders.'
+    error.value = err?.response?.data?.message || t('orders.loadError')
   } finally {
     loading.value = false
   }
@@ -64,7 +69,7 @@ function toggle(id) {
 function formatWhen(iso) {
   if (!iso) return '—'
   const d = new Date(iso)
-  return d.toLocaleString(undefined, {
+  return d.toLocaleString(intlLocale(), {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
@@ -73,11 +78,14 @@ function formatWhen(iso) {
 }
 
 const rangeLabel = computed(() => {
-  if (!meta.value.total) return 'No orders'
+  if (!meta.value.total) return t('orders.noOrders')
   const start = (meta.value.current_page - 1) * 20 + 1
   const end = Math.min(meta.value.current_page * 20, meta.value.total)
-  return `${start}–${end} of ${meta.value.total}`
+  return t('orders.range', { start, end, total: meta.value.total })
 })
+
+// Dish names come from the API in the current language: re-fetch on a switch.
+watch(locale, () => load())
 
 onMounted(load)
 </script>
@@ -86,21 +94,21 @@ onMounted(load)
   <div>
     <header class="mb-5 flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">All orders</h1>
+        <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">{{ t('orders.allOrders') }}</h1>
         <p class="text-sm text-ink-500">{{ rangeLabel }}</p>
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <input
           v-model="search"
           type="search"
-          placeholder="Search order #, table, name…"
+          :placeholder="t('orders.searchPlaceholder')"
           class="w-56 field"
         />
         <select
           v-model="status"
           class="field-select rounded-full border border-hairline py-2 pl-3 text-sm outline-none focus:border-brand-400"
         >
-          <option value="">All statuses</option>
+          <option value="">{{ t('orders.allStatuses') }}</option>
           <option v-for="opt in statusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
         </select>
       </div>
@@ -111,15 +119,15 @@ onMounted(load)
     <div class="overflow-hidden card">
       <!-- Header row -->
       <div class="hidden grid-cols-12 gap-2 border-b border-hairline px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-ink-400 sm:grid">
-        <span class="col-span-3">Order</span>
-        <span class="col-span-2">Table</span>
-        <span class="col-span-3">When</span>
-        <span class="col-span-2 text-right">Total</span>
-        <span class="col-span-2 text-right">Status</span>
+        <span class="col-span-3">{{ t('orders.colOrder') }}</span>
+        <span class="col-span-2">{{ t('orders.colTable') }}</span>
+        <span class="col-span-3">{{ t('orders.colWhen') }}</span>
+        <span class="col-span-2 text-right">{{ t('orders.colTotal') }}</span>
+        <span class="col-span-2 text-right">{{ t('orders.colStatus') }}</span>
       </div>
 
-      <div v-if="loading && !orders.length" class="px-4 py-16 text-center text-sm text-ink-400">Loading…</div>
-      <div v-else-if="!orders.length" class="px-4 py-16 text-center text-sm text-ink-400">No orders found.</div>
+      <div v-if="loading && !orders.length" class="px-4 py-16 text-center text-sm text-ink-400">{{ t('orders.loading') }}</div>
+      <div v-else-if="!orders.length" class="px-4 py-16 text-center text-sm text-ink-400">{{ t('orders.noneFound') }}</div>
 
       <ul v-else class="divide-y divide-hairline">
         <li v-for="order in orders" :key="order.id">
@@ -136,7 +144,7 @@ onMounted(load)
                   class="shrink-0 text-ink-400"
                 />
                 <span class="min-w-0 flex-1 truncate font-semibold text-ink-800">{{ order.order_number }}</span>
-                <span class="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold" :class="statusMeta(order.status).badge">
+                <span class="max-w-[45%] shrink-0 truncate rounded-full px-2.5 py-1 text-xs font-semibold" :class="statusMeta(order.status).badge">
                   {{ statusMeta(order.status).label }}
                 </span>
               </div>
@@ -160,7 +168,7 @@ onMounted(load)
               <span class="col-span-3 text-sm text-ink-500">{{ formatWhen(order.created_at) }}</span>
               <span class="col-span-2 text-right font-semibold text-ink-800">{{ formatPrice(order.total) }}</span>
               <span class="col-span-2 flex justify-end">
-                <span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="statusMeta(order.status).badge">
+                <span class="max-w-full truncate rounded-full px-2.5 py-1 text-xs font-semibold" :class="statusMeta(order.status).badge">
                   {{ statusMeta(order.status).label }}
                 </span>
               </span>
@@ -178,7 +186,7 @@ onMounted(load)
                 <span class="flex items-center gap-3">
                   <span
                     v-if="item.status"
-                    class="rounded-full px-2 py-0.5 text-[11px] font-medium"
+                    class="shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium"
                     :class="itemStatusMeta(item.status).badge"
                   >
                     {{ itemStatusMeta(item.status).label }}
@@ -190,8 +198,8 @@ onMounted(load)
             <div class="mt-2 flex flex-wrap gap-x-6 gap-y-1 border-t border-hairline pt-2 text-xs text-ink-500">
               <span v-if="order.customer_name" class="inline-flex items-center gap-1"><User :size="12" /> {{ order.customer_name }}</span>
               <span v-if="order.notes" class="inline-flex items-center gap-1"><StickyNote :size="12" /> {{ order.notes }}</span>
-              <span v-if="order.service_charge">Service {{ formatPrice(order.service_charge) }}</span>
-              <span v-if="order.tax">Tax {{ formatPrice(order.tax) }}</span>
+              <span v-if="order.service_charge">{{ t('orders.service', { amount: formatPrice(order.service_charge) }) }}</span>
+              <span v-if="order.tax">{{ t('orders.tax', { amount: formatPrice(order.tax) }) }}</span>
             </div>
           </div>
         </li>
@@ -205,15 +213,15 @@ onMounted(load)
         :disabled="meta.current_page <= 1"
         @click="page = meta.current_page - 1"
       >
-        ‹ Prev
+        {{ t('orders.prev') }}
       </button>
-      <span class="text-sm text-ink-500">Page {{ meta.current_page }} of {{ meta.last_page }}</span>
+      <span class="text-sm text-ink-500">{{ t('orders.pageOf', { page: meta.current_page, last: meta.last_page }) }}</span>
       <button
         class="rounded-full border border-hairline px-4 py-1.5 text-sm font-medium text-ink-600 hover:bg-canvas disabled:opacity-40"
         :disabled="meta.current_page >= meta.last_page"
         @click="page = meta.current_page + 1"
       >
-        Next ›
+        {{ t('orders.next') }}
       </button>
     </div>
   </div>

@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import AppImage from '@/components/ui/AppImage.vue'
 
 const props = defineProps({
@@ -7,6 +8,8 @@ const props = defineProps({
   /** Photo-free themes fall back to a typographic tile. */
   showImage: { type: Boolean, default: true },
 })
+
+const { t } = useI18n()
 
 const count = computed(
   () => props.category.products_count ?? props.category.products?.length ?? 0,
@@ -26,7 +29,7 @@ const count = computed(
     <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
     <div class="absolute inset-x-0 bottom-0 p-4">
       <h3 class="m-heading text-lg font-semibold text-white drop-shadow-sm">{{ category.name }}</h3>
-      <p class="text-xs font-medium text-white/80">{{ count }} items</p>
+      <p class="text-xs font-medium text-white/80">{{ t('customer.itemsCount', { count }, count) }}</p>
     </div>
   </article>
 
@@ -35,6 +38,6 @@ const count = computed(
     class="m-card flex h-28 cursor-pointer flex-col justify-end p-4 transition hover:-translate-y-0.5 sm:h-32"
   >
     <h3 class="m-heading text-base font-semibold">{{ category.name }}</h3>
-    <p class="m-muted-card text-xs font-medium">{{ count }} items</p>
+    <p class="m-muted-card text-xs font-medium">{{ t('customer.itemsCount', { count }, count) }}</p>
   </article>
 </template>

@@ -22,6 +22,7 @@ class UpdateRestaurantRequest extends FormRequest
     public function rules(): array
     {
         return [
+            ...$this->translationRules(),
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:2000'],
             'phone' => ['nullable', 'string', 'max:20'],
@@ -34,5 +35,17 @@ class UpdateRestaurantRequest extends FormRequest
             'currency' => ['required', 'string', 'size:3'],
             'timezone' => ['required', 'string', Rule::in(timezone_identifiers_list())],
         ];
+    }
+
+    /**
+     * Optional wording in other languages; blanks fall back to the original.
+     *
+     * @return array<string, array<int, mixed>>
+     */
+    private function translationRules(): array
+    {
+        return \App\Models\Restaurant::translationRules([
+            'description' => ['nullable', 'string', 'max:2000'],
+        ]);
     }
 }

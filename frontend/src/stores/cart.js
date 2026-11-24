@@ -59,6 +59,23 @@ export const useCartStore = defineStore('cart', () => {
     persist()
   }
 
+  /**
+   * Swap in fresh copies of dishes already in the cart (e.g. after the menu
+   * re-loads in another language), so lines show the current name and price.
+   */
+  function refreshProducts(products) {
+    const byId = new Map(products.map((p) => [p.id, p]))
+    let changed = false
+    for (const line of lines.value) {
+      const fresh = byId.get(line.product.id)
+      if (fresh) {
+        line.product = { ...line.product, ...fresh }
+        changed = true
+      }
+    }
+    if (changed) persist()
+  }
+
   function decrement(productId) {
     const line = lineFor(productId)
     if (!line) return
@@ -132,6 +149,7 @@ export const useCartStore = defineStore('cart', () => {
     setContext,
     quantityOf,
     add,
+    refreshProducts,
     decrement,
     remove,
     clear,

@@ -32,7 +32,7 @@ class OrderController extends Controller
         $restaurant = $this->currentRestaurant($request);
 
         $orders = $restaurant->orders()
-            ->with(['items', 'table'])
+            ->with(['items.product', 'table'])
             ->where(function ($query) {
                 $query->whereNotIn('status', [
                     OrderStatus::Completed->value,
@@ -57,7 +57,7 @@ class OrderController extends Controller
         $restaurant = $this->currentRestaurant($request);
 
         $query = $restaurant->orders()
-            ->with(['items', 'table'])
+            ->with(['items.product', 'table'])
             ->orderByDesc('created_at');
 
         if ($status = $request->query('status')) {
@@ -103,14 +103,17 @@ class OrderController extends Controller
         abort_unless(
             $order->status->canTransitionTo($status),
             422,
-            "An order that is {$order->status->value} cannot be marked {$status->value}.",
+            __('An order that is :from cannot be marked :to.', [
+                'from' => __($order->status->value),
+                'to' => __($status->value),
+            ]),
         );
 
         // Re-applying the current status is a no-op, so a double-tap on the
         // board doesn't re-cascade or re-stamp anything.
         if ($status === $order->status) {
             return ApiResponse::success(
-                new OrderResource($order->load(['items', 'table'])),
+                new OrderResource($order->load(['items.product', 'table'])),
                 'Order status unchanged.',
             );
         }
@@ -143,7 +146,7 @@ class OrderController extends Controller
         }
 
         return ApiResponse::success(
-            new OrderResource($order->load(['items', 'table'])),
+            new OrderResource($order->load(['items.product', 'table'])),
             'Order status updated.',
         );
     }

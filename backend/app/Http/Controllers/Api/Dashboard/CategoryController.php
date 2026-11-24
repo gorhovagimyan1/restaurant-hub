@@ -9,6 +9,7 @@ use App\Http\Requests\Dashboard\StoreCategoryRequest;
 use App\Http\Requests\Dashboard\UpdateCategoryRequest;
 use App\Http\Resources\Dashboard\CategoryResource;
 use App\Models\Category;
+use App\Models\CategoryPreset;
 use App\Models\Menu;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,6 +22,7 @@ class CategoryController extends Controller
     {
         $categories = $this->currentRestaurant($request)
             ->categories()
+            ->with('preset')
             ->withCount('products')
             ->orderBy('sort_order')
             ->orderBy('name')
@@ -32,7 +34,7 @@ class CategoryController extends Controller
     public function store(StoreCategoryRequest $request): JsonResponse
     {
         $restaurant = $this->currentRestaurant($request);
-        $data = $request->validated();
+        $data = $this->withPreset($restaurant, $request->validated());
 
         $category = $restaurant->categories()->make($data);
         $category->menu_id = $this->defaultMenu($restaurant)->id;
@@ -55,7 +57,7 @@ class CategoryController extends Controller
         $restaurant = $this->currentRestaurant($request);
         $this->guardTenant($restaurant, $category);
 
-        $category->update($request->validated());
+        $category->update($this->withPreset($restaurant, $request->validated(), $category));
 
         return ApiResponse::success(
             new CategoryResource($category->loadCount('products')),
@@ -71,6 +73,42 @@ class CategoryController extends Controller
         $category->delete();
 
         return ApiResponse::success(null, 'Category deleted.');
+    }
+
+    /**
+     * A category picked from the catalog takes its name and description from
+     * there (stored in the restaurant's language as a plain-text fallback) and
+     * needs no translations of its own. Each catalog option can be used once
+     * per restaurant.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function withPreset(\App\Models\Restaurant $restaurant, array $data, ?Category $category = null): array
+    {
+        if (empty($data['category_preset_id'])) {
+            return $data;
+        }
+
+        $preset = CategoryPreset::findOrFail($data['category_preset_id']);
+
+        abort_if(
+            $restaurant->categories()
+                ->where('category_preset_id', $preset->id)
+                ->when($category, fn ($q) => $q->whereKeyNot($category->id))
+                ->exists(),
+            422,
+            'Your menu already has this category.',
+        );
+
+        $locale = $restaurant->settings?->default_language ?? 'en';
+
+        return [
+            ...$data,
+            'name' => $preset->text('name', $locale),
+            'description' => $preset->text('description', $locale),
+            'translations' => null,
+        ];
     }
 
     /**

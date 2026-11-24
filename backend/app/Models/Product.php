@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\BelongsToRestaurant;
+use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +14,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Product extends Model
 {
     /** @use HasFactory<\Database\Factories\ProductFactory> */
-    use BelongsToRestaurant, HasFactory, SoftDeletes;
+    use BelongsToRestaurant, HasFactory, HasTranslations, SoftDeletes;
+
+    /** Fields owners can write per language (see HasTranslations). */
+    public const TRANSLATABLE = ['name', 'description', 'ingredients'];
 
     /**
      * @var list<string>

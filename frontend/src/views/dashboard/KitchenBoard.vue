@@ -1,12 +1,15 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useI18n } from 'vue-i18n'
+import { intlLocale } from '@/i18n'
 import { Bell, BellOff, CookingPot, Check } from 'lucide-vue-next'
 import { useOrdersStore } from '@/stores/orders'
 import ServiceCallsBanner from '@/components/dashboard/ServiceCallsBanner.vue'
 import StockAlertsBanner from '@/components/dashboard/StockAlertsBanner.vue'
 import { nextItemStep } from '@/utils/orderStatus'
 
+const { t } = useI18n()
 const store = useOrdersStore()
 const { kitchen, loading, error, freshIds, lastUpdated } = storeToRefs(store)
 
@@ -25,9 +28,9 @@ function elapsed(order) {
   const created = order.ordered_at || order.created_at
   if (!created) return ''
   const mins = Math.max(0, Math.floor((Date.now() - new Date(created).getTime()) / 60000))
-  if (mins < 1) return 'just now'
-  if (mins < 60) return `${mins}m`
-  return `${Math.floor(mins / 60)}h ${mins % 60}m`
+  if (mins < 1) return t('orders.justNow')
+  if (mins < 60) return t('orders.shortMin', { n: mins })
+  return t('orders.shortHm', { h: Math.floor(mins / 60), m: mins % 60 })
 }
 
 function urgencyClass(order) {
@@ -67,7 +70,7 @@ watch(freshIds, (ids) => {
 })
 
 const lastUpdatedLabel = computed(() =>
-  lastUpdated.value ? lastUpdated.value.toLocaleTimeString() : '—',
+  lastUpdated.value ? lastUpdated.value.toLocaleTimeString(intlLocale()) : '—',
 )
 
 async function advanceItem(order, item, status) {
@@ -106,15 +109,15 @@ onBeforeUnmount(() => store.stop())
   <div>
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
       <p class="text-sm text-stone-400">
-        {{ tickets.length }} active tickets · updated {{ lastUpdatedLabel }}
-        <span v-if="loading" class="text-stone-500">· refreshing…</span>
+        {{ t('orders.kitchenSummary', { tickets: t('orders.activeTickets', tickets.length), time: lastUpdatedLabel }) }}
+        <span v-if="loading" class="text-stone-500">· {{ t('orders.refreshing') }}</span>
       </p>
       <button
         class="flex items-center gap-1.5 rounded-full border border-stone-600 px-3 py-1.5 text-sm font-medium text-stone-300 hover:bg-stone-800"
         @click="soundOn = !soundOn"
       >
         <component :is="soundOn ? Bell : BellOff" :size="15" />
-        {{ soundOn ? 'Sound on' : 'Sound off' }}
+        {{ soundOn ? t('orders.soundOn') : t('orders.soundOff') }}
       </button>
     </div>
 
@@ -131,8 +134,8 @@ onBeforeUnmount(() => store.stop())
       class="mt-6 rounded-2xl border border-dashed border-stone-700 px-6 py-20 text-center"
     >
       <CookingPot :size="48" class="mx-auto text-stone-600" />
-      <h3 class="mt-3 text-lg font-semibold text-stone-200">No tickets right now</h3>
-      <p class="mt-1 text-sm text-stone-400">New orders appear here the moment a customer sends them.</p>
+      <h3 class="mt-3 text-lg font-semibold text-stone-200">{{ t('orders.noTickets') }}</h3>
+      <p class="mt-1 text-sm text-stone-400">{{ t('orders.noTicketsHint') }}</p>
     </div>
 
     <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
@@ -144,14 +147,14 @@ onBeforeUnmount(() => store.stop())
       >
         <header class="flex items-start justify-between gap-2 border-b border-stone-700 pb-3">
           <div>
-            <p class="text-xl font-bold leading-tight text-white">{{ order.table?.name || 'Table' }}</p>
+            <p class="text-xl font-bold leading-tight text-white">{{ order.table?.name || t('orders.table') }}</p>
             <p class="text-xs text-stone-400">{{ order.order_number }}</p>
           </div>
           <div class="text-right">
             <span class="rounded-full bg-stone-700 px-2.5 py-1 text-sm font-semibold text-stone-100 tabular-nums">
               ⏱ {{ elapsed(order) }}
             </span>
-            <p class="mt-1 text-xs text-stone-400">{{ servedCount(order) }}/{{ order.items.length }} delivered</p>
+            <p class="mt-1 text-xs text-stone-400">{{ t('orders.deliveredCount', { done: servedCount(order), total: order.items.length }) }}</p>
           </div>
         </header>
 
@@ -171,13 +174,13 @@ onBeforeUnmount(() => store.stop())
 
             <button
               v-if="step(item.status)"
-              class="shrink-0 rounded-lg px-3 py-1.5 text-xs font-bold text-white transition"
+              class="max-w-[45%] shrink-0 rounded-lg px-3 py-1.5 text-xs font-bold text-white transition"
               :class="step(item.status).btn"
               @click="advanceItem(order, item, step(item.status).next)"
             >
               {{ step(item.status).action }}
             </button>
-            <span v-else class="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-teal-400"><Check :size="13" /> Delivered</span>
+            <span v-else class="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-teal-400"><Check :size="13" /> {{ t('orders.delivered') }}</span>
           </li>
         </ul>
 
@@ -188,17 +191,17 @@ onBeforeUnmount(() => store.stop())
         >
           <button
             v-if="hasCooking(order)"
-            class="flex-1 rounded-lg bg-emerald-600 py-2 text-xs font-bold text-white transition hover:bg-emerald-500"
+            class="flex-1 rounded-lg bg-emerald-600 px-2 py-2 text-xs font-bold text-white transition hover:bg-emerald-500"
             @click="advanceOrder(order, 'ready')"
           >
-            Mark all ready
+            {{ t('orders.markAllReady') }}
           </button>
           <button
             v-if="hasReady(order)"
-            class="flex-1 rounded-lg bg-sky-600 py-2 text-xs font-bold text-white transition hover:bg-sky-500"
+            class="flex-1 rounded-lg bg-sky-600 px-2 py-2 text-xs font-bold text-white transition hover:bg-sky-500"
             @click="advanceOrder(order, 'served')"
           >
-            Deliver all
+            {{ t('orders.deliverAll') }}
           </button>
         </footer>
       </article>

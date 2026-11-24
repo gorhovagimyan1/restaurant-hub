@@ -2,16 +2,19 @@
 import { ref, computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { RouterLink } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { CreditCard, ArrowRight } from 'lucide-vue-next'
 import { useBillingStore } from '@/stores/billing'
 import { cancelSubscription } from '@/services/billing'
 import { formatPrice } from '@/utils/format'
+import { intlLocale } from '@/i18n'
 
 /**
  * Where an owner sees what they are paying and when it renews — and the only
  * place to cancel. The trial banner only appears near expiry, so without this
  * a paying restaurant would have nowhere to manage its subscription.
  */
+const { t } = useI18n()
 const billing = useBillingStore()
 const { subscription, loading } = storeToRefs(billing)
 
@@ -21,12 +24,12 @@ const error = ref(null)
 const confirming = ref(false)
 
 const renewLabel = computed(() =>
-  subscription.value?.status === 'cancelled' ? 'Access ends' : 'Renews',
+  subscription.value?.status === 'cancelled' ? t('billing.accessEnds') : t('billing.renews'),
 )
 
 function formatDate(iso) {
   if (!iso) return '—'
-  return new Date(iso).toLocaleDateString(undefined, {
+  return new Date(iso).toLocaleDateString(intlLocale(), {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -39,10 +42,10 @@ async function confirmCancel() {
   try {
     await cancelSubscription()
     await billing.load({ force: true })
-    notice.value = 'Subscription cancelled. You keep access until the end of the period you paid for.'
+    notice.value = t('billing.cancelledNotice')
     confirming.value = false
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not cancel the subscription.'
+    error.value = err?.response?.data?.message || t('billing.cancelError')
   } finally {
     cancelling.value = false
   }
@@ -55,8 +58,8 @@ onMounted(() => billing.load())
   <section class="card p-6">
     <div class="flex items-start justify-between gap-3">
       <div>
-        <h2 class="text-lg font-bold text-ink-900">Subscription</h2>
-        <p class="mt-1 text-xs text-ink-400">Your plan and billing.</p>
+        <h2 class="text-lg font-bold text-ink-900">{{ t('billing.subscription') }}</h2>
+        <p class="mt-1 text-xs text-ink-400">{{ t('billing.subscriptionHint') }}</p>
       </div>
       <span
         v-if="subscription"
@@ -72,20 +75,20 @@ onMounted(() => billing.load())
       </span>
     </div>
 
-    <p v-if="loading && !subscription" class="mt-4 text-sm text-ink-400">Loading…</p>
+    <p v-if="loading && !subscription" class="mt-4 text-sm text-ink-400">{{ t('common.loading') }}</p>
 
     <div v-else-if="subscription" class="mt-4">
       <dl class="grid grid-cols-2 gap-4 sm:grid-cols-3">
         <div>
-          <dt class="eyebrow">Plan</dt>
+          <dt class="eyebrow">{{ t('billing.plan') }}</dt>
           <dd class="mt-0.5 text-sm font-medium text-ink-800">
-            {{ subscription.plan?.name || 'Free trial' }}
+            {{ subscription.plan?.name || t('billing.freeTrial') }}
           </dd>
         </div>
         <div v-if="subscription.interval">
-          <dt class="eyebrow">Billing</dt>
-          <dd class="mt-0.5 text-sm font-medium capitalize text-ink-800">
-            {{ subscription.interval }}
+          <dt class="eyebrow">{{ t('billing.billing') }}</dt>
+          <dd class="mt-0.5 text-sm font-medium text-ink-800">
+            {{ t(`billing.${subscription.interval}`, subscription.interval) }}
             <span v-if="subscription.plan" class="font-normal text-ink-500">
               ·
               {{
@@ -120,7 +123,7 @@ onMounted(() => billing.load())
           class="btn-brand flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold"
         >
           <CreditCard :size="15" />
-          {{ subscription.plan ? 'Change plan' : 'Choose a plan' }}
+          {{ subscription.plan ? t('billing.changePlan') : t('billing.choosePlanBtn') }}
           <ArrowRight :size="14" />
         </RouterLink>
 
@@ -132,24 +135,24 @@ onMounted(() => billing.load())
             class="text-sm font-medium text-ink-500 transition hover:text-red-600"
             @click="confirming = true"
           >
-            Cancel subscription
+            {{ t('billing.cancelSubscription') }}
           </button>
-          <span v-else class="flex items-center gap-2 text-sm">
-            <span class="text-ink-600">Cancel? You keep access until {{ formatDate(subscription.access_ends_at) }}.</span>
+          <span v-else class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+            <span class="text-ink-600">{{ t('billing.cancelConfirm', { date: formatDate(subscription.access_ends_at) }) }}</span>
             <button
               type="button"
               class="font-semibold text-red-600 hover:underline disabled:opacity-60"
               :disabled="cancelling"
               @click="confirmCancel"
             >
-              {{ cancelling ? 'Cancelling…' : 'Yes, cancel' }}
+              {{ cancelling ? t('billing.cancelling') : t('billing.yesCancel') }}
             </button>
             <button
               type="button"
               class="font-medium text-ink-500 hover:text-ink-800"
               @click="confirming = false"
             >
-              Keep it
+              {{ t('billing.keepIt') }}
             </button>
           </span>
         </template>

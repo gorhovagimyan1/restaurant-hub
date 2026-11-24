@@ -1,6 +1,7 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { Wallet, ReceiptText, Flame, Armchair, BellRing, RefreshCw, ArrowRight } from 'lucide-vue-next'
 import { getOverview } from '@/services/dashboard'
 import { formatPrice } from '@/utils/format'
@@ -9,6 +10,7 @@ import AppCard from '@/components/ui/AppCard.vue'
 import StatCard from '@/components/ui/StatCard.vue'
 
 const router = useRouter()
+const { t, locale } = useI18n()
 
 const data = ref(null)
 const loading = ref(true)
@@ -31,10 +33,10 @@ const tiles = computed(() => {
   const d = data.value
   if (!d) return []
   return [
-    { label: "Today's revenue", value: formatPrice(d.today.revenue, currency.value), hint: `${d.today.completed} completed`, icon: Wallet, featured: true },
-    { label: "Today's orders", value: d.today.orders, hint: `avg ${formatPrice(d.today.avg_order, currency.value)}`, icon: ReceiptText },
-    { label: 'Active orders', value: d.live.active_orders, hint: `${d.live.pending} pending · ${d.live.ready} ready`, icon: Flame, to: 'dashboard-orders' },
-    { label: 'Occupied tables', value: `${d.tables.occupied}/${d.tables.total}`, hint: `${d.tables.available} free`, icon: Armchair, to: 'dashboard-tables' },
+    { label: t('overview.todayRevenue'), value: formatPrice(d.today.revenue, currency.value), hint: t('overview.completedHint', { n: d.today.completed }), icon: Wallet, featured: true },
+    { label: t('overview.todayOrders'), value: d.today.orders, hint: t('overview.avgHint', { price: formatPrice(d.today.avg_order, currency.value) }), icon: ReceiptText },
+    { label: t('overview.activeOrders'), value: d.live.active_orders, hint: t('overview.liveHint', { pending: d.live.pending, ready: d.live.ready }), icon: Flame, to: 'dashboard-orders' },
+    { label: t('overview.occupiedTables'), value: `${d.tables.occupied}/${d.tables.total}`, hint: t('overview.freeHint', { n: d.tables.available }), icon: Armchair, to: 'dashboard-tables' },
   ]
 })
 
@@ -50,10 +52,10 @@ const topPeak = computed(() =>
 function timeAgo(iso) {
   if (!iso) return ''
   const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000)
-  if (mins < 1) return 'just now'
-  if (mins < 60) return `${mins}m ago`
+  if (mins < 1) return t('overview.justNow')
+  if (mins < 60) return t('overview.minsAgo', { n: mins })
   const hrs = Math.round(mins / 60)
-  return `${hrs}h ago`
+  return t('overview.hrsAgo', { n: hrs })
 }
 
 async function load() {
@@ -62,7 +64,7 @@ async function load() {
   try {
     data.value = await getOverview()
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not load the overview.'
+    error.value = err?.response?.data?.message || t('overview.loadError')
   } finally {
     loading.value = false
   }
@@ -72,12 +74,15 @@ function go(name) {
   if (name) router.push({ name })
 }
 
+// Dish names come from the API in the current language: re-fetch on a switch.
+watch(locale, () => load())
+
 onMounted(load)
 </script>
 
 <template>
   <div>
-    <PageHeader title="Overview" subtitle="Today at a glance.">
+    <PageHeader :title="t('overview.title')" :subtitle="t('overview.subtitle')">
       <template #actions>
         <button
           class="btn-ghost flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-medium disabled:opacity-60"
@@ -85,7 +90,7 @@ onMounted(load)
           @click="load"
         >
           <RefreshCw :size="15" :class="loading && 'animate-spin'" />
-          {{ loading ? 'Refreshing…' : 'Refresh' }}
+          {{ loading ? t('overview.refreshing') : t('overview.refresh') }}
         </button>
       </template>
     </PageHeader>
@@ -119,27 +124,30 @@ onMounted(load)
           <BellRing :size="17" />
         </span>
         <span class="min-w-0 flex-1 text-sm font-medium text-brand-800">
-          {{ data.service.waiter_calls }} waiter call{{ data.service.waiter_calls === 1 ? '' : 's' }}
-          · {{ data.service.bill_requests }} bill request{{ data.service.bill_requests === 1 ? '' : 's' }}
-          waiting
+          {{
+            t('overview.waiting', {
+              calls: t('overview.waiterCalls', data.service.waiter_calls),
+              bills: t('overview.billRequests', data.service.bill_requests),
+            })
+          }}
         </span>
         <ArrowRight :size="16" class="shrink-0 text-brand-600" />
       </button>
 
       <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <!-- Recent orders -->
-        <AppCard title="Recent orders" flush>
+        <AppCard :title="t('overview.recentOrders')" flush>
           <template #action>
             <button
               class="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-brand-600 transition hover:bg-brand-50"
               @click="go('dashboard-orders')"
             >
-              View all <ArrowRight :size="13" />
+              {{ t('overview.viewAll') }} <ArrowRight :size="13" />
             </button>
           </template>
 
           <p v-if="!data.recent_orders.length" class="px-5 pb-5 text-sm text-ink-400">
-            No orders yet today.
+            {{ t('overview.noOrders') }}
           </p>
           <ul v-else class="divide-y divide-hairline">
             <li
@@ -154,10 +162,10 @@ onMounted(load)
                 <p class="text-xs text-ink-400">{{ timeAgo(order.created_at) }}</p>
               </div>
               <span
-                class="rounded-full px-2 py-0.5 text-[11px] font-medium capitalize"
+                class="rounded-full px-2 py-0.5 text-[11px] font-medium"
                 :class="statusColors[order.status] || 'bg-ink-900/5 text-ink-600'"
               >
-                {{ order.status }}
+                {{ t(`overview.status.${order.status}`, order.status) }}
               </span>
               <span class="w-24 text-right text-sm font-semibold tabular-nums text-ink-800">
                 {{ formatPrice(order.total, currency) }}
@@ -167,9 +175,9 @@ onMounted(load)
         </AppCard>
 
         <!-- Top products -->
-        <AppCard title="Top sellers today" hint="By quantity sold." flush>
+        <AppCard :title="t('overview.topSellers')" :hint="t('overview.topHint')" flush>
           <p v-if="!data.top_products.length" class="px-5 pb-5 text-sm text-ink-400">
-            No items sold yet today.
+            {{ t('overview.noItems') }}
           </p>
           <ul v-else class="space-y-3 px-5 pb-5">
             <li v-for="(product, i) in data.top_products" :key="product.name">

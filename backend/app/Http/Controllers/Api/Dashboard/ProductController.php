@@ -108,7 +108,7 @@ class ProductController extends Controller
 
         return ApiResponse::success($items->map(fn (Product $p) => [
             'id' => $p->id,
-            'name' => $p->name,
+            'name' => $p->translated('name'),
             'quantity' => $p->stock_quantity,
             'status' => $p->stockStatus(),
         ]));

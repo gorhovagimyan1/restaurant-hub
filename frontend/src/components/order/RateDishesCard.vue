@@ -1,5 +1,6 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { fetchPendingReviews, submitReviews } from '@/services/orders'
 import { loadRatingTicket, clearRatingTicket } from '@/utils/ratingTicket'
 import StarRating from '@/components/ui/StarRating.vue'
@@ -9,6 +10,7 @@ import StarRating from '@/components/ui/StarRating.vue'
  * rating ticket saved while they were seated. Renders nothing at all unless
  * there is something left to rate — never a dead end, never a nag.
  */
+const { t } = useI18n()
 const ticket = ref(null)
 const items = ref([])
 const drafts = reactive({}) // order item id -> { rating, comment }
@@ -48,7 +50,7 @@ async function send() {
     }))
 
   if (!reviews.length) {
-    error.value = 'Tap the stars on at least one dish.'
+    error.value = t('cart.tapStars')
     return
   }
 
@@ -59,7 +61,7 @@ async function send() {
     clearRatingTicket()
     thanks.value = true
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not send your rating.'
+    error.value = err?.response?.data?.message || t('cart.rateError')
   } finally {
     sending.value = false
   }
@@ -71,13 +73,13 @@ async function send() {
     v-if="thanks"
     class="mt-8 rounded-2xl bg-brand-50 px-5 py-4 text-sm font-medium text-brand-800"
   >
-    Thank you for your feedback!
+    {{ t('cart.rateThanks') }}
   </div>
 
   <section v-else-if="ticket" class="mt-8 rounded-2xl border border-hairline bg-white p-5 text-left shadow-sm">
-    <h2 class="font-bold text-ink-900">How were your dishes?</h2>
+    <h2 class="font-bold text-ink-900">{{ t('cart.rateQuestion') }}</h2>
     <p class="mt-0.5 text-sm text-ink-500">
-      Thanks for dining with us{{ ticket.tableName ? ` at ${ticket.tableName}` : '' }}. Rate what you liked — it only takes a moment.
+      {{ ticket.tableName ? t('cart.rateThanksDiningAt', { table: ticket.tableName }) : t('cart.rateThanksDining') }}
     </p>
 
     <ul class="mt-4 divide-y divide-hairline">
@@ -91,7 +93,7 @@ async function send() {
           v-model="drafts[item.id].comment"
           rows="2"
           maxlength="500"
-          placeholder="Tell us more (optional)"
+          :placeholder="t('cart.commentPlaceholder')"
           class="mt-2 w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm outline-none focus:border-brand-500"
         />
       </li>
@@ -101,14 +103,14 @@ async function send() {
 
     <div class="mt-4 flex items-center justify-between gap-3">
       <button class="text-sm font-medium text-ink-500 hover:text-ink-700" @click="dismiss">
-        No thanks
+        {{ t('cart.noThanks') }}
       </button>
       <button
         class="rounded-lg bg-brand-500 px-5 py-2 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-60"
         :disabled="sending"
         @click="send"
       >
-        {{ sending ? 'Sending…' : 'Send' }}
+        {{ sending ? t('cart.sending') : t('cart.send') }}
       </button>
     </div>
   </section>

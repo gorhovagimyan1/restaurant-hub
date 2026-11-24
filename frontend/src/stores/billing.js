@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import i18n from '@/i18n'
 import { getSubscription, getPendingPayments } from '@/services/billing'
 
 /**
@@ -53,7 +54,7 @@ export const useBillingStore = defineStore('billing', () => {
         forbidden.value = true
       } else {
         // A 402 here would be circular — this endpoint is deliberately ungated.
-        error.value = err?.response?.data?.message || 'Could not load your subscription.'
+        error.value = err?.response?.data?.message || i18n.global.t('billing.loadError')
       }
     } finally {
       loading.value = false
