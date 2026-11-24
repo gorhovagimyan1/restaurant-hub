@@ -22,6 +22,14 @@ class Category extends Model
     public const TRANSLATABLE = ['name', 'description'];
 
     /**
+     * Same as the column defaults, so a category just created in code has them.
+     */
+    protected $attributes = [
+        'prep_station' => 'kitchen',
+        'is_alcoholic' => false,
+    ];
+
+    /**
      * @var list<string>
      */
     protected $fillable = [
@@ -31,6 +39,8 @@ class Category extends Model
         'name',
         'description',
         'image',
+        'prep_station',
+        'is_alcoholic',
         'is_active',
         'sort_order',
     ];
@@ -43,6 +53,8 @@ class Category extends Model
         return [
             'is_active' => 'boolean',
             'sort_order' => 'integer',
+            'prep_station' => \App\Enums\PrepStation::class,
+            'is_alcoholic' => 'boolean',
         ];
     }
 

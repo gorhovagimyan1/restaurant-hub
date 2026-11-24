@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Dashboard;
 
 use App\Enums\OrderItemStatus;
 use App\Enums\OrderStatus;
+use App\Enums\PrepStation;
 use App\Enums\TableStatus;
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Concerns\ResolvesRestaurant;
@@ -109,6 +110,10 @@ class OrderController extends Controller
             ]),
         );
 
+        if ($board = $request->validated('board')) {
+            return $this->advanceBoard($order, $status, $board);
+        }
+
         // Re-applying the current status is a no-op, so a double-tap on the
         // board doesn't re-cascade or re-stamp anything.
         if ($status === $order->status) {
@@ -152,11 +157,37 @@ class OrderController extends Controller
     }
 
     /**
+     * A board's whole-order shortcut: move only the items that board prepares
+     * (kitchen: food; bar: drinks and ready-to-serve items), then let the order
+     * status follow from its items, as it does for single-item changes.
+     */
+    private function advanceBoard(Order $order, OrderStatus $status, string $board): JsonResponse
+    {
+        abort_unless(
+            in_array($status, [OrderStatus::Preparing, OrderStatus::Ready, OrderStatus::Served], true),
+            422,
+            __('This action is not available from a board.'),
+        );
+
+        $stations = array_map(fn (PrepStation $s) => $s->value, PrepStation::forBoard($board));
+
+        DB::transaction(function () use ($order, $status, $stations) {
+            $this->cascadeToItems($order, $status, $stations);
+            $order->syncStatusFromItems();
+        });
+
+        return ApiResponse::success(
+            new OrderResource($order->refresh()->load(['items.product', 'table'])),
+            'Order status updated.',
+        );
+    }
+
+    /**
      * Move the order's items forward to match a whole-order action (so
      * "mark all ready" also marks each dish ready). Items already further
      * along are left as-is.
      */
-    private function cascadeToItems(Order $order, OrderStatus $status): void
+    private function cascadeToItems(Order $order, OrderStatus $status, ?array $stations = null): void
     {
         $P = OrderItemStatus::Pending;
         $C = OrderItemStatus::Preparing;
@@ -178,6 +209,7 @@ class OrderController extends Controller
 
         $order->items()
             ->whereIn('status', array_map(fn (OrderItemStatus $s) => $s->value, $config['from']))
+            ->when($stations !== null, fn ($q) => $q->whereIn('prep_station', $stations))
             ->update(['status' => $config['to']->value]);
     }
 

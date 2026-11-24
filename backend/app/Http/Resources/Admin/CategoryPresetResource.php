@@ -20,6 +20,9 @@ class CategoryPresetResource extends JsonResource
             'name' => $this->text('name'),
             'description' => $this->text('description'),
             'translations' => $this->translations,
+            // Defaults a restaurant category picked from it starts with.
+            'prep_station' => $this->prep_station->value,
+            'is_alcoholic' => $this->is_alcoholic,
             'is_active' => $this->is_active,
             'sort_order' => $this->sort_order,
             // How many restaurant categories use it (admin list only).

@@ -69,10 +69,30 @@ class CategoryPresetsSeeder extends Seeder
                     'hy' => ['name' => $hy[0], 'description' => $hy[1]],
                 ],
                 'sort_order' => ($i + 1) * 10,
+                ...self::drinkDefaults($en[0]),
             ]);
         }
 
         $this->linkExistingCategories($existing->values()->all());
+    }
+
+    /**
+     * Where a catalog category is prepared and whether it is 18+ (same table
+     * as the 2026_11_25 migration, which set them on existing presets).
+     *
+     * @return array{prep_station: string, is_alcoholic: bool}
+     */
+    private static function drinkDefaults(string $englishName): array
+    {
+        [$station, $alcoholic] = match (mb_strtolower($englishName)) {
+            'soft drinks' => ['ready', false],
+            'fresh juices & smoothies', 'hot drinks', 'coffee', 'tea' => ['bar', false],
+            'alcohol', 'cocktails' => ['bar', true],
+            'wine', 'beer', 'spirits' => ['ready', true],
+            default => ['kitchen', false],
+        };
+
+        return ['prep_station' => $station, 'is_alcoholic' => $alcoholic];
     }
 
     /**

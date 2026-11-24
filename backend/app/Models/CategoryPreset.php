@@ -17,8 +17,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class CategoryPreset extends Model
 {
+    /**
+     * Same as the column defaults, so a preset just created in code has them.
+     */
+    protected $attributes = [
+        'prep_station' => 'kitchen',
+        'is_alcoholic' => false,
+    ];
+
     protected $fillable = [
         'translations',
+        'prep_station',
+        'is_alcoholic',
         'is_active',
         'sort_order',
     ];
@@ -27,6 +37,8 @@ class CategoryPreset extends Model
     {
         return [
             'translations' => 'array',
+            'prep_station' => \App\Enums\PrepStation::class,
+            'is_alcoholic' => 'boolean',
             'is_active' => 'boolean',
             'sort_order' => 'integer',
         ];

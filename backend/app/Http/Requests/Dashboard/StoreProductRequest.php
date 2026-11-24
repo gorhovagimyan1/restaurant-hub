@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Dashboard;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreProductRequest extends FormRequest
 {
@@ -25,6 +26,9 @@ class StoreProductRequest extends FormRequest
             'ingredients.*' => ['string', 'max:100'],
             'price' => ['required', 'numeric', 'min:0'],
             'preparation_time' => ['nullable', 'integer', 'min:0', 'max:600'],
+            // Null = same as the category.
+            'prep_station' => ['nullable', 'string', Rule::in(\App\Enums\PrepStation::values())],
+            'is_alcoholic' => ['nullable', 'boolean'],
             'is_available' => ['boolean'],
             'stock_quantity' => ['nullable', 'integer', 'min:0', 'max:100000'],
             'low_stock_threshold' => ['nullable', 'integer', 'min:0', 'max:100000'],

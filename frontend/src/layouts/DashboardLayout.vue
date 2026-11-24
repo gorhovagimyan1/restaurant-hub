@@ -8,6 +8,7 @@ import {
   ReceiptText,
   ClipboardList,
   ChefHat,
+  Martini,
   BookOpen,
   Palette,
   QrCode,
@@ -53,6 +54,7 @@ const sections = computed(() =>
         { name: 'dashboard-orders', label: t('shell.nav.liveOrders'), icon: ReceiptText, exact: true },
         { name: 'dashboard-orders-history', label: t('shell.nav.allOrders'), icon: ClipboardList },
         { name: 'kitchen', label: t('shell.kitchenDisplay'), icon: ChefHat },
+        { name: 'bar', label: t('shell.barDisplay'), icon: Martini },
       ],
     },
     {
@@ -103,10 +105,10 @@ onMounted(async () => {
       return
     }
   }
-  // Kitchen/waiter staff don't have menu-management access — send them to the
-  // kitchen display instead of loading (and failing) the owner dashboard.
+  // Kitchen/waiter staff don't have menu-management access — send them to
+  // their display instead of loading (and failing) the owner dashboard.
   if (auth.isKitchenOnly) {
-    router.replace({ name: 'kitchen' })
+    router.replace(auth.homeRoute)
     return
   }
   if (!restaurant.value) {

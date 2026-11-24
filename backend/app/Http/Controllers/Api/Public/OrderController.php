@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api\Public;
 
+use App\Enums\OrderItemStatus;
 use App\Enums\OrderStatus;
+use App\Enums\PrepStation;
 use App\Enums\TableStatus;
 use App\Helpers\ApiResponse;
 use App\Http\Controllers\Concerns\ResolvesDiningSession;
@@ -48,6 +50,7 @@ class OrderController extends Controller
         $products = Product::query()
             ->where('restaurant_id', $restaurant->id)
             ->whereIn('id', $requested->pluck('product_id'))
+            ->with('category')
             ->get()
             ->keyBy('id');
 
@@ -59,6 +62,7 @@ class OrderController extends Controller
 
             $quantity = (int) $item['quantity'];
             $unitPrice = (float) $product->price;
+            $station = $product->effectivePrepStation();
 
             return [
                 'product_id' => $product->id,
@@ -67,6 +71,13 @@ class OrderController extends Controller
                 'unit_price' => $unitPrice,
                 'total_price' => round($unitPrice * $quantity, 2),
                 'notes' => $item['notes'] ?? null,
+                'prep_station' => $station,
+                // Nothing to prepare (a bottle of water): ready for the waiter
+                // straight away. The order's own status is left alone, so a
+                // restaurant that accepts orders by hand still does.
+                'status' => $station === PrepStation::Ready
+                    ? OrderItemStatus::Ready
+                    : OrderItemStatus::Pending,
             ];
         });
 

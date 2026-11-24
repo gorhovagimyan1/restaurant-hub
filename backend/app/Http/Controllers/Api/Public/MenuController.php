@@ -43,7 +43,10 @@ class MenuController extends Controller
                 ->orderBy('sort_order')
                 ->orderBy('name')
                 ->with(['preset', 'products' => function ($query) {
-                    $query->orderBy('sort_order')
+                    // Products read their category's 18+ default without a
+                    // query each.
+                    $query->chaperone('category')
+                        ->orderBy('sort_order')
                         ->orderBy('name')
                         ->with('images')
                         ->withAvg('reviews', 'rating')

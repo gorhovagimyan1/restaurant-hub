@@ -31,6 +31,8 @@ class Product extends Model
         'sku',
         'price',
         'preparation_time',
+        'prep_station',
+        'is_alcoholic',
         'is_available',
         'stock_quantity',
         'low_stock_threshold',
@@ -49,6 +51,9 @@ class Product extends Model
             'ingredients' => 'array',
             'price' => 'decimal:2',
             'preparation_time' => 'integer',
+            // Null = use the category's setting (see effectivePrepStation()).
+            'prep_station' => \App\Enums\PrepStation::class,
+            'is_alcoholic' => 'boolean',
             'is_available' => 'boolean',
             'stock_quantity' => 'integer',
             'low_stock_threshold' => 'integer',
@@ -65,6 +70,24 @@ class Product extends Model
     public function tracksStock(): bool
     {
         return $this->stock_quantity !== null;
+    }
+
+    /**
+     * Where this product is prepared: its own setting, else its category's.
+     */
+    public function effectivePrepStation(): \App\Enums\PrepStation
+    {
+        return $this->prep_station
+            ?? $this->category?->prep_station
+            ?? \App\Enums\PrepStation::Kitchen;
+    }
+
+    /**
+     * Whether it contains alcohol (18+): its own setting, else its category's.
+     */
+    public function effectiveIsAlcoholic(): bool
+    {
+        return $this->is_alcoholic ?? (bool) $this->category?->is_alcoholic;
     }
 
     /**

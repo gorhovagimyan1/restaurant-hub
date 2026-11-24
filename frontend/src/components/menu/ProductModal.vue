@@ -108,6 +108,10 @@ onBeforeUnmount(() => {
               >
                 <Star :size="11" style="fill: currentColor" /> {{ t('customer.chefsPick') }}
               </span>
+              <span
+                v-if="selectedProduct.is_alcoholic"
+                class="m-faint rounded-full border border-current px-2 py-0.5 font-semibold"
+              >{{ t('customer.adultsOnly') }}</span>
               <span v-if="selectedProduct.rating" class="m-accent inline-flex items-center gap-1 font-semibold">
                 <StarRating :model-value="selectedProduct.rating" :size="13" />
                 {{ selectedProduct.rating.toFixed(1) }}

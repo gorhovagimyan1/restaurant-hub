@@ -3,11 +3,17 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { intlLocale } from '@/i18n'
-import { Bell, BellOff, CookingPot, Check } from 'lucide-vue-next'
+import { Bell, BellOff, CookingPot, GlassWater, Check } from 'lucide-vue-next'
 import { useOrdersStore } from '@/stores/orders'
 import ServiceCallsBanner from '@/components/dashboard/ServiceCallsBanner.vue'
 import StockAlertsBanner from '@/components/dashboard/StockAlertsBanner.vue'
-import { nextItemStep } from '@/utils/orderStatus'
+import { nextItemStep, onBoard } from '@/utils/orderStatus'
+
+// The same board serves the kitchen (food) and the bar (drinks made by
+// waiters, plus ready-to-serve bottles to pick up).
+const props = defineProps({
+  board: { type: String, default: 'kitchen' },
+})
 
 const { t } = useI18n()
 const store = useOrdersStore()
@@ -15,10 +21,24 @@ const { kitchen, loading, error, freshIds, lastUpdated } = storeToRefs(store)
 
 const soundOn = ref(true)
 
-// Oldest tickets first so nothing waits too long.
+const ACTIVE = ['pending', 'preparing', 'ready']
+
+// This board's items of an order (cancelled ones are not work).
+function boardItems(order) {
+  return order.items.filter((i) => i.status !== 'cancelled' && onBoard(i, props.board))
+}
+
+// Orders with something still to do here, oldest first so nothing waits too
+// long. Once this board's items are delivered the ticket leaves, even if
+// another board is still busy with the same order.
 const tickets = computed(() =>
-  [...kitchen.value].sort((a, b) => new Date(a.created_at) - new Date(b.created_at)),
+  kitchen.value
+    .map((order) => ({ ...order, items: boardItems(order) }))
+    .filter((order) => order.items.some((i) => ACTIVE.includes(i.status)))
+    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at)),
 )
+
+const emptyIcon = computed(() => (props.board === 'bar' ? GlassWater : CookingPot))
 
 function servedCount(order) {
   return order.items.filter((i) => i.status === 'served').length
@@ -65,8 +85,9 @@ function chime() {
   }
 }
 
+// Chime only for new orders with something for this board.
 watch(freshIds, (ids) => {
-  if (ids.size > 0) chime()
+  if (tickets.value.some((order) => ids.has(order.id))) chime()
 })
 
 const lastUpdatedLabel = computed(() =>
@@ -86,7 +107,7 @@ const step = nextItemStep
 // Whole-order shortcuts (cascade to every item server-side).
 async function advanceOrder(order, status) {
   try {
-    await store.advance(order, status)
+    await store.advance(order, status, props.board)
     store.acknowledge(order.id)
   } catch {
     // resurfaces on the next poll
@@ -133,9 +154,13 @@ onBeforeUnmount(() => store.stop())
       v-if="!loading && !tickets.length"
       class="mt-6 rounded-2xl border border-dashed border-stone-700 px-6 py-20 text-center"
     >
-      <CookingPot :size="48" class="mx-auto text-stone-600" />
-      <h3 class="mt-3 text-lg font-semibold text-stone-200">{{ t('orders.noTickets') }}</h3>
-      <p class="mt-1 text-sm text-stone-400">{{ t('orders.noTicketsHint') }}</p>
+      <component :is="emptyIcon" :size="48" class="mx-auto text-stone-600" />
+      <h3 class="mt-3 text-lg font-semibold text-stone-200">
+        {{ board === 'bar' ? t('orders.noBarTickets') : t('orders.noTickets') }}
+      </h3>
+      <p class="mt-1 text-sm text-stone-400">
+        {{ board === 'bar' ? t('orders.noBarTicketsHint') : t('orders.noTicketsHint') }}
+      </p>
     </div>
 
     <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
@@ -168,6 +193,11 @@ onBeforeUnmount(() => store.stop())
             <div class="min-w-0">
               <p class="text-base font-semibold leading-snug text-white">
                 <span class="text-brand-400">{{ item.quantity }}×</span> {{ item.product_name }}
+                <!-- Bottles and cans: nothing to make, just bring it. -->
+                <span
+                  v-if="item.prep_station === 'ready'"
+                  class="ml-1 rounded-full bg-emerald-500/15 px-2 py-0.5 align-middle text-[11px] font-semibold text-emerald-300"
+                >{{ t('orders.stations.ready') }}</span>
               </p>
               <p v-if="item.notes" class="text-sm font-medium italic text-brand-300">“{{ item.notes }}”</p>
             </div>

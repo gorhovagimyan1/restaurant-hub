@@ -7,6 +7,7 @@ import { initText, splitText } from '@/utils/translatable'
 import LanguageTabs from '@/components/ui/LanguageTabs.vue'
 import ImageUploadField from '@/components/ui/ImageUploadField.vue'
 import TagInput from '@/components/ui/TagInput.vue'
+import PrepStationField from '@/components/dashboard/PrepStationField.vue'
 
 const props = defineProps({
   product: { type: Object, default: null },
@@ -57,6 +58,15 @@ const form = reactive({
   stock_quantity: props.product?.stock_quantity ?? '',
   low_stock_threshold: props.product?.low_stock_threshold ?? '',
   daily_stock: props.product?.daily_stock ?? '',
+  // null = same as the category.
+  prep_station: props.product?.prep_station ?? null,
+  is_alcoholic: props.product?.is_alcoholic ?? null,
+})
+
+// The chosen category's settings, shown as "Same as category (Bar)".
+const categorySettings = computed(() => {
+  const category = props.categories.find((c) => c.id === form.category_id)
+  return { station: category?.prep_station ?? 'kitchen', alcoholic: !!category?.is_alcoholic }
 })
 
 const toggles = computed(() => [
@@ -93,6 +103,8 @@ async function submit() {
       stock_quantity: form.stock_quantity === '' ? null : Number(form.stock_quantity),
       low_stock_threshold: form.low_stock_threshold === '' ? null : Number(form.low_stock_threshold),
       daily_stock: form.daily_stock === '' ? null : Number(form.daily_stock),
+      prep_station: form.prep_station,
+      is_alcoholic: form.is_alcoholic,
     }
     await dashboard.saveProduct(payload, props.product?.id, imageFile.value)
     emit('close')
@@ -192,6 +204,13 @@ const labelClass = 'mb-1 block text-xs font-medium text-ink-500'
             </span>
           </label>
         </div>
+
+        <!-- Kitchen / bar / ready to serve, and 18+: usually set on the category. -->
+        <PrepStationField
+          v-model:station="form.prep_station"
+          v-model:alcoholic="form.is_alcoholic"
+          :inherit="categorySettings"
+        />
 
         <!-- Everything guests read, per language: one tab switches all three fields. -->
         <section class="overflow-hidden rounded-2xl border border-hairline">

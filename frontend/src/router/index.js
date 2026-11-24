@@ -167,6 +167,21 @@ const router = createRouter({
           path: '',
           name: 'kitchen',
           component: () => import('@/views/dashboard/KitchenBoard.vue'),
+          props: { board: 'kitchen' },
+        },
+      ],
+    },
+    {
+      // Bar display — the same board for drinks, run by the waiters.
+      path: '/bar',
+      component: KitchenLayout,
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: '',
+          name: 'bar',
+          component: () => import('@/views/dashboard/KitchenBoard.vue'),
+          props: { board: 'bar' },
         },
       ],
     },

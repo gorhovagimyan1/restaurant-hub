@@ -24,6 +24,9 @@ class StoreCategoryRequest extends FormRequest
             // …or a custom category the owner names.
             'name' => ['required_without:category_preset_id', 'nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
+            // Defaults to the catalog option's (or kitchen) when left out.
+            'prep_station' => ['sometimes', 'string', Rule::in(\App\Enums\PrepStation::values())],
+            'is_alcoholic' => ['sometimes', 'boolean'],
             'is_active' => ['boolean'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
         ];

@@ -41,6 +41,8 @@ class OrderResource extends JsonResource
                 'total_price' => (float) $item->total_price,
                 'notes' => $item->notes,
                 'status' => $item->status->value,
+                // kitchen | bar | ready — which board the item shows on.
+                'prep_station' => $item->prep_station->value,
             ])),
             'ordered_at' => $this->ordered_at?->toIso8601String(),
             'completed_at' => $this->completed_at?->toIso8601String(),

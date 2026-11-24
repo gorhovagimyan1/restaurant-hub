@@ -151,5 +151,6 @@
     "Your menu already has this category.": "В вашем меню уже есть эта категория.",
     "Name": "Название",
     "Description": "Описание",
-    "Choose a category or enter your own name.": "Выберите категорию или введите своё название."
+    "Choose a category or enter your own name.": "Выберите категорию или введите своё название.",
+    "This action is not available from a board.": "Это действие недоступно с доски."
 }

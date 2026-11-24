@@ -112,8 +112,9 @@ export async function fetchOrderHistory(params = {}) {
 /**
  * Advance an order to a new status.
  */
-export async function updateOrderStatus(orderId, status) {
-  const { data } = await http.patch(`/dashboard/orders/${orderId}/status`, { status })
+// `board` ('kitchen' | 'bar') limits a whole-order shortcut to that board's items.
+export async function updateOrderStatus(orderId, status, board = null) {
+  const { data } = await http.patch(`/dashboard/orders/${orderId}/status`, board ? { status, board } : { status })
   return data.data
 }
 

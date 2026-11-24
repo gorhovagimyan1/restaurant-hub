@@ -7,6 +7,8 @@ export default {
     edit: 'Edit',
     close: 'Close',
     loading: 'Loading…',
+    yes: 'Yes',
+    no: 'No',
   },
   ru: {
     language: 'Язык',
@@ -16,6 +18,8 @@ export default {
     edit: 'Изменить',
     close: 'Закрыть',
     loading: 'Загрузка…',
+    yes: 'Да',
+    no: 'Нет',
   },
   hy: {
     language: 'Լեզու',
@@ -25,5 +29,7 @@ export default {
     edit: 'Խմբագրել',
     close: 'Փակել',
     loading: 'Բեռնվում է…',
+    yes: 'Այո',
+    no: 'Ոչ',
   },
 }

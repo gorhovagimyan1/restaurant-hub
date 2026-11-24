@@ -1,5 +1,6 @@
 export default {
   en: {
+    adultsOnly: 'Contains alcohol, 18+ only',
     menuFallback: 'Menu',
     home: 'Home',
     menu: 'Menu',
@@ -87,6 +88,7 @@ export default {
     },
   },
   ru: {
+    adultsOnly: 'Содержит алкоголь, только 18+',
     menuFallback: 'Меню',
     home: 'Главная',
     menu: 'Меню',
@@ -175,6 +177,7 @@ export default {
     },
   },
   hy: {
+    adultsOnly: 'Պարունակում է ալկոհոլ, միայն 18+',
     menuFallback: 'Ճաշացանկ',
     home: 'Գլխավոր',
     menu: 'Ճաշացանկ',

@@ -52,6 +52,11 @@ const { allowOrders } = storeToRefs(dining)
           style="fill: currentColor"
           :title="t('customer.chefsPick')"
         />
+        <span
+          v-if="product.is_alcoholic"
+          class="m-faint mt-0.5 shrink-0 rounded border border-current px-1 text-[10px] font-bold leading-4"
+          :title="t('customer.adultsOnly')"
+        >18+</span>
       </div>
       <p class="m-muted-card mt-1 line-clamp-2 text-sm">{{ product.description }}</p>
 
@@ -129,6 +134,11 @@ const { allowOrders } = storeToRefs(dining)
             style="fill: currentColor"
             :title="t('customer.chefsPick')"
           />
+          <span
+            v-if="product.is_alcoholic"
+            class="m-faint shrink-0 rounded border border-current px-1 text-[10px] font-bold leading-4"
+            :title="t('customer.adultsOnly')"
+          >18+</span>
         </div>
         <p class="m-muted mt-1 line-clamp-2 text-sm">{{ product.description }}</p>
         <div class="m-faint mt-1.5 flex items-center gap-3 text-xs">

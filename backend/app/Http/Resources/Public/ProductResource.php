@@ -36,6 +36,8 @@ class ProductResource extends JsonResource
             'rating' => ($this->reviews_count ?? 0) > 0 ? round((float) $this->reviews_avg_rating, 1) : null,
             'reviews_count' => (int) ($this->reviews_count ?? 0),
             'is_featured' => $this->is_featured,
+            // Contains alcohol: the menu shows an 18+ badge.
+            'is_alcoholic' => $this->effectiveIsAlcoholic(),
             'image' => $primary?->image,
             'images' => $this->whenLoaded('images', fn () => $this->images->pluck('image')),
         ];

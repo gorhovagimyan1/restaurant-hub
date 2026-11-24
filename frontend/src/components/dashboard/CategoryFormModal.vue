@@ -7,6 +7,7 @@ import { getCategoryPresets } from '@/services/dashboard'
 import { initText, splitText } from '@/utils/translatable'
 import LanguageTabs from '@/components/ui/LanguageTabs.vue'
 import ImageUploadField from '@/components/ui/ImageUploadField.vue'
+import PrepStationField from '@/components/dashboard/PrepStationField.vue'
 
 const props = defineProps({
   category: { type: Object, default: null },
@@ -44,6 +45,17 @@ const text = reactive(initText(props.category, { name: '', description: '' }, ma
 
 const form = reactive({
   is_active: props.category?.is_active ?? true,
+  // Where its products are prepared, and whether they are 18+.
+  prep_station: props.category?.prep_station ?? 'kitchen',
+  is_alcoholic: props.category?.is_alcoholic ?? false,
+})
+
+// Picking a catalog option takes its drink defaults ("Cocktails" → bar, 18+);
+// the owner can still change them. Re-showing the saved option keeps theirs.
+watch(selectedPreset, (preset) => {
+  if (!preset || preset.id === props.category?.category_preset_id) return
+  form.prep_station = preset.prep_station ?? 'kitchen'
+  form.is_alcoholic = !!preset.is_alcoholic
 })
 
 // Photo from the owner's device: uploaded after the category is saved.
@@ -99,6 +111,8 @@ async function submit() {
       {
         ...textPayload(),
         is_active: form.is_active,
+        prep_station: form.prep_station,
+        is_alcoholic: form.is_alcoholic,
       },
       props.category?.id,
       imageFile.value,
@@ -192,6 +206,8 @@ async function submit() {
           @select="pickImage"
           @remove="removeImage"
         />
+
+        <PrepStationField v-model:station="form.prep_station" v-model:alcoholic="form.is_alcoholic" />
 
         <label
           class="flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm transition"

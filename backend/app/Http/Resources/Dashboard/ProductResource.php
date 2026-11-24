@@ -35,6 +35,9 @@ class ProductResource extends JsonResource
             'translations' => (object) ($this->translations ?? []),
             'price' => (float) $this->price,
             'preparation_time' => $this->preparation_time,
+            // The product's own settings; null = same as its category.
+            'prep_station' => $this->prep_station?->value,
+            'is_alcoholic' => $this->is_alcoholic,
             'is_available' => $this->is_available,
             'rating' => ($this->reviews_count ?? 0) > 0 ? round((float) $this->reviews_avg_rating, 1) : null,
             'reviews_count' => (int) ($this->reviews_count ?? 0),

@@ -30,10 +30,13 @@ export const useAuthStore = defineStore('auth', () => {
     return roles.value.length > 0 && !roles.value.some((r) => managerial.includes(r))
   })
 
-  // Where a freshly-authenticated user should be sent.
+  // Where a freshly-authenticated user should be sent. Waiters run the bar
+  // display; cooks (and anyone who is both) the kitchen one.
   const homeRoute = computed(() => {
     if (isSuperAdmin.value) return { name: 'admin-overview' }
-    return isKitchenOnly.value ? { name: 'kitchen' } : { name: 'dashboard-overview' }
+    if (!isKitchenOnly.value) return { name: 'dashboard-overview' }
+    const waiterOnly = roles.value.includes('waiter') && !roles.value.includes('kitchen-staff')
+    return waiterOnly ? { name: 'bar' } : { name: 'kitchen' }
   })
 
   function setToken(value) {

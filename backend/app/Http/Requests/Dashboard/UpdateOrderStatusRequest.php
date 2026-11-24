@@ -23,6 +23,10 @@ class UpdateOrderStatusRequest extends FormRequest
     {
         return [
             'status' => ['required', 'string', Rule::in(OrderStatus::values())],
+            // Sent by the Kitchen / Bar boards: the shortcut then only moves
+            // that board's items (the kitchen's "all ready" must not mark the
+            // bar's cocktails ready).
+            'board' => ['nullable', 'string', Rule::in(['kitchen', 'bar'])],
         ];
     }
 }

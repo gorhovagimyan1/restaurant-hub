@@ -103,7 +103,16 @@ class CategoryController extends Controller
 
         $locale = $restaurant->settings?->default_language ?? 'en';
 
+        // The catalog's drink defaults (a "Cocktails" category goes to the bar
+        // and is 18+) when a preset is first picked, unless the owner chose
+        // otherwise. Re-saving the same preset keeps the owner's settings.
+        $defaults = $category?->category_preset_id === $preset->id ? [] : [
+            'prep_station' => $preset->prep_station,
+            'is_alcoholic' => $preset->is_alcoholic,
+        ];
+
         return [
+            ...$defaults,
             ...$data,
             'name' => $preset->text('name', $locale),
             'description' => $preset->text('description', $locale),

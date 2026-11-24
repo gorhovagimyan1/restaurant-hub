@@ -1,9 +1,9 @@
 <script setup>
 import { useI18n } from 'vue-i18n'
-import { ref, onMounted } from 'vue'
-import { RouterView, RouterLink, useRouter } from 'vue-router'
+import { ref, computed, onMounted } from 'vue'
+import { RouterView, RouterLink, useRouter, useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
-import { ChefHat } from 'lucide-vue-next'
+import { ChefHat, Martini } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import http from '@/services/http'
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher.vue'
@@ -11,6 +11,14 @@ import LanguageSwitcher from '@/components/ui/LanguageSwitcher.vue'
 const { t } = useI18n()
 
 const router = useRouter()
+const route = useRoute()
+
+// Kitchen and bar share this screen; staff switch between them here.
+const DISPLAYS = [
+  { name: 'kitchen', label: 'shell.kitchenDisplay', icon: ChefHat },
+  { name: 'bar', label: 'shell.barDisplay', icon: Martini },
+]
+const current = computed(() => DISPLAYS.find((d) => d.name === route.name) || DISPLAYS[0])
 const auth = useAuthStore()
 const { user } = storeToRefs(auth)
 
@@ -52,13 +60,25 @@ async function logout() {
         class="-mx-2 flex items-center gap-3 rounded-lg px-2 py-1 transition hover:bg-stone-800"
         :title="t('shell.goHome')"
       >
-        <ChefHat :size="22" class="text-brand-400" />
+        <component :is="current.icon" :size="22" class="text-brand-400" />
         <span>
-          <span class="block text-sm font-bold leading-tight">{{ t('shell.kitchenDisplay') }}</span>
+          <span class="block text-sm font-bold leading-tight">{{ t(current.label) }}</span>
           <span class="block text-xs text-stone-400">{{ restaurantName || '—' }}</span>
         </span>
       </RouterLink>
       <div class="flex items-center gap-3 text-sm">
+        <nav class="flex rounded-full bg-stone-800 p-0.5" :aria-label="t('shell.displays')">
+          <RouterLink
+            v-for="d in DISPLAYS"
+            :key="d.name"
+            :to="{ name: d.name }"
+            class="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition"
+            :class="current.name === d.name ? 'bg-stone-100 text-stone-900' : 'text-stone-400 hover:text-stone-100'"
+          >
+            <component :is="d.icon" :size="14" />
+            <span class="hidden sm:inline">{{ t(d.label) }}</span>
+          </RouterLink>
+        </nav>
         <LanguageSwitcher tone="dark" />
         <RouterLink
           :to="{ name: 'profile' }"

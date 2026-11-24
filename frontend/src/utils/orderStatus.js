@@ -104,6 +104,17 @@ export function itemStatusMeta(status) {
   return ITEM_STATUS[status] || ITEM_STATUS.pending
 }
 
+// Which item stations each staff board shows (waiters run the bar board, and
+// pick up ready-to-serve items there).
+export const BOARD_STATIONS = {
+  kitchen: ['kitchen'],
+  bar: ['bar', 'ready'],
+}
+
+export function onBoard(item, board) {
+  return (BOARD_STATIONS[board] || []).includes(item.prep_station || 'kitchen')
+}
+
 export function nextItemStep(status) {
   return ITEM_FLOW[status] || null
 }

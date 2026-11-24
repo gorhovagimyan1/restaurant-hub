@@ -108,8 +108,8 @@ export const useOrdersStore = defineStore('orders', () => {
     freshIds.value = new Set()
   }
 
-  async function advance(order, status) {
-    const updated = await updateOrderStatus(order.id, status)
+  async function advance(order, status, board = null) {
+    const updated = await updateOrderStatus(order.id, status, board)
     const index = orders.value.findIndex((o) => o.id === order.id)
     if (index !== -1) orders.value.splice(index, 1, updated)
     return updated

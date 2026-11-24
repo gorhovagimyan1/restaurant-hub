@@ -30,6 +30,10 @@ class CategoryResource extends JsonResource
             ],
             'translations' => (object) ($this->translations ?? []),
             'image' => $this->image,
+            // Where its products are prepared, and whether they are 18+
+            // (each product may override both).
+            'prep_station' => $this->prep_station->value,
+            'is_alcoholic' => $this->is_alcoholic,
             'is_active' => $this->is_active,
             'sort_order' => $this->sort_order,
             'products_count' => $this->when(

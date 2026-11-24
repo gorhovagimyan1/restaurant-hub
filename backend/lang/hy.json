@@ -151,5 +151,6 @@
     "Your menu already has this category.": "Ձեր մենյուում արդեն կա այս կատեգորիան։",
     "Name": "Անվանում",
     "Description": "Նկարագրություն",
-    "Choose a category or enter your own name.": "Ընտրեք կատեգորիա կամ մուտքագրեք ձեր անվանումը։"
+    "Choose a category or enter your own name.": "Ընտրեք կատեգորիա կամ մուտքագրեք ձեր անվանումը։",
+    "This action is not available from a board.": "Այս գործողությունը հասանելի չէ վահանակից։"
 }

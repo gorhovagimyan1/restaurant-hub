@@ -16,6 +16,13 @@ class OrderItem extends Model
     /**
      * @var list<string>
      */
+    /**
+     * Same as the column default, for items created without a station.
+     */
+    protected $attributes = [
+        'prep_station' => 'kitchen',
+    ];
+
     protected $fillable = [
         'restaurant_id',
         'order_id',
@@ -26,6 +33,7 @@ class OrderItem extends Model
         'total_price',
         'notes',
         'status',
+        'prep_station',
     ];
 
     /**
@@ -38,6 +46,7 @@ class OrderItem extends Model
             'unit_price' => 'decimal:2',
             'total_price' => 'decimal:2',
             'status' => \App\Enums\OrderItemStatus::class,
+            'prep_station' => \App\Enums\PrepStation::class,
         ];
     }
 
