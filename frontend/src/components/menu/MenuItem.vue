@@ -1,5 +1,6 @@
 <script setup>
 import { storeToRefs } from 'pinia'
+import { useI18n } from 'vue-i18n'
 import { Star } from 'lucide-vue-next'
 import AppImage from '@/components/ui/AppImage.vue'
 import { formatPrice } from '@/utils/format'
@@ -20,6 +21,7 @@ defineProps({
 
 defineEmits(['select'])
 
+const { t } = useI18n()
 const dining = useDiningStore()
 const cart = useCartStore()
 const { allowOrders } = storeToRefs(dining)
@@ -48,14 +50,18 @@ const { allowOrders } = storeToRefs(dining)
           :size="14"
           class="m-accent mt-0.5 shrink-0"
           style="fill: currentColor"
-          title="Chef's pick"
+          :title="t('customer.chefsPick')"
         />
       </div>
       <p class="m-muted-card mt-1 line-clamp-2 text-sm">{{ product.description }}</p>
 
       <div class="m-faint mt-1.5 flex items-center gap-3 text-xs">
-        <span v-if="product.preparation_time">⏱ {{ product.preparation_time }} min</span>
-        <span v-if="!product.is_available" class="font-semibold text-red-500">Sold out</span>
+        <span v-if="product.rating" class="m-accent inline-flex items-center gap-1 font-semibold">
+            <Star :size="12" style="fill: currentColor" /> {{ product.rating.toFixed(1) }}
+            <span class="m-faint font-normal">({{ product.reviews_count }})</span>
+          </span>
+          <span v-if="product.preparation_time">⏱ {{ t('customer.minutes', { n: product.preparation_time }) }}</span>
+        <span v-if="!product.is_available" class="font-semibold text-red-500">{{ t('customer.soldOut') }}</span>
       </div>
 
       <div class="mt-3 flex items-center justify-between gap-2">
@@ -69,7 +75,7 @@ const { allowOrders } = storeToRefs(dining)
           >
             <button
               class="grid h-6 w-6 place-items-center rounded-full text-lg leading-none"
-              aria-label="Remove one"
+              :aria-label="t('customer.removeOne')"
               @click="cart.decrement(product.id)"
             >
               −
@@ -79,7 +85,7 @@ const { allowOrders } = storeToRefs(dining)
             </span>
             <button
               class="grid h-6 w-6 place-items-center rounded-full text-lg leading-none"
-              aria-label="Add one"
+              :aria-label="t('customer.addOne')"
               @click="cart.add(product)"
             >
               +
@@ -90,7 +96,7 @@ const { allowOrders } = storeToRefs(dining)
             class="m-btn-outline px-3 py-1 text-sm font-semibold"
             @click.stop="cart.add(product)"
           >
-            + Add
+            {{ t('customer.add') }}
           </button>
         </template>
       </div>
@@ -121,13 +127,17 @@ const { allowOrders } = storeToRefs(dining)
             :size="14"
             class="m-accent shrink-0"
             style="fill: currentColor"
-            title="Chef's pick"
+            :title="t('customer.chefsPick')"
           />
         </div>
         <p class="m-muted mt-1 line-clamp-2 text-sm">{{ product.description }}</p>
         <div class="m-faint mt-1.5 flex items-center gap-3 text-xs">
-          <span v-if="product.preparation_time">⏱ {{ product.preparation_time }} min</span>
-          <span v-if="!product.is_available" class="font-semibold text-red-500">Sold out</span>
+          <span v-if="product.rating" class="m-accent inline-flex items-center gap-1 font-semibold">
+            <Star :size="12" style="fill: currentColor" /> {{ product.rating.toFixed(1) }}
+            <span class="m-faint font-normal">({{ product.reviews_count }})</span>
+          </span>
+          <span v-if="product.preparation_time">⏱ {{ t('customer.minutes', { n: product.preparation_time }) }}</span>
+          <span v-if="!product.is_available" class="font-semibold text-red-500">{{ t('customer.soldOut') }}</span>
         </div>
       </div>
 
@@ -143,7 +153,7 @@ const { allowOrders } = storeToRefs(dining)
           >
             <button
               class="grid h-6 w-6 place-items-center rounded-full text-lg leading-none"
-              aria-label="Remove one"
+              :aria-label="t('customer.removeOne')"
               @click="cart.decrement(product.id)"
             >
               −
@@ -153,7 +163,7 @@ const { allowOrders } = storeToRefs(dining)
             </span>
             <button
               class="grid h-6 w-6 place-items-center rounded-full text-lg leading-none"
-              aria-label="Add one"
+              :aria-label="t('customer.addOne')"
               @click="cart.add(product)"
             >
               +
@@ -164,7 +174,7 @@ const { allowOrders } = storeToRefs(dining)
             class="m-btn-outline px-3.5 py-1 text-sm font-semibold"
             @click.stop="cart.add(product)"
           >
-            + Add
+            {{ t('customer.add') }}
           </button>
         </template>
       </div>

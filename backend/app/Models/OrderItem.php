@@ -6,6 +6,7 @@ use App\Traits\BelongsToRestaurant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class OrderItem extends Model
 {
@@ -54,6 +55,26 @@ class OrderItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * The dish name in the viewer's language (guest or staff): the menu's
+     * current wording while the dish exists, else the name captured when it
+     * was ordered. Load `product` first to avoid a query per line.
+     */
+    public function localizedName(): string
+    {
+        return $this->product?->translated('name') ?? $this->product_name;
+    }
+
+    /**
+     * The guest's rating of this line, if they left one.
+     *
+     * @return HasOne<ProductReview, $this>
+     */
+    public function review(): HasOne
+    {
+        return $this->hasOne(ProductReview::class);
     }
 
     /**

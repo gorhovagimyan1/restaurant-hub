@@ -1,4 +1,5 @@
 import http from './http'
+import i18n from '@/i18n'
 
 // Platform-administration endpoints. All are gated server-side to super-admins.
 
@@ -46,13 +47,39 @@ export async function updateRolePermissions(roleId, permissions) {
   return data.data
 }
 
+// The category catalog restaurants pick their menu sections from.
+export async function getCategoryPresets() {
+  const { data } = await http.get('/admin/category-presets')
+  return data.data
+}
+
+export async function saveCategoryPreset(payload, id) {
+  const { data } = id
+    ? await http.put(`/admin/category-presets/${id}`, payload)
+    : await http.post('/admin/category-presets', payload)
+  return data.data
+}
+
+export async function deleteCategoryPreset(id) {
+  await http.delete(`/admin/category-presets/${id}`)
+}
+
 // Restaurant platform statuses, with display labels and badge tones.
-export const RESTAURANT_STATUSES = [
-  { value: 'pending', label: 'Pending', tone: 'bg-amber-100 text-amber-700' },
-  { value: 'active', label: 'Active', tone: 'bg-emerald-100 text-emerald-700' },
-  { value: 'suspended', label: 'Suspended', tone: 'bg-red-100 text-red-600' },
-  { value: 'closed', label: 'Closed', tone: 'bg-stone-200 text-stone-600' },
+const STATUS_DEFS = [
+  { value: 'pending', tone: 'bg-amber-100 text-amber-700' },
+  { value: 'active', tone: 'bg-emerald-100 text-emerald-700' },
+  { value: 'suspended', tone: 'bg-red-100 text-red-600' },
+  { value: 'closed', tone: 'bg-stone-200 text-stone-600' },
 ]
+
+// Labels resolve on read, so they follow the active locale.
+export const RESTAURANT_STATUSES = STATUS_DEFS.map((s) => ({
+  value: s.value,
+  tone: s.tone,
+  get label() {
+    return i18n.global.t(`admin.statuses.${s.value}`)
+  },
+}))
 
 export function restaurantStatusMeta(value) {
   return (
@@ -65,14 +92,15 @@ export function restaurantStatusMeta(value) {
 }
 
 // Role display labels for the users table.
-export const ROLE_LABELS = {
-  'super-admin': 'Super Admin',
-  'restaurant-owner': 'Owner',
-  'restaurant-manager': 'Manager',
-  waiter: 'Waiter',
-  'kitchen-staff': 'Kitchen Staff',
-}
+export const ROLE_SLUGS = [
+  'super-admin',
+  'restaurant-owner',
+  'restaurant-manager',
+  'waiter',
+  'kitchen-staff',
+]
 
 export function roleLabel(role) {
-  return ROLE_LABELS[role] || role
+  const key = `admin.roles.${role}`
+  return i18n.global.te(key) ? i18n.global.t(key) : role
 }

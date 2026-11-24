@@ -1,4 +1,5 @@
 <script setup>
+import { useI18n } from 'vue-i18n'
 import { computed, ref, watch, onMounted } from 'vue'
 import { RouterView, RouterLink, useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
@@ -10,6 +11,7 @@ import {
   BookOpen,
   Palette,
   QrCode,
+  MessageSquareText,
   Users,
   Settings,
   ExternalLink,
@@ -23,6 +25,10 @@ import { useAuthStore } from '@/stores/auth'
 import { useDashboardStore } from '@/stores/dashboard'
 import { useBillingStore } from '@/stores/billing'
 import TrialBanner from '@/components/dashboard/TrialBanner.vue'
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher.vue'
+import StockAlertsBanner from '@/components/dashboard/StockAlertsBanner.vue'
+
+const { t } = useI18n()
 
 const route = useRoute()
 const router = useRouter()
@@ -41,29 +47,30 @@ watch(() => route.fullPath, () => (navOpen.value = false))
 const sections = computed(() =>
   [
     {
-      label: 'Operations',
+      label: t('shell.sections.operations'),
       items: [
-        { name: 'dashboard-overview', label: 'Overview', icon: LayoutDashboard, exact: true },
-        { name: 'dashboard-orders', label: 'Live Orders', icon: ReceiptText, exact: true },
-        { name: 'dashboard-orders-history', label: 'All Orders', icon: ClipboardList },
-        { name: 'kitchen', label: 'Kitchen Display', icon: ChefHat },
+        { name: 'dashboard-overview', label: t('shell.nav.overview'), icon: LayoutDashboard, exact: true },
+        { name: 'dashboard-orders', label: t('shell.nav.liveOrders'), icon: ReceiptText, exact: true },
+        { name: 'dashboard-orders-history', label: t('shell.nav.allOrders'), icon: ClipboardList },
+        { name: 'kitchen', label: t('shell.kitchenDisplay'), icon: ChefHat },
       ],
     },
     {
-      label: 'Your restaurant',
+      label: t('shell.sections.restaurant'),
       items: [
-        { name: 'dashboard-menu', label: 'Menu', icon: BookOpen, exact: true },
+        { name: 'dashboard-menu', label: t('shell.nav.menu'), icon: BookOpen, exact: true },
         {
           name: 'dashboard-design',
-          label: 'Menu Design',
+          label: t('shell.nav.menuDesign'),
           icon: Palette,
           show: auth.can('restaurant.manage'),
         },
-        { name: 'dashboard-tables', label: 'Tables & QR', icon: QrCode },
-        { name: 'dashboard-team', label: 'Team', icon: Users, show: auth.can('employees.manage') },
+        { name: 'dashboard-reviews', label: t('shell.nav.reviews'), icon: MessageSquareText, show: auth.can('products.manage') },
+        { name: 'dashboard-tables', label: t('shell.nav.tables'), icon: QrCode },
+        { name: 'dashboard-team', label: t('shell.nav.team'), icon: Users, show: auth.can('employees.manage') },
         {
           name: 'dashboard-settings',
-          label: 'Settings',
+          label: t('shell.nav.settings'),
           icon: Settings,
           show: auth.can('restaurant.manage'),
         },
@@ -80,7 +87,7 @@ const currentLabel = computed(() => {
     const match = section.items.find((item) => item.name === route.name)
     if (match) return match.label
   }
-  return 'Dashboard'
+  return t('shell.dashboard')
 })
 
 const linkClass =
@@ -144,7 +151,7 @@ async function logout() {
         <RouterLink
           :to="{ name: 'dashboard-overview' }"
           class="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-3 py-1.5 transition hover:bg-canvas"
-          :title="`${restaurant?.name || 'Restaurant Hub'} — go to Overview`"
+          :title="t('shell.goOverview', { name: restaurant?.name || t('auth.brand') })"
         >
           <span
             class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-white shadow-[0_6px_16px_-6px_rgba(5,150,105,0.8)]"
@@ -153,14 +160,14 @@ async function logout() {
           </span>
           <span class="min-w-0 flex-1">
             <span class="block truncate text-sm font-semibold text-ink-900">
-              {{ restaurant?.name || 'Restaurant Hub' }}
+              {{ restaurant?.name || t('auth.brand') }}
             </span>
             <span class="block truncate text-xs text-ink-400">Restaurant Hub</span>
           </span>
         </RouterLink>
         <button
           class="shrink-0 rounded-lg p-1 text-ink-400 transition hover:bg-canvas sm:hidden"
-          aria-label="Close menu"
+          :aria-label="t('shell.closeMenu')"
           @click="navOpen = false"
         >
           <X :size="20" />
@@ -191,7 +198,7 @@ async function logout() {
             target="_blank"
             class="flex items-center justify-between gap-2 rounded-xl border border-dashed border-hairline-strong px-3 py-2.5 text-sm font-medium text-ink-500 transition hover:border-brand-300 hover:text-brand-700"
           >
-            View customer menu
+            {{ t('shell.viewMenu') }}
             <ExternalLink :size="15" class="shrink-0" />
           </a>
         </div>
@@ -200,11 +207,11 @@ async function logout() {
       <div class="border-t border-hairline p-3">
         <RouterLink :to="{ name: 'profile' }" :class="[linkClass, 'gap-3']">
           <CircleUserRound :size="17" class="shrink-0" />
-          <span class="min-w-0 flex-1 truncate">{{ user?.full_name || 'My Profile' }}</span>
+          <span class="min-w-0 flex-1 truncate">{{ user?.full_name || t('shell.myProfile') }}</span>
         </RouterLink>
         <button :class="[linkClass, 'mt-0.5 w-full text-left']" @click="logout">
           <LogOut :size="17" class="shrink-0" />
-          Sign out
+          {{ t('shell.signOut') }}
         </button>
       </div>
     </aside>
@@ -217,19 +224,20 @@ async function logout() {
       >
         <button
           class="rounded-lg p-1.5 text-ink-600 transition hover:bg-canvas"
-          aria-label="Open menu"
+          :aria-label="t('shell.openMenu')"
           @click="navOpen = true"
         >
           <MenuIcon :size="22" />
         </button>
         <span class="min-w-0 flex-1 truncate font-semibold text-ink-900">
-          {{ restaurant?.name || 'Dashboard' }}
+          {{ restaurant?.name || t('shell.dashboard') }}
         </span>
+        <LanguageSwitcher />
         <button
           class="flex items-center gap-1.5 text-sm text-ink-500 transition hover:text-ink-800"
           @click="logout"
         >
-          <LogOut :size="16" /> Sign out
+          <LogOut :size="16" /> {{ t('shell.signOut') }}
         </button>
       </header>
 
@@ -248,10 +256,11 @@ async function logout() {
         >
           <ExternalLink :size="14" /> /r/{{ restaurant.slug }}
         </a>
+        <LanguageSwitcher />
         <RouterLink
           :to="{ name: 'profile' }"
           class="flex h-8 w-8 items-center justify-center rounded-full bg-canvas text-xs font-semibold text-ink-600 transition hover:bg-hairline"
-          :title="user?.full_name || 'My Profile'"
+          :title="user?.full_name || t('shell.myProfile')"
         >
           {{ (user?.full_name || '?').charAt(0).toUpperCase() }}
         </RouterLink>
@@ -260,6 +269,7 @@ async function logout() {
       <main class="flex-1 overflow-y-auto p-5 sm:p-8">
         <div class="mx-auto w-full max-w-[84rem]">
           <TrialBanner />
+          <StockAlertsBanner v-if="auth.can('orders.view')" />
           <RouterView />
         </div>
       </main>

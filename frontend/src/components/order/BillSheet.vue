@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { X, Check } from 'lucide-vue-next'
 import { fetchBill, requestBill } from '@/services/orders'
 import { statusMeta } from '@/utils/orderStatus'
@@ -14,6 +15,7 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close'])
+const { t } = useI18n()
 
 const bill = ref(null)
 const loading = ref(true)
@@ -28,7 +30,7 @@ async function load() {
     bill.value = await fetchBill(props.token, props.sessionToken)
     requested.value = !!bill.value.bill_requested
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not load your bill.'
+    error.value = err?.response?.data?.message || t('orders.billLoadError')
   } finally {
     loading.value = false
   }
@@ -41,7 +43,7 @@ async function askForBill() {
     await requestBill(props.token, props.sessionToken)
     requested.value = true
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not send the request.'
+    error.value = err?.response?.data?.message || t('orders.requestError')
   } finally {
     requesting.value = false
   }
@@ -59,17 +61,17 @@ onMounted(load)
     >
       <header class="flex items-center justify-between m-card-border border-b px-5 py-3.5">
         <div>
-          <h2 class="m-heading font-bold">Your bill</h2>
+          <h2 class="m-heading font-bold">{{ t('orders.yourBill') }}</h2>
           <p v-if="bill?.table" class="m-muted-card text-xs">{{ bill.table.name }}</p>
         </div>
-        <button class="m-faint hover:opacity-70" aria-label="Close" @click="emit('close')"><X :size="20" /></button>
+        <button class="m-faint hover:opacity-70" :aria-label="t('common.close')" @click="emit('close')"><X :size="20" /></button>
       </header>
 
       <div class="min-h-0 flex-1 overflow-y-auto px-5 py-4">
-        <p v-if="loading" class="py-8 text-center m-faint text-sm">Loading…</p>
+        <p v-if="loading" class="py-8 text-center m-faint text-sm">{{ t('orders.loading') }}</p>
         <p v-else-if="error" class="py-8 text-center text-sm text-red-500">{{ error }}</p>
         <p v-else-if="!bill.orders.length" class="py-8 text-center m-faint text-sm">
-          You haven't ordered anything yet.
+          {{ t('orders.nothingOrdered') }}
         </p>
 
         <div v-else class="space-y-4">
@@ -77,7 +79,7 @@ onMounted(load)
             <div class="flex items-center justify-between">
               <p class="m-faint text-xs font-semibold">{{ order.order_number }}</p>
               <span
-                class="rounded-full px-2 py-0.5 text-xs font-medium"
+                class="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
                 :class="statusMeta(order.status).badge"
               >
                 {{ statusMeta(order.status).label }}
@@ -100,26 +102,26 @@ onMounted(load)
       <footer v-if="bill && bill.orders.length" class="m-card-border border-t px-5 py-4">
         <dl class="space-y-1 text-sm">
           <div v-if="bill.service_charge > 0" class="flex justify-between m-muted-card">
-            <dt>Service charge</dt>
+            <dt>{{ t('orders.serviceCharge') }}</dt>
             <dd>{{ formatPrice(bill.service_charge, bill.currency) }}</dd>
           </div>
           <div v-if="bill.tax > 0" class="flex justify-between m-muted-card">
-            <dt>Tax</dt>
+            <dt>{{ t('orders.taxLabel') }}</dt>
             <dd>{{ formatPrice(bill.tax, bill.currency) }}</dd>
           </div>
           <div class="flex justify-between pt-1 text-base m-heading font-bold">
-            <dt>Total</dt>
+            <dt>{{ t('orders.total') }}</dt>
             <dd>{{ formatPrice(bill.total, bill.currency) }}</dd>
           </div>
         </dl>
 
-        <p class="m-faint mt-2 text-center text-xs">Pay at the table when you're ready to leave.</p>
+        <p class="m-faint mt-2 text-center text-xs">{{ t('orders.payAtTable') }}</p>
 
         <div
           v-if="requested"
           class="m-accent-soft mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full py-2.5 text-center text-sm font-semibold"
         >
-          <Check :size="15" /> A waiter is on the way with your bill
+          <Check :size="15" class="shrink-0" /> {{ t('orders.waiterComing') }}
         </div>
         <button
           v-else-if="canRequest"
@@ -127,7 +129,7 @@ onMounted(load)
           :disabled="requesting"
           @click="askForBill"
         >
-          {{ requesting ? 'Sending…' : 'Request bill' }}
+          {{ requesting ? t('orders.sending') : t('orders.requestBill') }}
         </button>
       </footer>
     </div>

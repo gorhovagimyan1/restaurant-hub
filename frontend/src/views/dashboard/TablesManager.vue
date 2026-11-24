@@ -1,8 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { fetchTables, createTable, deleteTable } from '@/services/tables'
 import TableQrCard from '@/components/dashboard/TableQrCard.vue'
 
+const { t } = useI18n()
 const tables = ref([])
 const loading = ref(true)
 const error = ref(null)
@@ -17,7 +19,7 @@ async function load() {
   try {
     tables.value = await fetchTables()
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not load tables.'
+    error.value = err?.response?.data?.message || t('tables.loadError')
   } finally {
     loading.value = false
   }
@@ -33,19 +35,19 @@ async function add() {
     newName.value = ''
     newCapacity.value = 4
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not create the table.'
+    error.value = err?.response?.data?.message || t('tables.createError')
   } finally {
     creating.value = false
   }
 }
 
 async function remove(table) {
-  if (!window.confirm(`Delete ${table.name}? Its QR code will stop working.`)) return
+  if (!window.confirm(t('tables.deleteConfirm', { name: table.name }))) return
   try {
     await deleteTable(table.id)
     tables.value = tables.value.filter((t) => t.id !== table.id)
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not delete the table.'
+    error.value = err?.response?.data?.message || t('tables.deleteError')
   }
 }
 
@@ -55,9 +57,9 @@ onMounted(load)
 <template>
   <div>
     <header class="mb-5">
-      <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">Tables & QR codes</h1>
+      <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">{{ t('tables.title') }}</h1>
       <p class="text-sm text-ink-500">
-        Print a QR code for each table. Scanning it opens the menu and lets guests order.
+        {{ t('tables.hint') }}
       </p>
     </header>
 
@@ -67,16 +69,16 @@ onMounted(load)
       @submit.prevent="add"
     >
       <div class="w-full sm:w-auto sm:flex-1">
-        <label class="block text-xs font-medium text-ink-500">Table name</label>
+        <label class="block text-xs font-medium text-ink-500">{{ t('tables.name') }}</label>
         <input
           v-model="newName"
           type="text"
-          placeholder="e.g. Table 9 / Patio 2"
+          :placeholder="t('tables.namePlaceholder')"
           class="mt-1 w-full field sm:w-64"
         />
       </div>
       <div>
-        <label class="block text-xs font-medium text-ink-500">Seats</label>
+        <label class="block text-xs font-medium text-ink-500">{{ t('tables.seats') }}</label>
         <input
           v-model="newCapacity"
           type="number"
@@ -90,19 +92,19 @@ onMounted(load)
         class="w-full rounded-full bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-60 sm:w-auto sm:py-2"
         :disabled="creating"
       >
-        {{ creating ? 'Adding…' : '+ Add table' }}
+        {{ creating ? t('tables.adding') : t('tables.add') }}
       </button>
     </form>
 
     <p v-if="error" class="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{{ error }}</p>
 
-    <div v-if="loading" class="py-16 text-center text-sm text-ink-400">Loading tables…</div>
+    <div v-if="loading" class="py-16 text-center text-sm text-ink-400">{{ t('tables.loading') }}</div>
 
     <div
       v-else-if="tables.length === 0"
       class="rounded-2xl border border-dashed border-hairline px-6 py-16 text-center text-sm text-ink-500"
     >
-      No tables yet — add your first one above.
+      {{ t('tables.empty') }}
     </div>
 
     <div

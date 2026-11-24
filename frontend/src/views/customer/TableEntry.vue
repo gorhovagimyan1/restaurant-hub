@@ -2,6 +2,8 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ScanLine } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher.vue'
 import { resolveTable, openSession } from '@/services/orders'
 import { useDiningStore } from '@/stores/dining'
 import { useCartStore } from '@/stores/cart'
@@ -11,6 +13,7 @@ import { useCartStore } from '@/stores/cart'
  * Resolves the token, opens a dining session, then hands off to the full
  * restaurant portal (/r/:slug). This is the only way that portal opens.
  */
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const dining = useDiningStore()
@@ -35,8 +38,7 @@ async function boot(token) {
     router.replace({ name: 'restaurant-home', params: { slug: context.restaurant.slug } })
   } catch (err) {
     error.value =
-      err?.response?.data?.message ||
-      'This QR code is not valid. Please ask a staff member for help.'
+      err?.response?.data?.message || t('customer.invalidQr')
   }
 }
 
@@ -50,15 +52,16 @@ watch(
 </script>
 
 <template>
-  <div class="flex min-h-screen items-center justify-center bg-canvas px-4 text-center">
+  <div class="relative flex min-h-screen items-center justify-center bg-canvas px-4 text-center">
+    <LanguageSwitcher class="absolute right-4 top-4" />
     <div v-if="error" class="max-w-md">
       <ScanLine :size="44" class="mx-auto text-ink-300" />
-      <h2 class="mt-4 text-lg font-semibold text-ink-800">Table not found</h2>
+      <h2 class="mt-4 text-lg font-semibold text-ink-800">{{ t('customer.tableNotFound') }}</h2>
       <p class="mt-1 text-sm text-ink-500">{{ error }}</p>
     </div>
     <div v-else class="flex flex-col items-center gap-3 text-ink-400">
       <span class="h-8 w-8 animate-spin rounded-full border-2 border-hairline border-t-brand-500" />
-      <span class="text-sm">Opening menu…</span>
+      <span class="text-sm">{{ t('customer.openingMenu') }}</span>
     </div>
   </div>
 </template>

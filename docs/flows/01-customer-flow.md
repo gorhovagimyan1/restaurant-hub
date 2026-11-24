@@ -51,6 +51,25 @@ regenerated per visit.
 Two guests at the same table get the **same** session — the second scan joins
 the existing open session under a `lockForUpdate`, so they share one bill.
 
+#### The QR is static; the session is what changes
+
+The printed QR never needs replacing, not after a guest leaves and not between
+visits. Two separate tokens do two separate jobs:
+
+| Token | Lifetime | Job |
+|---|---|---|
+| QR token (`table_qr_codes`) | Permanent per table | Identifies the table |
+| `session_token` (`dining_sessions`) | One visit | Authorizes ordering, bill and waiter calls |
+
+When staff settle (or the idle job closes the session) the `session_token`
+dies. The next scan of the same QR opens a fresh session with a new token.
+A photo of the QR from an earlier visit therefore cannot order or ask for the
+bill: every action checks the session token (`ResolvesDiningSession`).
+
+Limitation: while a session is still open, anyone who scans the QR joins it.
+Closing the session on settle is what stops a later scan from riding the
+previous guest's bill.
+
 ### 2. Open menu
 
 `/r/{slug}` is guarded by `meta.requiresDining`. Without a stored dining
@@ -108,6 +127,32 @@ this visit, with items, plus combined subtotal / tax / service charge / total.
 **Call a waiter** is the same shape:
 `POST /api/public/tables/{token}/call-waiter`, stamping `waiter_called_at`,
 and gated by `settings.enable_waiter_call`.
+
+#### Rating dishes
+
+Once a dish is `served`, the order tracker shows **Rate this dish** (1–5 stars +
+optional comment, `POST /api/public/tables/{token}/reviews`). Rules:
+
+- Only lines from the guest's **own open session** that were **served**.
+- **One review per ordered line** (unique `order_item_id`), so ratings come from
+  real diners and can't be spammed. Rate-limited to 20 requests/minute.
+- **Rating outlives the session, briefly.** For `REVIEWS_WINDOW_HOURS` (default
+  2) after a session closes — settled or idle-closed — its token can still rate
+  dishes (`GET .../reviews/pending` lists what's left). Ordering, the bill and
+  service calls stay dead the moment it closes. After the window: `409`.
+- **Prompts are gentle.** While seated, a slim dismissible bar offers "Rate N
+  dishes" once something is served. After the visit the "scan again" screen
+  shows a "How were your dishes?" card, driven by a rating ticket kept in
+  `localStorage` (`utils/ratingTicket.js`); it shows nothing if there is nothing
+  left to rate. Rating never blocks ordering, the bill or calling a waiter.
+
+The public menu returns each dish's `rating` and `reviews_count`, plus a
+`best_choices` list rendered as a **Best choices** section at the top. A dish
+qualifies with at least `REVIEWS_MIN_COUNT` (3) reviews averaging
+`REVIEWS_MIN_RATING` (4.0)+ and is currently orderable; the top
+`REVIEWS_BEST_LIMIT` (6) are ranked by a smoothed (Bayesian) score so a
+dish with three 5-stars doesn't outrank a proven favourite. Owners/managers see
+and can delete reviews under **Reviews** in the dashboard.
 
 ### 9. Pay
 

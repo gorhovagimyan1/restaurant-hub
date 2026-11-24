@@ -1,6 +1,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useI18n } from 'vue-i18n'
 import { RotateCcw, ExternalLink, Check, Smartphone } from 'lucide-vue-next'
 import { useDashboardStore } from '@/stores/dashboard'
 import {
@@ -24,6 +25,7 @@ import AppCard from '@/components/ui/AppCard.vue'
 import ImageUploadField from '@/components/ui/ImageUploadField.vue'
 import MenuPreview from '@/components/design/MenuPreview.vue'
 
+const { t, te } = useI18n()
 const dashboard = useDashboardStore()
 const { restaurant } = storeToRefs(dashboard)
 
@@ -47,11 +49,19 @@ const dirty = computed(() =>
 )
 
 const fontOptions = computed(() =>
-  Object.entries(FONTS).map(([value, font]) => ({ value, ...font })),
+  Object.entries(FONTS).map(([value, font]) => ({
+    value,
+    ...font,
+    note: te(`design.fontNotes.${value}`) ? t(`design.fontNotes.${value}`) : font.note,
+  })),
 )
 
 const presetList = computed(() =>
-  Object.entries(presets.value).map(([value, preset]) => ({ value, ...preset })),
+  Object.entries(presets.value).map(([value, preset]) => ({
+    value,
+    ...preset,
+    label: te(`design.presets.${value}`) ? t(`design.presets.${value}`) : preset.label,
+  })),
 )
 
 function apply(next) {
@@ -92,10 +102,10 @@ async function save() {
   notice.value = null
   try {
     hydrate(await updateMenuTheme({ ...theme }))
-    notice.value = 'Design saved — your customer menu is updated.'
+    notice.value = t('design.saved')
   } catch (err) {
     error.value =
-      err?.response?.data?.message || 'Could not save the design. Please try again.'
+      err?.response?.data?.message || t('design.saveError')
   } finally {
     saving.value = false
   }
@@ -107,9 +117,9 @@ async function revertToDefault() {
   notice.value = null
   try {
     hydrate(await resetMenuTheme())
-    notice.value = 'Design reset to the default look.'
+    notice.value = t('design.resetDone')
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not reset the design.'
+    error.value = err?.response?.data?.message || t('design.resetError')
   } finally {
     resetting.value = false
   }
@@ -125,7 +135,7 @@ onMounted(async () => {
   try {
     hydrate(await getMenuTheme())
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not load your menu design.'
+    error.value = err?.response?.data?.message || t('design.loadError')
   } finally {
     loading.value = false
   }
@@ -147,6 +157,28 @@ watch(
   },
   { immediate: true },
 )
+
+const heroOptions = computed(() => localizedOptions(HERO_STYLES, 'heroes'))
+const layoutOptions = computed(() => localizedOptions(LAYOUTS, 'layouts'))
+
+function localizedOptions(list, ns) {
+  return list.map((o) => ({
+    ...o,
+    label: te(`design.${ns}.${o.value}.label`) ? t(`design.${ns}.${o.value}.label`) : o.label,
+    hint: te(`design.${ns}.${o.value}.hint`) ? t(`design.${ns}.${o.value}.hint`) : o.hint,
+  }))
+}
+
+const swatches = computed(() => [
+  { key: 'primary_color', label: t('design.brandColour'), hint: t('design.brandColourHint') },
+  { key: 'surface_color', label: t('design.pageBg'), hint: t('design.pageBgHint') },
+  { key: 'card_color', label: t('design.cards'), hint: t('design.cardsHint') },
+])
+
+const fontSlots = computed(() => [
+  { key: 'heading_font', label: t('design.headings') },
+  { key: 'body_font', label: t('design.bodyText') },
+])
 
 const previewInfo = computed(() => previewRestaurant.value || restaurant.value)
 
@@ -176,12 +208,12 @@ async function pickImage(type, file) {
   imageError.value = null
   try {
     applyImages(await uploadRestaurantImage(type, file))
-    notice.value = type === 'logo' ? 'Logo updated.' : 'Cover photo updated.'
+    notice.value = type === 'logo' ? t('design.logoUpdated') : t('design.coverUpdated')
   } catch (err) {
     imageError.value =
       err?.response?.data?.errors?.image?.[0] ||
       err?.response?.data?.message ||
-      'Could not upload that image.'
+      t('design.uploadError')
   } finally {
     uploading.value = null
   }
@@ -193,7 +225,7 @@ async function removeImage(type) {
   try {
     applyImages(await deleteRestaurantImage(type))
   } catch (err) {
-    imageError.value = err?.response?.data?.message || 'Could not remove that image.'
+    imageError.value = err?.response?.data?.message || t('design.removeError')
   } finally {
     uploading.value = null
   }
@@ -203,8 +235,8 @@ async function removeImage(type) {
 <template>
   <div>
     <PageHeader
-      title="Menu Design"
-      subtitle="Style the menu your guests see when they scan a table QR."
+      :title="t('design.title')"
+      :subtitle="t('design.subtitle')"
     >
       <template #actions>
         <a
@@ -213,19 +245,19 @@ async function removeImage(type) {
           target="_blank"
           class="btn-ghost flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-medium"
         >
-          <ExternalLink :size="15" /> Open live menu
+          <ExternalLink :size="15" /> {{ t('design.openLive') }}
         </a>
       </template>
     </PageHeader>
 
     <p v-if="error" class="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{{ error }}</p>
-    <p v-if="loading" class="text-sm text-ink-400">Loading your design…</p>
+    <p v-if="loading" class="text-sm text-ink-400">{{ t('design.loading') }}</p>
 
-    <div v-else class="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
+    <div v-else class="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <!-- Controls -->
       <div class="space-y-5">
         <!-- Presets -->
-        <AppCard title="Start from a look" hint="Pick one, then adjust anything you like.">
+        <AppCard :title="t('design.presetsTitle')" :hint="t('design.presetsHint')">
           <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <button
               v-for="preset in presetList"
@@ -267,17 +299,18 @@ async function removeImage(type) {
           </div>
 
           <p v-if="theme.preset === 'custom'" class="mt-3 text-xs text-ink-400">
-            You're on a custom design. Picking a look above replaces it.
+            {{ t('design.customNote') }}
           </p>
         </AppCard>
 
         <!-- Header & photos -->
-        <AppCard title="Header & photos" hint="Your cover photo and logo, and how the header uses them.">
+        <AppCard :title="t('design.headerTitle')" :hint="t('design.headerHint')">
           <div class="grid grid-cols-1 gap-5 sm:grid-cols-[minmax(0,1fr)_9rem]">
             <ImageUploadField
-              label="Cover photo"
-              hint="Shown behind your name. Wide shots work best — around 1600×900."
+              :label="t('design.cover')"
+              :hint="t('design.coverHint')"
               shape="wide"
+              :max-mb="6"
               :src="previewInfo?.cover_image"
               :busy="uploading === 'cover'"
               :error="imageError && uploading !== 'logo' ? imageError : ''"
@@ -285,8 +318,8 @@ async function removeImage(type) {
               @remove="removeImage('cover')"
             />
             <ImageUploadField
-              label="Logo"
-              hint="Appears in the top bar."
+              :label="t('design.logo')"
+              :hint="t('design.logoHint')"
               shape="square"
               :src="previewInfo?.logo"
               :busy="uploading === 'logo'"
@@ -296,10 +329,10 @@ async function removeImage(type) {
           </div>
 
           <div class="mt-5">
-            <label class="text-xs font-medium text-ink-600">Menu header</label>
+            <label class="text-xs font-medium text-ink-600">{{ t('design.menuHeader') }}</label>
             <div class="mt-1.5 grid grid-cols-1 gap-2 sm:grid-cols-3">
               <button
-                v-for="option in HERO_STYLES"
+                v-for="option in heroOptions"
                 :key="option.value"
                 type="button"
                 class="rounded-xl border px-3 py-2.5 text-left transition"
@@ -315,24 +348,20 @@ async function removeImage(type) {
               </button>
             </div>
             <p v-if="theme.hero_style === 'compact'" class="mt-2 text-[11px] text-ink-400">
-              The compact header doesn't use the cover photo — only your logo and name.
+              {{ t('design.compactNote') }}
             </p>
           </div>
 
           <p class="mt-3 text-[11px] text-ink-400">
-            Photos save as soon as you upload them — no need to press Save design.
+            {{ t('design.photosAutosave') }}
           </p>
         </AppCard>
 
         <!-- Colours -->
-        <AppCard title="Colours" hint="Text, borders and hover states adapt automatically.">
+        <AppCard :title="t('design.coloursTitle')" :hint="t('design.coloursHint')">
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div
-              v-for="swatch in [
-                { key: 'primary_color', label: 'Brand colour', hint: 'Buttons, prices, highlights' },
-                { key: 'surface_color', label: 'Page background', hint: 'Behind everything' },
-                { key: 'card_color', label: 'Cards & bars', hint: 'Dish cards, top bar' },
-              ]"
+              v-for="swatch in swatches"
               :key="swatch.key"
             >
               <label class="block text-xs font-medium text-ink-600">{{ swatch.label }}</label>
@@ -359,12 +388,9 @@ async function removeImage(type) {
         </AppCard>
 
         <!-- Typography -->
-        <AppCard title="Typography">
+        <AppCard :title="t('design.typography')">
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div v-for="slot in [
-              { key: 'heading_font', label: 'Headings' },
-              { key: 'body_font', label: 'Body text' },
-            ]" :key="slot.key">
+            <div v-for="slot in fontSlots" :key="slot.key">
               <label class="block text-xs font-medium text-ink-600">{{ slot.label }}</label>
               <div class="mt-1.5 space-y-1.5">
                 <button
@@ -390,11 +416,11 @@ async function removeImage(type) {
         </AppCard>
 
         <!-- Shape & layout -->
-        <AppCard title="Shape & layout">
+        <AppCard :title="t('design.shapeTitle')">
           <div class="space-y-5">
             <div>
               <div class="flex items-baseline justify-between">
-                <label class="text-xs font-medium text-ink-600">Corner roundness</label>
+                <label class="text-xs font-medium text-ink-600">{{ t('design.roundness') }}</label>
                 <span class="text-xs tabular-nums text-ink-400">{{ theme.radius }}px</span>
               </div>
               <input
@@ -407,15 +433,15 @@ async function removeImage(type) {
                 @input="edit('radius', Number($event.target.value))"
               />
               <div class="mt-1 flex justify-between text-[11px] text-ink-400">
-                <span>Sharp</span><span>Rounded</span>
+                <span>{{ t('design.sharp') }}</span><span>{{ t('design.rounded') }}</span>
               </div>
             </div>
 
             <div>
-              <label class="text-xs font-medium text-ink-600">Dish layout</label>
+              <label class="text-xs font-medium text-ink-600">{{ t('design.dishLayout') }}</label>
               <div class="mt-1.5 grid grid-cols-2 gap-2">
                 <button
-                  v-for="option in LAYOUTS"
+                  v-for="option in layoutOptions"
                   :key="option.value"
                   type="button"
                   class="rounded-xl border px-3 py-2.5 text-left transition"
@@ -434,9 +460,9 @@ async function removeImage(type) {
 
             <div class="flex items-center justify-between gap-4">
               <div>
-                <p class="text-sm font-medium text-ink-800">Show dish photos</p>
+                <p class="text-sm font-medium text-ink-800">{{ t('design.showPhotos') }}</p>
                 <p class="text-[11px] text-ink-400">
-                  Turn off for a text-only menu — cleaner when photos are inconsistent.
+                  {{ t('design.showPhotosHint') }}
                 </p>
               </div>
               <button
@@ -464,17 +490,17 @@ async function removeImage(type) {
           @click="revertToDefault"
         >
           <RotateCcw :size="14" />
-          {{ resetting ? 'Resetting…' : 'Reset to the default design' }}
+          {{ resetting ? t('design.resetting') : t('design.reset') }}
         </button>
       </div>
 
       <!-- Live preview -->
-      <div class="xl:sticky xl:top-24 xl:self-start">
+      <div class="lg:sticky lg:top-4 lg:self-start">
         <div class="mb-2.5 flex items-center gap-2 text-xs font-medium text-ink-500">
-          <Smartphone :size="14" /> Live preview
+          <Smartphone :size="14" /> {{ t('design.livePreview') }}
         </div>
         <div
-          class="mx-auto h-[34rem] w-full max-w-[19rem] overflow-hidden rounded-[1.75rem] border-[6px] border-ink-900 bg-ink-900 shadow-pop"
+          class="mx-auto h-[min(34rem,calc(100vh-9rem))] w-full max-w-[19rem] overflow-hidden rounded-[1.75rem] border-[6px] border-ink-900 bg-ink-900 shadow-pop"
         >
           <MenuPreview
             :theme="theme"
@@ -485,8 +511,8 @@ async function removeImage(type) {
         <p class="mt-3 text-center text-[11px] text-ink-400">
           {{
             previewCategories.length
-              ? 'Showing your own dishes.'
-              : 'Sample dishes — add menu items to preview your own.'
+              ? t('design.ownDishes')
+              : t('design.sampleDishes')
           }}
         </p>
       </div>
@@ -498,7 +524,7 @@ async function removeImage(type) {
         v-if="!loading && (dirty || notice)"
         class="sticky bottom-4 z-20 mt-5 flex flex-wrap items-center gap-3 rounded-2xl border border-hairline bg-surface/95 px-4 py-3 shadow-lift backdrop-blur"
       >
-        <span v-if="dirty" class="flex-1 text-sm text-ink-600">You have unsaved changes.</span>
+        <span v-if="dirty" class="flex-1 text-sm text-ink-600">{{ t('design.unsaved') }}</span>
         <span v-else class="flex flex-1 items-center gap-2 text-sm font-medium text-brand-700">
           <Check :size="15" /> {{ notice }}
         </span>
@@ -509,7 +535,7 @@ async function removeImage(type) {
             class="btn-ghost rounded-xl px-3.5 py-2 text-sm font-medium"
             @click="discard"
           >
-            Discard
+            {{ t('design.discard') }}
           </button>
           <button
             type="button"
@@ -517,7 +543,7 @@ async function removeImage(type) {
             :disabled="saving"
             @click="save"
           >
-            {{ saving ? 'Saving…' : 'Save design' }}
+            {{ saving ? t('design.saving') : t('design.saveDesign') }}
           </button>
         </template>
       </div>

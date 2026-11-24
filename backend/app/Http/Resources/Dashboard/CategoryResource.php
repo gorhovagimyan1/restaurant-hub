@@ -18,8 +18,17 @@ class CategoryResource extends JsonResource
         return [
             'id' => $this->id,
             'menu_id' => $this->menu_id,
-            'name' => $this->name,
-            'description' => $this->description,
+            // Picked from the platform catalog (null = the owner's own category).
+            'category_preset_id' => $this->category_preset_id,
+            // Shown in the dashboard user's language; forms edit `original`
+            // and `translations`.
+            'name' => $this->translated('name'),
+            'description' => $this->translated('description'),
+            'original' => [
+                'name' => $this->name,
+                'description' => $this->description,
+            ],
+            'translations' => (object) ($this->translations ?? []),
             'image' => $this->image,
             'is_active' => $this->is_active,
             'sort_order' => $this->sort_order,

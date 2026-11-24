@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useI18n } from 'vue-i18n'
 import { X } from 'lucide-vue-next'
 import { useCartStore } from '@/stores/cart'
 import AppImage from '@/components/ui/AppImage.vue'
@@ -11,6 +12,8 @@ defineProps({
 })
 
 const emit = defineEmits(['close', 'placed'])
+
+const { t } = useI18n()
 
 const cart = useCartStore()
 const { lines, currency, subtotal, serviceAmount, taxAmount, total, isEmpty } = storeToRefs(cart)
@@ -28,7 +31,7 @@ async function place() {
     const result = await cart.submit({ customer_name: customerName.value, notes: notes.value })
     emit('placed', result)
   } catch (err) {
-    error.value = err?.response?.data?.message || 'We could not send your order. Please try again.'
+    error.value = err?.response?.data?.message || t('cart.placeError')
   } finally {
     submitting.value = false
   }
@@ -46,14 +49,14 @@ async function place() {
     >
       <header class="flex items-center justify-between m-card-border border-b px-5 py-3.5">
         <div>
-          <h2 class="m-heading font-bold">Your order</h2>
+          <h2 class="m-heading font-bold">{{ t('cart.yourOrder') }}</h2>
           <p v-if="tableName" class="m-muted-card text-xs">{{ tableName }}</p>
         </div>
-        <button class="m-faint hover:opacity-70" aria-label="Close" @click="emit('close')"><X :size="20" /></button>
+        <button class="m-faint hover:opacity-70" :aria-label="t('common.close')" @click="emit('close')"><X :size="20" /></button>
       </header>
 
       <div class="min-h-0 flex-1 overflow-y-auto px-5">
-        <p v-if="isEmpty" class="py-10 text-center m-faint text-sm">Your cart is empty.</p>
+        <p v-if="isEmpty" class="py-10 text-center m-faint text-sm">{{ t('cart.empty') }}</p>
 
         <ul v-else class="m-divide">
           <li v-for="line in lines" :key="line.product.id" class="flex items-center gap-3 py-3">
@@ -71,6 +74,7 @@ async function place() {
             <div class="flex items-center gap-2.5 rounded-full m-elevated m-muted-card px-1.5 py-1">
               <button
                 class="grid h-6 w-6 place-items-center rounded-full text-lg leading-none"
+                :aria-label="t('cart.removeOne')"
                 @click="cart.decrement(line.product.id)"
               >
                 −
@@ -78,6 +82,7 @@ async function place() {
               <span class="min-w-4 text-center text-sm font-bold tabular-nums">{{ line.quantity }}</span>
               <button
                 class="grid h-6 w-6 place-items-center rounded-full text-lg leading-none"
+                :aria-label="t('cart.addOne')"
                 @click="cart.add(line.product)"
               >
                 +
@@ -93,13 +98,13 @@ async function place() {
           <input
             v-model="customerName"
             type="text"
-            placeholder="Your name (optional)"
+            :placeholder="t('cart.namePlaceholder')"
             class="w-full rounded-xl m-card-border m-elevated border px-3.5 py-2.5 text-sm outline-none focus:border-[var(--m-primary)]"
           />
           <textarea
             v-model="notes"
             rows="2"
-            placeholder="Notes for the kitchen (optional)"
+            :placeholder="t('cart.notesPlaceholder')"
             class="w-full resize-none rounded-xl m-card-border m-elevated border px-3.5 py-2.5 text-sm outline-none focus:border-[var(--m-primary)]"
           />
         </div>
@@ -108,19 +113,19 @@ async function place() {
       <footer v-if="!isEmpty" class="m-card-border border-t px-5 py-4">
         <dl class="space-y-1 text-sm">
           <div class="flex justify-between m-muted-card">
-            <dt>Subtotal</dt>
+            <dt>{{ t('cart.subtotal') }}</dt>
             <dd>{{ formatPrice(subtotal, currency) }}</dd>
           </div>
           <div v-if="serviceAmount > 0" class="flex justify-between m-muted-card">
-            <dt>Service charge</dt>
+            <dt>{{ t('cart.serviceCharge') }}</dt>
             <dd>{{ formatPrice(serviceAmount, currency) }}</dd>
           </div>
           <div v-if="taxAmount > 0" class="flex justify-between m-muted-card">
-            <dt>Tax</dt>
+            <dt>{{ t('cart.tax') }}</dt>
             <dd>{{ formatPrice(taxAmount, currency) }}</dd>
           </div>
           <div class="flex justify-between pt-1 text-base m-heading font-bold">
-            <dt>Total</dt>
+            <dt>{{ t('cart.total') }}</dt>
             <dd>{{ formatPrice(total, currency) }}</dd>
           </div>
         </dl>
@@ -132,7 +137,7 @@ async function place() {
           :disabled="submitting"
           @click="place"
         >
-          {{ submitting ? 'Sending…' : `Place order · ${formatPrice(total, currency)}` }}
+          {{ submitting ? t('cart.sending') : t('cart.placeOrder', { total: formatPrice(total, currency) }) }}
         </button>
       </footer>
     </div>

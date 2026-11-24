@@ -1,5 +1,9 @@
 <script setup>
+import { useI18n } from 'vue-i18n'
 import { UtensilsCrossed, BookOpen, QrCode, LineChart } from 'lucide-vue-next'
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher.vue'
+
+const { t } = useI18n()
 
 defineProps({
   // Small heading shown above the slotted form on the right panel.
@@ -8,9 +12,9 @@ defineProps({
 })
 
 const features = [
-  { icon: BookOpen, text: 'Menus, categories & dishes in one place' },
-  { icon: QrCode, text: 'QR ordering straight to the kitchen' },
-  { icon: LineChart, text: 'Live orders, tables & daily takings' },
+  { icon: BookOpen, key: 'auth.featMenus' },
+  { icon: QrCode, key: 'auth.featQr' },
+  { icon: LineChart, key: 'auth.featLive' },
 ]
 </script>
 
@@ -35,14 +39,14 @@ const features = [
 
       <div class="relative">
         <h2 class="max-w-md text-4xl font-extrabold leading-tight tracking-tight">
-          Run your restaurant, from menu to money.
+          {{ t('auth.tagline') }}
         </h2>
         <ul class="mt-8 space-y-3">
-          <li v-for="f in features" :key="f.text" class="flex items-center gap-3 text-white/90">
+          <li v-for="f in features" :key="f.key" class="flex items-center gap-3 text-white/90">
             <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/20">
               <component :is="f.icon" :size="18" />
             </span>
-            <span class="text-sm">{{ f.text }}</span>
+            <span class="text-sm">{{ t(f.key) }}</span>
           </li>
         </ul>
       </div>
@@ -51,7 +55,10 @@ const features = [
     </aside>
 
     <!-- Form panel -->
-    <main class="flex items-center justify-center bg-white px-6 py-12">
+    <main class="relative flex items-center justify-center bg-white px-6 py-12">
+      <div class="absolute right-4 top-4">
+        <LanguageSwitcher />
+      </div>
       <div class="w-full max-w-sm">
         <!-- Compact brand mark for mobile where the panel is hidden. -->
         <div class="mb-8 flex items-center gap-2 lg:hidden">

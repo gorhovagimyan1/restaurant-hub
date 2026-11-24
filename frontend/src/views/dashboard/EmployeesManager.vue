@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import {
@@ -11,6 +12,7 @@ import {
   roleLabel,
 } from '@/services/employees'
 
+const { t } = useI18n()
 const auth = useAuthStore()
 const { user } = storeToRefs(auth)
 
@@ -36,7 +38,7 @@ async function load() {
   try {
     employees.value = await fetchEmployees()
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not load employees.'
+    error.value = err?.response?.data?.message || t('employees.loadError')
   } finally {
     loading.value = false
   }
@@ -55,13 +57,13 @@ async function invite() {
       phone: form.value.phone.trim() || null,
       role: form.value.role,
     })
-    notice.value = `Invitation sent to ${form.value.email.trim()} — they'll get an email to set their password.`
+    notice.value = t('employees.invited', { email: form.value.email.trim() })
     form.value = { first_name: '', last_name: '', email: '', phone: '', role: 'waiter' }
     await load()
   } catch (err) {
     formErrors.value = err?.response?.data?.errors || {}
     if (!Object.keys(formErrors.value).length) {
-      error.value = err?.response?.data?.message || 'Could not invite the employee.'
+      error.value = err?.response?.data?.message || t('employees.inviteError')
     }
   } finally {
     inviting.value = false
@@ -73,7 +75,7 @@ async function changeRole(employee, role) {
     const updated = await updateEmployee(employee.id, { role, is_active: employee.is_active })
     Object.assign(employee, updated)
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not update the role.'
+    error.value = err?.response?.data?.message || t('employees.roleError')
     await load()
   }
 }
@@ -86,18 +88,18 @@ async function toggleActive(employee) {
     })
     Object.assign(employee, updated)
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not change the status.'
+    error.value = err?.response?.data?.message || t('employees.statusError')
     await load()
   }
 }
 
 async function remove(employee) {
-  if (!window.confirm(`Remove ${employee.full_name} from the team? They will lose access.`)) return
+  if (!window.confirm(t('employees.confirmRemove', { name: employee.full_name }))) return
   try {
     await deleteEmployee(employee.id)
     employees.value = employees.value.filter((e) => e.id !== employee.id)
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not remove the employee.'
+    error.value = err?.response?.data?.message || t('employees.removeError')
   }
 }
 
@@ -107,9 +109,9 @@ onMounted(load)
 <template>
   <div>
     <header class="mb-5">
-      <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">Team</h1>
+      <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">{{ t('employees.title') }}</h1>
       <p class="text-sm text-ink-500">
-        Invite staff and set what they can do. Waiters and kitchen staff get their own dashboards.
+        {{ t('employees.subtitle') }}
       </p>
     </header>
 
@@ -118,10 +120,10 @@ onMounted(load)
       class="mb-6 card p-4"
       @submit.prevent="invite"
     >
-      <p class="mb-3 text-sm font-semibold text-ink-700">Invite an employee</p>
+      <p class="mb-3 text-sm font-semibold text-ink-700">{{ t('employees.invite') }}</p>
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <div>
-          <label class="block text-xs font-medium text-ink-500">First name</label>
+          <label class="block text-xs font-medium text-ink-500">{{ t('employees.firstName') }}</label>
           <input
             v-model="form.first_name"
             type="text"
@@ -133,7 +135,7 @@ onMounted(load)
           </p>
         </div>
         <div>
-          <label class="block text-xs font-medium text-ink-500">Last name</label>
+          <label class="block text-xs font-medium text-ink-500">{{ t('employees.lastName') }}</label>
           <input
             v-model="form.last_name"
             type="text"
@@ -145,7 +147,7 @@ onMounted(load)
           </p>
         </div>
         <div>
-          <label class="block text-xs font-medium text-ink-500">Email</label>
+          <label class="block text-xs font-medium text-ink-500">{{ t('employees.email') }}</label>
           <input
             v-model="form.email"
             type="email"
@@ -157,7 +159,7 @@ onMounted(load)
           </p>
         </div>
         <div>
-          <label class="block text-xs font-medium text-ink-500">Phone (optional)</label>
+          <label class="block text-xs font-medium text-ink-500">{{ t('employees.phone') }}</label>
           <input
             v-model="form.phone"
             type="text"
@@ -165,7 +167,7 @@ onMounted(load)
           />
         </div>
         <div>
-          <label class="block text-xs font-medium text-ink-500">Role</label>
+          <label class="block text-xs font-medium text-ink-500">{{ t('employees.role') }}</label>
           <select
             v-model="form.role"
             class="field field-select mt-1 w-full"
@@ -181,7 +183,7 @@ onMounted(load)
             :disabled="inviting"
             class="w-full rounded-xl bg-brand-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
           >
-            {{ inviting ? 'Sending…' : 'Send invite' }}
+            {{ inviting ? t('employees.sending') : t('employees.sendInvite') }}
           </button>
         </div>
       </div>
@@ -197,13 +199,13 @@ onMounted(load)
     <!-- Staff list -->
     <div class="overflow-hidden card">
       <div class="flex items-center justify-between border-b border-hairline px-4 py-3">
-        <p class="text-sm font-semibold text-ink-700">Team members</p>
-        <span class="text-xs text-ink-400">{{ staffCount }} total</span>
+        <p class="text-sm font-semibold text-ink-700">{{ t('employees.members') }}</p>
+        <span class="text-xs text-ink-400">{{ t('employees.total', { n: staffCount }) }}</span>
       </div>
 
-      <p v-if="loading" class="px-4 py-6 text-sm text-ink-400">Loading…</p>
+      <p v-if="loading" class="px-4 py-6 text-sm text-ink-400">{{ t('common.loading') }}</p>
       <p v-else-if="!employees.length" class="px-4 py-6 text-sm text-ink-400">
-        No employees yet. Invite your first team member above.
+        {{ t('employees.empty') }}
       </p>
 
       <ul v-else class="divide-y divide-hairline">
@@ -218,7 +220,7 @@ onMounted(load)
               <span
                 v-if="employee.email === user?.email"
                 class="ml-1 rounded bg-canvas px-1.5 py-0.5 text-xs font-normal text-ink-500"
-                >You</span
+                >{{ t('employees.you') }}</span
               >
             </p>
             <p class="truncate text-xs text-ink-400">{{ employee.email }}</p>
@@ -231,7 +233,7 @@ onMounted(load)
               v-if="!isManageable(employee)"
               class="rounded-lg bg-canvas px-2.5 py-1 text-xs font-medium text-ink-600"
             >
-              {{ employee.role === 'restaurant-owner' ? 'Owner' : roleLabel(employee.role) }}
+              {{ employee.role === 'restaurant-owner' ? t('employees.owner') : roleLabel(employee.role) }}
             </span>
 
             <!-- Manageable staff: editable role -->
@@ -256,13 +258,13 @@ onMounted(load)
               "
               @click="toggleActive(employee)"
             >
-              {{ employee.is_active ? 'Active' : 'Inactive' }}
+              {{ employee.is_active ? t('employees.active') : t('employees.inactive') }}
             </button>
             <span
               v-else
               class="rounded-lg bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700"
             >
-              Active
+              {{ t('employees.active') }}
             </span>
 
             <button
@@ -270,7 +272,7 @@ onMounted(load)
               class="ml-auto rounded-lg px-2 py-1 text-xs font-medium text-red-500 hover:bg-red-50 sm:ml-0"
               @click="remove(employee)"
             >
-              Remove
+              {{ t('employees.remove') }}
             </button>
           </div>
         </li>

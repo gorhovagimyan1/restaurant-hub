@@ -78,7 +78,7 @@ class TableController extends Controller
 
         $orders = $session->orders()
             ->whereNotIn('status', [OrderStatus::Completed->value, OrderStatus::Cancelled->value])
-            ->with('items')
+            ->with('items.product')
             ->orderBy('created_at')
             ->get();
 
@@ -92,7 +92,7 @@ class TableController extends Controller
                 'total' => (float) $order->total,
                 'created_at' => $order->created_at?->toIso8601String(),
                 'items' => $order->items->map(fn ($item) => [
-                    'product_name' => $item->product_name,
+                    'product_name' => $item->localizedName(),
                     'quantity' => $item->quantity,
                     'total_price' => (float) $item->total_price,
                 ]),
@@ -111,7 +111,7 @@ class TableController extends Controller
      * Deliberately separate from the bill: this one keeps cancelled orders (a
      * guest needs to know something was rejected) and carries per-item status,
      * because the kitchen advances dishes individually. It is polled, so it
-     * stays lean — no restaurant or product payload.
+     * stays lean — products are loaded only to name dishes in the guest's language.
      */
     public function orders(Request $request, TableQrCode $tableQrCode): JsonResponse
     {
@@ -119,7 +119,7 @@ class TableController extends Controller
         $session = $this->requireOpenSession($table, $request->query('session_token'));
 
         $orders = $session->orders()
-            ->with('items')
+            ->with(['items.review', 'items.product'])
             ->latest('created_at')
             ->get();
 
@@ -132,10 +132,16 @@ class TableController extends Controller
                 'total' => (float) $order->total,
                 'created_at' => $order->created_at?->toIso8601String(),
                 'items' => $order->items->map(fn ($item) => [
-                    'product_name' => $item->product_name,
+                    'id' => $item->id,
+                    'product_name' => $item->localizedName(),
                     'quantity' => $item->quantity,
                     'status' => $item->status->value,
                     'total_price' => (float) $item->total_price,
+                    // Served and not yet rated: the guest can leave a review.
+                    'can_review' => $item->status === \App\Enums\OrderItemStatus::Served
+                        && $item->product_id !== null
+                        && $item->review === null,
+                    'rating' => $item->review?->rating,
                 ]),
             ]),
             // Lets the client stop polling once nothing can change again.

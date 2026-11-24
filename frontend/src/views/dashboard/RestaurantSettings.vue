@@ -1,9 +1,13 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useI18n } from 'vue-i18n'
+import { intlLocale, LOCALES } from '@/i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useDashboardStore } from '@/stores/dashboard'
 import BillingPanel from '@/components/dashboard/BillingPanel.vue'
+import LanguageTabs from '@/components/ui/LanguageTabs.vue'
+import { initText, splitText } from '@/utils/translatable'
 import {
   getRestaurant,
   updateRestaurant,
@@ -15,6 +19,7 @@ import {
   updateSpecialHours,
 } from '@/services/dashboard'
 
+const { t } = useI18n()
 const auth = useAuthStore()
 const dashboard = useDashboardStore()
 const { restaurant } = storeToRefs(dashboard)
@@ -33,7 +38,6 @@ const loadError = ref(null)
 // --- Profile ---
 const profile = reactive({
   name: '',
-  description: '',
   phone: '',
   email: '',
   website: '',
@@ -45,6 +49,11 @@ const profile = reactive({
   timezone: '',
 })
 const slug = ref('')
+// The description is written per language; the default language is the main
+// one and stands in for any language left blank.
+const mainLocale = ref(restaurant.value?.default_language || 'hy')
+const descLang = ref(mainLocale.value)
+const descText = reactive(initText(null, { description: '' }, mainLocale.value))
 const profileErrors = ref({})
 const profileNotice = ref(null)
 const savingProfile = ref(false)
@@ -123,7 +132,7 @@ function closeSpecialModal() {
 }
 
 function formatSpecialDate(date) {
-  return new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {
+  return new Date(`${date}T00:00:00`).toLocaleDateString(intlLocale(), {
     weekday: 'short',
     year: 'numeric',
     month: 'short',
@@ -135,16 +144,16 @@ async function confirmSpecial() {
   modalError.value = null
 
   if (!draft.date) {
-    modalError.value = 'Please choose a date.'
+    modalError.value = t('settings.chooseDate')
     return
   }
   const duplicate = specialHours.value.some((d, i) => d.date === draft.date && i !== editingIndex.value)
   if (duplicate) {
-    modalError.value = 'That date already has an entry.'
+    modalError.value = t('settings.dateExists')
     return
   }
   if (!draft.is_closed && (!draft.open_time || !draft.close_time)) {
-    modalError.value = 'Set both opening and closing times, or mark the day closed.'
+    modalError.value = t('settings.needTimes')
     return
   }
 
@@ -173,18 +182,32 @@ async function removeSpecial(index) {
   )
 }
 
-const TOGGLES = [
-  { key: 'allow_guest_orders', label: 'Allow guest orders', hint: 'Guests can order without an account.' },
-  { key: 'require_table_selection', label: 'Require table selection', hint: 'Force a table before ordering.' },
-  { key: 'enable_waiter_call', label: 'Enable “call waiter”', hint: 'Show the call-waiter button to guests.' },
-  { key: 'enable_bill_request', label: 'Enable “request bill”', hint: 'Show the request-bill button to guests.' },
-  { key: 'auto_accept_orders', label: 'Auto-accept orders', hint: 'New orders skip the pending step.' },
+const TOGGLE_KEYS = [
+  'allow_guest_orders',
+  'require_table_selection',
+  'enable_waiter_call',
+  'enable_bill_request',
+  'auto_accept_orders',
 ]
+const TOGGLES = computed(() =>
+  TOGGLE_KEYS.map((key) => ({
+    key,
+    label: t(`settings.toggles.${key}.label`),
+    hint: t(`settings.toggles.${key}.hint`),
+  })),
+)
+
+// day_of_week is ISO (1 = Monday); 2024-01-01 was a Monday.
+function dayName(n) {
+  return new Intl.DateTimeFormat(intlLocale(), { weekday: 'long' }).format(new Date(2024, 0, n))
+}
 
 function fillProfile(data) {
   slug.value = data.slug
   profile.name = data.name ?? ''
-  profile.description = data.description ?? ''
+  if (data.default_language) mainLocale.value = data.default_language
+  descLang.value = mainLocale.value
+  Object.assign(descText, initText(data, { description: '' }, mainLocale.value))
   profile.phone = data.phone ?? ''
   profile.email = data.email ?? ''
   profile.website = data.website ?? ''
@@ -207,7 +230,7 @@ onMounted(async () => {
     specialHours.value = await getSpecialHours()
     if (canSettings.value) fillSettings(await getSettings())
   } catch (err) {
-    loadError.value = err?.response?.data?.message || 'Could not load settings.'
+    loadError.value = err?.response?.data?.message || t('settings.loadError')
   } finally {
     loading.value = false
   }
@@ -226,11 +249,11 @@ async function saveHours() {
         close_time: h.is_closed ? null : h.close_time || null,
       })),
     )
-    hoursNotice.value = 'Hours saved.'
+    hoursNotice.value = t('settings.hoursSaved')
   } catch (err) {
     hoursErrors.value = err?.response?.data?.errors || {}
     if (!Object.keys(hoursErrors.value).length) {
-      loadError.value = err?.response?.data?.message || 'Could not save the hours.'
+      loadError.value = err?.response?.data?.message || t('settings.hoursSaveError')
     }
   } finally {
     savingHours.value = false
@@ -252,13 +275,13 @@ async function persistSpecial(list, { fromModal = false } = {}) {
         label: d.label?.trim() || null,
       })),
     )
-    specialNotice.value = 'Special days saved.'
+    specialNotice.value = t('settings.specialSaved')
     if (fromModal) showSpecialModal.value = false
   } catch (err) {
     const message =
       err?.response?.data?.errors
-        ? 'Please check the date and times.'
-        : err?.response?.data?.message || 'Could not save the special days.'
+        ? t('settings.checkDateTimes')
+        : err?.response?.data?.message || t('settings.specialSaveError')
     if (fromModal) {
       modalError.value = message
     } else {
@@ -274,16 +297,16 @@ async function saveProfile() {
   profileNotice.value = null
   savingProfile.value = true
   try {
-    const updated = await updateRestaurant({ ...profile })
+    const updated = await updateRestaurant({ ...profile, ...splitText(descText, mainLocale.value) })
     fillProfile(updated)
     // Keep the sidebar/header name in sync.
     if (restaurant.value) restaurant.value.name = updated.name
-    profileNotice.value = 'Profile saved.'
+    profileNotice.value = t('settings.profileSaved')
   } catch (err) {
     profileErrors.value = err?.response?.data?.errors || {}
     if (!Object.keys(profileErrors.value).length) {
       profileNotice.value = null
-      loadError.value = err?.response?.data?.message || 'Could not save the profile.'
+      loadError.value = err?.response?.data?.message || t('settings.profileSaveError')
     }
   } finally {
     savingProfile.value = false
@@ -302,11 +325,15 @@ async function saveSettings() {
         service_charge: Number(settings.service_charge),
       }),
     )
-    settingsNotice.value = 'Settings saved.'
+    // Owner-written text is entered in the default language from now on.
+    mainLocale.value = settings.default_language
+    descLang.value = mainLocale.value
+    if (restaurant.value) restaurant.value.default_language = settings.default_language
+    settingsNotice.value = t('settings.settingsSaved')
   } catch (err) {
     settingsErrors.value = err?.response?.data?.errors || {}
     if (!Object.keys(settingsErrors.value).length) {
-      loadError.value = err?.response?.data?.message || 'Could not save the settings.'
+      loadError.value = err?.response?.data?.message || t('settings.settingsSaveError')
     }
   } finally {
     savingSettings.value = false
@@ -320,14 +347,14 @@ const inputClass =
 <template>
   <div>
     <header class="mb-5">
-      <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">Settings</h1>
-      <p class="text-sm text-ink-500">Your restaurant's public profile and ordering options.</p>
+      <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">{{ t('settings.title') }}</h1>
+      <p class="text-sm text-ink-500">{{ t('settings.subtitle') }}</p>
     </header>
 
     <p v-if="loadError" class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
       {{ loadError }}
     </p>
-    <p v-if="loading" class="text-sm text-ink-400">Loading…</p>
+    <p v-if="loading" class="text-sm text-ink-400">{{ t('common.loading') }}</p>
 
     <div v-else class="space-y-6">
       <!-- Billing -->
@@ -335,60 +362,61 @@ const inputClass =
 
       <!-- Profile -->
       <form class="card p-6" @submit.prevent="saveProfile">
-        <h2 class="text-lg font-bold text-ink-900">Profile</h2>
+        <h2 class="text-lg font-bold text-ink-900">{{ t('settings.profile') }}</h2>
         <p class="mt-1 text-xs text-ink-400">
-          Shown to customers. URL:
+          {{ t('settings.profileHint') }}
           <span class="font-mono text-ink-500">/r/{{ slug }}</span>
         </p>
 
         <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div class="sm:col-span-2">
-            <label class="block text-xs font-medium text-ink-500">Name</label>
+            <label class="block text-xs font-medium text-ink-500">{{ t('settings.name') }}</label>
             <input v-model="profile.name" type="text" :class="inputClass" />
             <p v-if="profileErrors.name" class="mt-1 text-xs text-red-600">{{ profileErrors.name[0] }}</p>
           </div>
           <div class="sm:col-span-2">
-            <label class="block text-xs font-medium text-ink-500">Description</label>
-            <textarea v-model="profile.description" rows="3" :class="inputClass"></textarea>
+            <label class="block text-xs font-medium text-ink-500">{{ t('settings.description') }}</label>
+            <LanguageTabs v-model="descLang" :main="mainLocale" :text="descText" class="mt-1" />
+            <textarea v-model="descText[descLang].description" rows="3" :class="inputClass"></textarea>
             <p v-if="profileErrors.description" class="mt-1 text-xs text-red-600">
               {{ profileErrors.description[0] }}
             </p>
           </div>
           <div>
-            <label class="block text-xs font-medium text-ink-500">Phone</label>
+            <label class="block text-xs font-medium text-ink-500">{{ t('settings.phone') }}</label>
             <input v-model="profile.phone" type="text" :class="inputClass" />
             <p v-if="profileErrors.phone" class="mt-1 text-xs text-red-600">{{ profileErrors.phone[0] }}</p>
           </div>
           <div>
-            <label class="block text-xs font-medium text-ink-500">Email</label>
+            <label class="block text-xs font-medium text-ink-500">{{ t('settings.email') }}</label>
             <input v-model="profile.email" type="email" :class="inputClass" />
             <p v-if="profileErrors.email" class="mt-1 text-xs text-red-600">{{ profileErrors.email[0] }}</p>
           </div>
           <div class="sm:col-span-2">
-            <label class="block text-xs font-medium text-ink-500">Website</label>
+            <label class="block text-xs font-medium text-ink-500">{{ t('settings.website') }}</label>
             <input v-model="profile.website" type="url" placeholder="https://…" :class="inputClass" />
             <p v-if="profileErrors.website" class="mt-1 text-xs text-red-600">
               {{ profileErrors.website[0] }}
             </p>
           </div>
           <div class="sm:col-span-2">
-            <label class="block text-xs font-medium text-ink-500">Address</label>
+            <label class="block text-xs font-medium text-ink-500">{{ t('settings.address') }}</label>
             <input v-model="profile.address" type="text" :class="inputClass" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-ink-500">City</label>
+            <label class="block text-xs font-medium text-ink-500">{{ t('settings.city') }}</label>
             <input v-model="profile.city" type="text" :class="inputClass" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-ink-500">Country</label>
+            <label class="block text-xs font-medium text-ink-500">{{ t('settings.country') }}</label>
             <input v-model="profile.country" type="text" :class="inputClass" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-ink-500">Postal code</label>
+            <label class="block text-xs font-medium text-ink-500">{{ t('settings.postalCode') }}</label>
             <input v-model="profile.postal_code" type="text" :class="inputClass" />
           </div>
           <div>
-            <label class="block text-xs font-medium text-ink-500">Currency</label>
+            <label class="block text-xs font-medium text-ink-500">{{ t('settings.currency') }}</label>
             <input
               v-model="profile.currency"
               type="text"
@@ -402,7 +430,7 @@ const inputClass =
             </p>
           </div>
           <div class="sm:col-span-2">
-            <label class="block text-xs font-medium text-ink-500">Timezone</label>
+            <label class="block text-xs font-medium text-ink-500">{{ t('settings.timezone') }}</label>
             <input v-model="profile.timezone" type="text" placeholder="Asia/Yerevan" :class="inputClass" />
             <p v-if="profileErrors.timezone" class="mt-1 text-xs text-red-600">
               {{ profileErrors.timezone[0] }}
@@ -416,7 +444,7 @@ const inputClass =
             :disabled="savingProfile"
             class="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
           >
-            {{ savingProfile ? 'Saving…' : 'Save profile' }}
+            {{ savingProfile ? t('settings.saving') : t('settings.saveProfile') }}
           </button>
           <span v-if="profileNotice" class="text-sm text-green-700">{{ profileNotice }}</span>
         </div>
@@ -428,16 +456,18 @@ const inputClass =
         class="card p-6"
         @submit.prevent="saveSettings"
       >
-        <h2 class="text-lg font-bold text-ink-900">Ordering &amp; service</h2>
-        <p class="mt-1 text-xs text-ink-400">Controls how guests order and what they can request.</p>
+        <h2 class="text-lg font-bold text-ink-900">{{ t('settings.ordering') }}</h2>
+        <p class="mt-1 text-xs text-ink-400">{{ t('settings.orderingHint') }}</p>
 
         <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
-            <label class="block text-xs font-medium text-ink-500">Default language</label>
-            <input v-model="settings.default_language" type="text" maxlength="5" :class="inputClass" />
+            <label class="block text-xs font-medium text-ink-500">{{ t('settings.defaultLanguage') }}</label>
+            <select v-model="settings.default_language" :class="inputClass">
+              <option v-for="l in LOCALES" :key="l.code" :value="l.code">{{ l.label }}</option>
+            </select>
           </div>
           <div>
-            <label class="block text-xs font-medium text-ink-500">Tax %</label>
+            <label class="block text-xs font-medium text-ink-500">{{ t('settings.tax') }}</label>
             <input
               v-model="settings.tax_percentage"
               type="number"
@@ -451,7 +481,7 @@ const inputClass =
             </p>
           </div>
           <div>
-            <label class="block text-xs font-medium text-ink-500">Service charge %</label>
+            <label class="block text-xs font-medium text-ink-500">{{ t('settings.serviceCharge') }}</label>
             <input
               v-model="settings.service_charge"
               type="number"
@@ -467,22 +497,22 @@ const inputClass =
         </div>
 
         <ul class="mt-5 divide-y divide-hairline">
-          <li v-for="t in TOGGLES" :key="t.key" class="flex items-center justify-between py-3">
+          <li v-for="tg in TOGGLES" :key="tg.key" class="flex items-center justify-between py-3">
             <div class="pr-4">
-              <p class="text-sm font-medium text-ink-800">{{ t.label }}</p>
-              <p class="text-xs text-ink-400">{{ t.hint }}</p>
+              <p class="text-sm font-medium text-ink-800">{{ tg.label }}</p>
+              <p class="text-xs text-ink-400">{{ tg.hint }}</p>
             </div>
             <button
               type="button"
               role="switch"
-              :aria-checked="settings[t.key]"
+              :aria-checked="settings[tg.key]"
               class="relative inline-flex h-6 w-11 shrink-0 rounded-full transition"
-              :class="settings[t.key] ? 'bg-brand-500' : 'bg-hairline-strong'"
-              @click="settings[t.key] = !settings[t.key]"
+              :class="settings[tg.key] ? 'bg-brand-500' : 'bg-hairline-strong'"
+              @click="settings[tg.key] = !settings[tg.key]"
             >
               <span
                 class="inline-block h-5 w-5 translate-y-0.5 rounded-full bg-white transition"
-                :class="settings[t.key] ? 'translate-x-5' : 'translate-x-0.5'"
+                :class="settings[tg.key] ? 'translate-x-5' : 'translate-x-0.5'"
               ></span>
             </button>
           </li>
@@ -494,7 +524,7 @@ const inputClass =
             :disabled="savingSettings"
             class="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
           >
-            {{ savingSettings ? 'Saving…' : 'Save settings' }}
+            {{ savingSettings ? t('settings.saving') : t('settings.saveSettings') }}
           </button>
           <span v-if="settingsNotice" class="text-sm text-green-700">{{ settingsNotice }}</span>
         </div>
@@ -502,8 +532,8 @@ const inputClass =
 
       <!-- Business hours -->
       <form class="card p-6" @submit.prevent="saveHours">
-        <h2 class="text-lg font-bold text-ink-900">Opening hours</h2>
-        <p class="mt-1 text-xs text-ink-400">Shown to customers on your menu page.</p>
+        <h2 class="text-lg font-bold text-ink-900">{{ t('settings.hours') }}</h2>
+        <p class="mt-1 text-xs text-ink-400">{{ t('settings.hoursHint') }}</p>
 
         <ul class="mt-4 divide-y divide-hairline">
           <li
@@ -511,11 +541,11 @@ const inputClass =
             :key="day.day_of_week"
             class="flex flex-wrap items-center gap-3 py-3"
           >
-            <span class="w-24 text-sm font-medium text-ink-800">{{ day.day_label }}</span>
+            <span class="w-28 text-sm font-medium text-ink-800">{{ dayName(day.day_of_week) }}</span>
 
             <label class="flex items-center gap-1.5 text-xs text-ink-500">
               <input v-model="day.is_closed" type="checkbox" class="rounded border-hairline-strong" />
-              Closed
+              {{ t('settings.closed') }}
             </label>
 
             <template v-if="!day.is_closed">
@@ -537,7 +567,7 @@ const inputClass =
                 {{ hoursError(i, 'open_time') || hoursError(i, 'close_time') }}
               </span>
             </template>
-            <span v-else class="text-sm text-ink-400">Closed all day</span>
+            <span v-else class="text-sm text-ink-400">{{ t('settings.closedAllDay') }}</span>
           </li>
         </ul>
 
@@ -547,7 +577,7 @@ const inputClass =
             :disabled="savingHours"
             class="rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
           >
-            {{ savingHours ? 'Saving…' : 'Save hours' }}
+            {{ savingHours ? t('settings.saving') : t('settings.saveHours') }}
           </button>
           <span v-if="hoursNotice" class="text-sm text-green-700">{{ hoursNotice }}</span>
         </div>
@@ -557,9 +587,9 @@ const inputClass =
       <section class="card p-6">
         <div class="flex items-start justify-between gap-3">
           <div>
-            <h2 class="text-lg font-bold text-ink-900">Holidays &amp; special days</h2>
+            <h2 class="text-lg font-bold text-ink-900">{{ t('settings.special') }}</h2>
             <p class="mt-1 text-xs text-ink-400">
-              Override your weekly hours on specific dates. These win over the schedule above.
+              {{ t('settings.specialHint') }}
             </p>
           </div>
           <button
@@ -567,12 +597,12 @@ const inputClass =
             class="shrink-0 rounded-xl bg-brand-500 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-brand-600"
             @click="openAddSpecial"
           >
-            + Add date
+            {{ t('settings.addDate') }}
           </button>
         </div>
 
         <p v-if="!specialHours.length" class="mt-4 text-sm text-ink-400">
-          No special days set. Add one for a holiday or one-off closure.
+          {{ t('settings.noSpecial') }}
         </p>
 
         <ul v-else class="mt-4 divide-y divide-hairline">
@@ -587,7 +617,7 @@ const inputClass =
                 <span v-if="day.label" class="font-normal text-ink-400">· {{ day.label }}</span>
               </p>
               <p class="text-xs" :class="day.is_closed ? 'text-red-500' : 'text-ink-500'">
-                {{ day.is_closed ? 'Closed all day' : `${day.open_time} – ${day.close_time}` }}
+                {{ day.is_closed ? t('settings.closedAllDay') : `${day.open_time} – ${day.close_time}` }}
               </p>
             </div>
             <button
@@ -595,7 +625,7 @@ const inputClass =
               class="rounded-lg px-2 py-1 text-xs font-medium text-ink-500 hover:bg-canvas"
               @click="openEditSpecial(i)"
             >
-              Edit
+              {{ t('settings.edit') }}
             </button>
             <button
               type="button"
@@ -603,7 +633,7 @@ const inputClass =
               :disabled="savingSpecial"
               @click="removeSpecial(i)"
             >
-              Remove
+              {{ t('settings.remove') }}
             </button>
           </li>
         </ul>
@@ -620,12 +650,12 @@ const inputClass =
     >
       <div class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
         <h3 class="text-lg font-bold text-ink-900">
-          {{ editingIndex === null ? 'Add special day' : 'Edit special day' }}
+          {{ editingIndex === null ? t('settings.addSpecial') : t('settings.editSpecial') }}
         </h3>
 
         <div class="mt-4 space-y-4">
           <div>
-            <label class="block text-xs font-medium text-ink-500">Date</label>
+            <label class="block text-xs font-medium text-ink-500">{{ t('settings.date') }}</label>
             <input
               v-model="draft.date"
               type="date"
@@ -634,23 +664,23 @@ const inputClass =
           </div>
 
           <div>
-            <label class="block text-xs font-medium text-ink-500">Label (optional)</label>
+            <label class="block text-xs font-medium text-ink-500">{{ t('settings.label') }}</label>
             <input
               v-model="draft.label"
               type="text"
-              placeholder="e.g. Christmas Day"
+              :placeholder="t('settings.labelPlaceholder')"
               class="mt-1 w-full field"
             />
           </div>
 
           <label class="flex items-center gap-2 text-sm text-ink-600">
             <input v-model="draft.is_closed" type="checkbox" class="rounded border-hairline-strong" />
-            Closed all day
+            {{ t('settings.closedAllDay') }}
           </label>
 
           <div v-if="!draft.is_closed" class="flex items-center gap-3">
             <div>
-              <label class="block text-xs font-medium text-ink-500">Opens</label>
+              <label class="block text-xs font-medium text-ink-500">{{ t('settings.opens') }}</label>
               <input
                 v-model="draft.open_time"
                 type="time"
@@ -658,7 +688,7 @@ const inputClass =
               />
             </div>
             <div>
-              <label class="block text-xs font-medium text-ink-500">Closes</label>
+              <label class="block text-xs font-medium text-ink-500">{{ t('settings.closes') }}</label>
               <input
                 v-model="draft.close_time"
                 type="time"
@@ -678,7 +708,7 @@ const inputClass =
             class="rounded-xl px-4 py-2 text-sm font-medium text-ink-600 hover:bg-canvas"
             @click="closeSpecialModal"
           >
-            Cancel
+            {{ t('common.cancel') }}
           </button>
           <button
             type="button"
@@ -686,7 +716,7 @@ const inputClass =
             class="rounded-xl bg-brand-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
             @click="confirmSpecial"
           >
-            {{ savingSpecial ? 'Saving…' : editingIndex === null ? 'Add' : 'Save' }}
+            {{ savingSpecial ? t('settings.saving') : editingIndex === null ? t('settings.add') : t('common.save') }}
           </button>
         </div>
       </div>

@@ -24,7 +24,11 @@ class RestaurantResource extends JsonResource
             'name' => $this->name,
             // Read-only: the slug is baked into customer QR/portal URLs.
             'slug' => $this->slug,
-            'description' => $this->description,
+            'description' => $this->translated('description'),
+            'original' => ['description' => $this->description],
+            'translations' => (object) ($this->translations ?? []),
+            // The language owner-written text is primarily entered in.
+            'default_language' => $this->settings?->default_language ?? 'hy',
             'logo' => $this->logo,
             'cover_image' => $this->cover_image,
             'phone' => $this->phone,

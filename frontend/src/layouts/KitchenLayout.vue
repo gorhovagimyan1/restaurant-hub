@@ -1,10 +1,14 @@
 <script setup>
+import { useI18n } from 'vue-i18n'
 import { ref, onMounted } from 'vue'
 import { RouterView, RouterLink, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { ChefHat } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import http from '@/services/http'
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher.vue'
+
+const { t } = useI18n()
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -46,15 +50,16 @@ async function logout() {
       <RouterLink
         :to="auth.homeRoute"
         class="-mx-2 flex items-center gap-3 rounded-lg px-2 py-1 transition hover:bg-stone-800"
-        title="Go to your home screen"
+        :title="t('shell.goHome')"
       >
         <ChefHat :size="22" class="text-brand-400" />
         <span>
-          <span class="block text-sm font-bold leading-tight">Kitchen Display</span>
+          <span class="block text-sm font-bold leading-tight">{{ t('shell.kitchenDisplay') }}</span>
           <span class="block text-xs text-stone-400">{{ restaurantName || '—' }}</span>
         </span>
       </RouterLink>
       <div class="flex items-center gap-3 text-sm">
+        <LanguageSwitcher tone="dark" />
         <RouterLink
           :to="{ name: 'profile' }"
           class="hidden text-stone-400 hover:text-brand-400 sm:inline"
@@ -65,7 +70,7 @@ async function logout() {
           class="rounded-lg border border-stone-600 px-3 py-1.5 font-medium text-stone-300 hover:bg-stone-800"
           @click="logout"
         >
-          Sign out
+          {{ t('shell.signOut') }}
         </button>
       </div>
     </header>

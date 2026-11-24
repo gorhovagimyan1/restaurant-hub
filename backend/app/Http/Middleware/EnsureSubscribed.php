@@ -50,9 +50,9 @@ class EnsureSubscribed
 
         return response()->json([
             'success' => false,
-            'message' => $subscription->trial_ends_at && ! $subscription->plan_id
+            'message' => __($subscription->trial_ends_at && ! $subscription->plan_id
                 ? 'Your free trial has ended. Choose a plan to continue.'
-                : 'Your subscription is not active. Choose a plan to continue.',
+                : 'Your subscription is not active. Choose a plan to continue.'),
             'data' => [
                 'subscription_required' => true,
                 'status' => $subscription->status->value,

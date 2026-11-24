@@ -1,7 +1,10 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { Lock, Save, RotateCcw, RefreshCw, Check } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import { getRoles, updateRolePermissions } from '@/services/admin'
+
+const { t, te } = useI18n()
 
 const roles = ref([])
 const permissions = ref([])
@@ -24,6 +27,21 @@ const groupedPermissions = computed(() => {
   }
   return [...groups.entries()].map(([name, items]) => ({ name, items }))
 })
+
+function roleName(role) {
+  const key = `admin.roles.${role.name}`
+  return te(key) ? t(key) : role.label
+}
+
+function permName(perm) {
+  const key = `admin.permissions.${perm.value}`
+  return te(key) ? t(key) : perm.label
+}
+
+function groupName(name) {
+  const key = `admin.groups.${name}`
+  return te(key) ? t(key) : name
+}
 
 function has(role, value) {
   return draft[role.id]?.has(value)
@@ -57,7 +75,7 @@ async function save(role) {
     if (idx !== -1) roles.value[idx] = updated
     draft[role.id] = new Set(updated.permissions)
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not update the role.'
+    error.value = err?.response?.data?.message || t('admin.rolesPage.updateError')
   } finally {
     savingId.value = null
   }
@@ -72,7 +90,7 @@ async function load() {
     permissions.value = data.permissions
     seedDraft()
   } catch (err) {
-    error.value = err?.response?.data?.message || 'Could not load roles.'
+    error.value = err?.response?.data?.message || t('admin.rolesPage.loadError')
   } finally {
     loading.value = false
   }
@@ -85,8 +103,8 @@ onMounted(load)
   <div>
     <header class="mb-5 flex flex-wrap items-center justify-between gap-3">
       <div>
-        <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">Roles &amp; Permissions</h1>
-        <p class="text-sm text-ink-500">Choose which abilities each role grants.</p>
+        <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">{{ t('admin.rolesPage.title') }}</h1>
+        <p class="text-sm text-ink-500">{{ t('admin.rolesPage.subtitle') }}</p>
       </div>
       <button
         class="flex items-center gap-2 rounded-xl border border-hairline bg-white px-3.5 py-2 text-sm font-medium text-ink-600 transition hover:bg-canvas disabled:opacity-60"
@@ -94,12 +112,12 @@ onMounted(load)
         @click="load"
       >
         <RefreshCw :size="16" :class="loading && 'animate-spin'" />
-        Refresh
+        {{ t('admin.refresh') }}
       </button>
     </header>
 
     <p v-if="error" class="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{{ error }}</p>
-    <p v-if="loading && !roles.length" class="text-sm text-ink-400">Loading…</p>
+    <p v-if="loading && !roles.length" class="text-sm text-ink-400">{{ t('common.loading') }}</p>
 
     <div
       v-else-if="roles.length"
@@ -109,20 +127,20 @@ onMounted(load)
         <thead>
           <tr class="border-b border-hairline">
             <th class="sticky left-0 z-10 bg-white px-4 py-3 text-left align-bottom">
-              <span class="text-xs font-medium uppercase tracking-wide text-ink-400">Permission</span>
+              <span class="text-xs font-medium uppercase tracking-wide text-ink-400">{{ t('admin.rolesPage.permission') }}</span>
             </th>
             <th
               v-for="role in roles"
               :key="role.id"
-              class="min-w-[8.5rem] px-3 py-3 text-center align-bottom"
+              class="min-w-[9.5rem] px-3 py-3 text-center align-bottom"
             >
               <div class="flex flex-col items-center gap-1">
                 <span class="flex items-center gap-1 font-semibold text-ink-800">
-                  {{ role.label }}
+                  {{ roleName(role) }}
                   <Lock v-if="role.is_locked" :size="12" class="text-ink-400" />
                 </span>
                 <span class="text-[11px] text-ink-400">
-                  {{ role.users_count }} user{{ role.users_count === 1 ? '' : 's' }}
+                  {{ t('admin.userCount', role.users_count) }}
                 </span>
                 <div v-if="isDirty(role)" class="mt-1 flex items-center gap-1">
                   <button
@@ -131,12 +149,12 @@ onMounted(load)
                     @click="save(role)"
                   >
                     <Save :size="12" />
-                    {{ savingId === role.id ? 'Saving…' : 'Save' }}
+                    {{ savingId === role.id ? t('admin.rolesPage.saving') : t('common.save') }}
                   </button>
                   <button
                     class="rounded-lg border border-hairline p-1 text-ink-400 transition hover:bg-canvas"
                     :disabled="savingId === role.id"
-                    title="Discard changes"
+                    :title="t('admin.rolesPage.discard')"
                     @click="reset(role)"
                   >
                     <RotateCcw :size="12" />
@@ -153,7 +171,7 @@ onMounted(load)
                 :colspan="roles.length + 1"
                 class="px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-400"
               >
-                {{ group.name }}
+                {{ groupName(group.name) }}
               </td>
             </tr>
             <tr
@@ -161,7 +179,7 @@ onMounted(load)
               :key="perm.value"
               class="border-b border-stone-50 last:border-0 hover:bg-canvas/50"
             >
-              <td class="sticky left-0 z-10 bg-white px-4 py-2.5 text-ink-700">{{ perm.label }}</td>
+              <td class="sticky left-0 z-10 bg-white px-4 py-2.5 text-ink-700">{{ permName(perm) }}</td>
               <td v-for="role in roles" :key="role.id" class="px-3 py-2.5 text-center">
                 <button
                   type="button"
@@ -173,7 +191,12 @@ onMounted(load)
                     role.is_locked ? 'cursor-not-allowed opacity-70' : 'hover:border-brand-400',
                   ]"
                   :disabled="role.is_locked"
-                  :aria-label="`${has(role, perm.value) ? 'Remove' : 'Grant'} ${perm.label} for ${role.label}`"
+                  :aria-label="
+                    t(has(role, perm.value) ? 'admin.rolesPage.removeAria' : 'admin.rolesPage.grantAria', {
+                      permission: permName(perm),
+                      role: roleName(role),
+                    })
+                  "
                   @click="toggle(role, perm.value)"
                 >
                   <Check :size="13" :stroke-width="3" />
@@ -186,7 +209,7 @@ onMounted(load)
     </div>
 
     <p class="mt-3 text-xs text-ink-400">
-      The super-admin role always has full access and cannot be changed.
+      {{ t('admin.rolesPage.superAdminNote') }}
     </p>
   </div>
 </template>

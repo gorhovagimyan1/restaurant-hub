@@ -35,7 +35,7 @@ class OverviewController extends Controller
             'tables' => $this->tables($restaurant),
             'service' => $this->service($restaurant),
             'recent_orders' => OrderResource::collection(
-                $restaurant->orders()->with(['items', 'table'])->latest()->limit(5)->get(),
+                $restaurant->orders()->with(['items.product', 'table'])->latest()->limit(5)->get(),
             ),
             'top_products' => $this->topProducts($restaurant, $start, $end),
         ], 'Overview retrieved.');
@@ -138,13 +138,16 @@ class OverviewController extends Controller
         return OrderItem::query()
             ->where('restaurant_id', $restaurant->id)
             ->whereBetween('created_at', [$start, $end])
-            ->selectRaw('product_name, SUM(quantity) as quantity')
-            ->groupBy('product_name')
+            // One row per dish (or per name, for dishes since deleted), so it
+            // can be named in the viewer's language.
+            ->selectRaw('MAX(product_id) as product_id, MAX(product_name) as product_name, SUM(quantity) as quantity')
+            ->groupByRaw('COALESCE(CAST(product_id AS CHAR), product_name)')
             ->orderByDesc('quantity')
             ->limit(5)
+            ->with('product')
             ->get()
             ->map(fn (OrderItem $item) => [
-                'name' => $item->product_name,
+                'name' => $item->localizedName(),
                 'quantity' => (int) $item->quantity,
             ])
             ->all();

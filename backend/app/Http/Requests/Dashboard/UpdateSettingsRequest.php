@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Dashboard;
 
+use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * Validates edits to the current restaurant's operational settings.
@@ -20,7 +22,7 @@ class UpdateSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'default_language' => ['required', 'string', 'max:5'],
+            'default_language' => ['required', 'string', Rule::in(SetLocale::SUPPORTED)],
             'tax_percentage' => ['required', 'numeric', 'min:0', 'max:100'],
             'service_charge' => ['required', 'numeric', 'min:0', 'max:100'],
             'allow_guest_orders' => ['required', 'boolean'],

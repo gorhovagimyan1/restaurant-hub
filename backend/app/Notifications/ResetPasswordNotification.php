@@ -39,11 +39,11 @@ class ResetPasswordNotification extends Notification
         $expire = (int) config('auth.passwords.'.config('auth.defaults.passwords').'.expire', 60);
 
         return (new MailMessage)
-            ->subject('Reset Your Password')
-            ->greeting('Hello '.$notifiable->first_name.',')
-            ->line('You are receiving this email because we received a password reset request for your account.')
-            ->action('Reset Password', $url)
-            ->line("This password reset link will expire in {$expire} minutes.")
-            ->line('If you did not request a password reset, no further action is required.');
+            ->subject(__('Reset Your Password'))
+            ->greeting(__('Hello :name,', ['name' => $notifiable->first_name]))
+            ->line(__('You are receiving this email because we received a password reset request for your account.'))
+            ->action(__('Reset Password'), $url)
+            ->line(__('This password reset link will expire in :count minutes.', ['count' => $expire]))
+            ->line(__('If you did not request a password reset, no further action is required.'));
     }
 }

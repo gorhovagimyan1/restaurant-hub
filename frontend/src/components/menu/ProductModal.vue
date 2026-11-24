@@ -1,14 +1,17 @@
 <script setup>
 import { computed, watch, onBeforeUnmount } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
 import { useMenuStore } from '@/stores/menu'
 import { useDiningStore } from '@/stores/dining'
 import { useCartStore } from '@/stores/cart'
 import { X, Star } from 'lucide-vue-next'
+import StarRating from '@/components/ui/StarRating.vue'
 import AppImage from '@/components/ui/AppImage.vue'
 import { formatPrice } from '@/utils/format'
 import { themeVars } from '@/utils/menuTheme'
 
+const { t } = useI18n()
 const store = useMenuStore()
 const dining = useDiningStore()
 const cart = useCartStore()
@@ -67,7 +70,7 @@ onBeforeUnmount(() => {
           <!-- Close -->
           <button
             class="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur transition hover:bg-black/60"
-            aria-label="Close"
+            :aria-label="t('common.close')"
             @click="close"
           >
             <X :size="18" />
@@ -103,13 +106,18 @@ onBeforeUnmount(() => {
                 v-if="selectedProduct.is_featured"
                 class="m-accent-soft inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-semibold"
               >
-                <Star :size="11" style="fill: currentColor" /> Chef's pick
+                <Star :size="11" style="fill: currentColor" /> {{ t('customer.chefsPick') }}
+              </span>
+              <span v-if="selectedProduct.rating" class="m-accent inline-flex items-center gap-1 font-semibold">
+                <StarRating :model-value="selectedProduct.rating" :size="13" />
+                {{ selectedProduct.rating.toFixed(1) }}
+                <span class="m-faint font-normal">({{ selectedProduct.reviews_count }})</span>
               </span>
               <span v-if="selectedProduct.preparation_time" class="m-faint">
-                ⏱ {{ selectedProduct.preparation_time }} min
+                ⏱ {{ t('customer.minutes', { n: selectedProduct.preparation_time }) }}
               </span>
               <span v-if="!selectedProduct.is_available" class="font-semibold text-red-500">
-                Sold out
+                {{ t('customer.soldOut') }}
               </span>
             </div>
 
@@ -119,7 +127,7 @@ onBeforeUnmount(() => {
 
             <!-- Ingredients -->
             <div v-if="selectedProduct.ingredients?.length" class="mt-5">
-              <h3 class="m-heading text-sm font-semibold">Ingredients</h3>
+              <h3 class="m-heading text-sm font-semibold">{{ t('customer.ingredients') }}</h3>
               <div class="mt-2 flex flex-wrap gap-2">
                 <span
                   v-for="ingredient in selectedProduct.ingredients"
@@ -131,7 +139,7 @@ onBeforeUnmount(() => {
               </div>
             </div>
             <p v-else class="m-faint mt-5 text-sm italic">
-              No ingredient information available.
+              {{ t('customer.noIngredients') }}
             </p>
           </div>
 
@@ -141,7 +149,7 @@ onBeforeUnmount(() => {
               <div class="m-elevated m-muted-card flex items-center gap-3 rounded-full px-2 py-1.5">
                 <button
                   class="grid h-8 w-8 place-items-center rounded-full text-xl leading-none"
-                  aria-label="Remove one"
+                  :aria-label="t('customer.removeOne')"
                   @click="cart.decrement(selectedProduct.id)"
                 >
                   −
@@ -149,14 +157,14 @@ onBeforeUnmount(() => {
                 <span class="min-w-5 text-center font-bold tabular-nums">{{ quantity }}</span>
                 <button
                   class="grid h-8 w-8 place-items-center rounded-full text-xl leading-none"
-                  aria-label="Add one"
+                  :aria-label="t('customer.addOne')"
                   @click="cart.add(selectedProduct)"
                 >
                   +
                 </button>
               </div>
               <button class="m-btn flex-1 py-2.5 text-sm font-semibold" @click="close">
-                Done · {{ formatPrice(selectedProduct.price * quantity, currency) }}
+                {{ t('customer.doneWithPrice', { price: formatPrice(selectedProduct.price * quantity, currency) }) }}
               </button>
             </div>
             <button
@@ -164,7 +172,7 @@ onBeforeUnmount(() => {
               class="m-btn w-full py-3 text-sm font-semibold shadow-sm"
               @click="cart.add(selectedProduct)"
             >
-              Add to order · {{ formatPrice(selectedProduct.price, currency) }}
+              {{ t('customer.addToOrder', { price: formatPrice(selectedProduct.price, currency) }) }}
             </button>
           </footer>
         </div>

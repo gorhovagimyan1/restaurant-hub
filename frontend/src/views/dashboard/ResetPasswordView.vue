@@ -1,7 +1,10 @@
 <script setup>
+import { useI18n } from 'vue-i18n'
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+
+const { t } = useI18n()
 
 const route = useRoute()
 const router = useRouter()
@@ -35,7 +38,7 @@ async function submit() {
       errors?.email?.[0] ||
       errors?.password?.[0] ||
       err?.response?.data?.message ||
-      'Unable to reset password. The link may have expired.'
+      t('auth.reset.failed')
   } finally {
     submitting.value = false
   }
@@ -45,12 +48,12 @@ async function submit() {
 <template>
   <div class="flex min-h-screen items-center justify-center bg-canvas px-4">
     <div class="w-full max-w-sm card p-8">
-      <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">Reset password</h1>
-      <p class="mt-1 text-sm text-ink-500">Choose a new password for your account.</p>
+      <h1 class="text-[1.375rem] font-semibold tracking-tight text-ink-900 sm:text-2xl">{{ t('auth.reset.title') }}</h1>
+      <p class="mt-1 text-sm text-ink-500">{{ t('auth.reset.subtitle') }}</p>
 
       <form class="mt-6 space-y-4" @submit.prevent="submit">
         <div>
-          <label class="mb-1 block text-sm font-medium text-ink-700">Email</label>
+          <label class="mb-1 block text-sm font-medium text-ink-700">{{ t('auth.email') }}</label>
           <input
             v-model="email"
             type="email"
@@ -60,7 +63,7 @@ async function submit() {
           />
         </div>
         <div>
-          <label class="mb-1 block text-sm font-medium text-ink-700">New password</label>
+          <label class="mb-1 block text-sm font-medium text-ink-700">{{ t('auth.reset.newPassword') }}</label>
           <input
             v-model="password"
             type="password"
@@ -70,7 +73,7 @@ async function submit() {
           />
         </div>
         <div>
-          <label class="mb-1 block text-sm font-medium text-ink-700">Confirm password</label>
+          <label class="mb-1 block text-sm font-medium text-ink-700">{{ t('auth.reset.confirmPassword') }}</label>
           <input
             v-model="passwordConfirmation"
             type="password"
@@ -92,13 +95,13 @@ async function submit() {
           :disabled="submitting"
           class="w-full rounded-lg bg-brand-500 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:opacity-60"
         >
-          {{ submitting ? 'Resetting…' : 'Reset password' }}
+          {{ submitting ? t('auth.reset.submitting') : t('auth.reset.submit') }}
         </button>
       </form>
 
       <div class="mt-4 text-center text-xs text-ink-400">
         <RouterLink :to="{ name: 'login' }" class="hover:text-brand-600">
-          Back to sign in
+          {{ t('auth.backToSignIn') }}
         </RouterLink>
       </div>
     </div>

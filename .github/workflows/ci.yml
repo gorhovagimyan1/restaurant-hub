@@ -20,8 +20,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # The floor declared in composer.json, and the version used in dev.
-        php: ['8.2', '8.3']
+        # The floor declared in composer.json (also the Railway image's PHP).
+        php: ['8.3']
 
     services:
       mysql:

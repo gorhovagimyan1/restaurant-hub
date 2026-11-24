@@ -23,12 +23,18 @@ class ProductResource extends JsonResource
 
         return [
             'id' => $this->id,
-            'name' => $this->name,
-            'description' => $this->description,
-            'ingredients' => $this->ingredients ?? [],
+            // In the visitor's language, falling back to the original wording.
+            'name' => $this->translated('name'),
+            'description' => $this->translated('description'),
+            'ingredients' => $this->translated('ingredients') ?? [],
             'price' => (float) $this->price,
             'preparation_time' => $this->preparation_time,
-            'is_available' => $this->is_available,
+            // Effective availability: the manual toggle AND stock. The stock count
+            // itself is never exposed to guests.
+            'is_available' => $this->isOrderable(),
+            // Average stars (1 decimal) and how many ratings; null until rated.
+            'rating' => ($this->reviews_count ?? 0) > 0 ? round((float) $this->reviews_avg_rating, 1) : null,
+            'reviews_count' => (int) ($this->reviews_count ?? 0),
             'is_featured' => $this->is_featured,
             'image' => $primary?->image,
             'images' => $this->whenLoaded('images', fn () => $this->images->pluck('image')),

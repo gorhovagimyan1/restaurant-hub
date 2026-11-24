@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import * as api from '@/services/dashboard'
+import i18n from '@/i18n'
 
 export const useDashboardStore = defineStore('dashboard', () => {
   const restaurant = ref(null)
@@ -60,8 +61,14 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
   }
 
-  async function saveCategory(payload, id) {
+  /**
+   * Save a category, then its photo: `image` is a File to upload, `null` to
+   * remove the current one, or undefined to leave it as it is.
+   */
+  async function saveCategory(payload, id, image) {
     const saved = id ? await api.updateCategory(id, payload) : await api.createCategory(payload)
+    if (image) await api.uploadCategoryImage(saved.id, image)
+    else if (image === null && id) await api.deleteCategoryImage(saved.id)
     await loadCategories()
     if (!id) await selectCategory(saved.id)
     return saved
@@ -78,12 +85,24 @@ export const useDashboardStore = defineStore('dashboard', () => {
     }
   }
 
+  /**
+   * Save a dish, then its photo: `file` is a File to upload, `null` to remove
+   * the photo, or undefined to leave it as it is.
+   */
   async function saveProduct(payload, id, file) {
     const product = id ? await api.updateProduct(id, payload) : await api.createProduct(payload)
     if (file) await api.uploadProductImage(product.id, file)
+    else if (file === null && id) {
+      for (const image of product.images ?? []) await api.deleteProductImage(image.id)
+    }
     await loadProducts()
     await loadCategories()
     return product
+  }
+
+  async function saveStock(items) {
+    await api.updateStock(items)
+    await loadProducts()
   }
 
   async function removeProduct(id) {
@@ -91,6 +110,17 @@ export const useDashboardStore = defineStore('dashboard', () => {
     await loadProducts()
     await loadCategories()
   }
+
+  // Category and dish names come from the API in the current language, so a
+  // language switch re-fetches whatever menu is already loaded.
+  watch(
+    () => i18n.global.locale.value,
+    async () => {
+      if (!restaurant.value) return
+      categories.value = await api.getCategories()
+      if (selectedCategoryId.value) products.value = await api.getProducts(selectedCategoryId.value)
+    },
+  )
 
   return {
     restaurant,
@@ -109,5 +139,6 @@ export const useDashboardStore = defineStore('dashboard', () => {
     removeCategory,
     saveProduct,
     removeProduct,
+    saveStock,
   }
 })

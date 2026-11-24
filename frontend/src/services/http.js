@@ -1,4 +1,5 @@
 import axios from 'axios'
+import i18n from '@/i18n'
 
 export const TOKEN_KEY = 'rh_token'
 
@@ -13,6 +14,8 @@ const http = axios.create({
 
 // Attach the bearer token (if any) to every request.
 http.interceptors.request.use((config) => {
+  // API messages and validation errors come back in the visitor's language.
+  config.headers['Accept-Language'] = i18n.global.locale.value
   const token = localStorage.getItem(TOKEN_KEY)
   if (token) {
     config.headers.Authorization = `Bearer ${token}`

@@ -1,8 +1,11 @@
 <script setup>
+import { useI18n } from 'vue-i18n'
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import AuthShell from '@/components/auth/AuthShell.vue'
+
+const { t } = useI18n()
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -36,7 +39,7 @@ async function submit() {
   } catch (err) {
     errors.value = err?.response?.data?.errors || {}
     if (!Object.keys(errors.value).length) {
-      generalError.value = err?.response?.data?.message || 'Registration failed. Please try again.'
+      generalError.value = err?.response?.data?.message || t('auth.register.failed')
     }
   }
 }
@@ -46,10 +49,10 @@ const inputClass =
 </script>
 
 <template>
-  <AuthShell title="Create your restaurant" subtitle="Set up your account and start managing your menu.">
+  <AuthShell :title="t('auth.register.title')" :subtitle="t('auth.register.subtitle')">
     <form class="space-y-4" @submit.prevent="submit">
       <div>
-        <label class="mb-1.5 block text-sm font-medium text-ink-700">Restaurant name</label>
+        <label class="mb-1.5 block text-sm font-medium text-ink-700">{{ t('auth.register.restaurantName') }}</label>
         <input v-model="form.restaurant_name" type="text" required :class="inputClass" />
         <p v-if="fieldError('restaurant_name')" class="mt-1 text-xs text-red-600">
           {{ fieldError('restaurant_name') }}
@@ -58,14 +61,14 @@ const inputClass =
 
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="mb-1.5 block text-sm font-medium text-ink-700">First name</label>
+          <label class="mb-1.5 block text-sm font-medium text-ink-700">{{ t('auth.firstName') }}</label>
           <input v-model="form.first_name" type="text" required :class="inputClass" />
           <p v-if="fieldError('first_name')" class="mt-1 text-xs text-red-600">
             {{ fieldError('first_name') }}
           </p>
         </div>
         <div>
-          <label class="mb-1.5 block text-sm font-medium text-ink-700">Last name</label>
+          <label class="mb-1.5 block text-sm font-medium text-ink-700">{{ t('auth.lastName') }}</label>
           <input v-model="form.last_name" type="text" required :class="inputClass" />
           <p v-if="fieldError('last_name')" class="mt-1 text-xs text-red-600">
             {{ fieldError('last_name') }}
@@ -74,26 +77,26 @@ const inputClass =
       </div>
 
       <div>
-        <label class="mb-1.5 block text-sm font-medium text-ink-700">Email</label>
+        <label class="mb-1.5 block text-sm font-medium text-ink-700">{{ t('auth.email') }}</label>
         <input v-model="form.email" type="email" required autocomplete="username" :class="inputClass" />
         <p v-if="fieldError('email')" class="mt-1 text-xs text-red-600">{{ fieldError('email') }}</p>
       </div>
 
       <div>
-        <label class="mb-1.5 block text-sm font-medium text-ink-700">Phone (optional)</label>
+        <label class="mb-1.5 block text-sm font-medium text-ink-700">{{ t('auth.register.phoneOptional') }}</label>
         <input v-model="form.phone" type="text" :class="inputClass" />
       </div>
 
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="mb-1.5 block text-sm font-medium text-ink-700">Password</label>
+          <label class="mb-1.5 block text-sm font-medium text-ink-700">{{ t('auth.password') }}</label>
           <input v-model="form.password" type="password" required autocomplete="new-password" :class="inputClass" />
           <p v-if="fieldError('password')" class="mt-1 text-xs text-red-600">
             {{ fieldError('password') }}
           </p>
         </div>
         <div>
-          <label class="mb-1.5 block text-sm font-medium text-ink-700">Confirm</label>
+          <label class="mb-1.5 block text-sm font-medium text-ink-700">{{ t('auth.register.confirm') }}</label>
           <input
             v-model="form.password_confirmation"
             type="password"
@@ -113,14 +116,14 @@ const inputClass =
         :disabled="auth.loading"
         class="btn-brand w-full rounded-xl py-3 text-sm font-semibold transition hover:-translate-y-0.5 disabled:opacity-60"
       >
-        {{ auth.loading ? 'Creating…' : 'Create account' }}
+        {{ auth.loading ? t('auth.register.submitting') : t('auth.register.submit') }}
       </button>
     </form>
 
     <p class="mt-6 text-center text-sm text-ink-500">
-      Already have an account?
+      {{ t('auth.register.have') }}
       <RouterLink :to="{ name: 'login' }" class="font-semibold text-brand-600 hover:underline">
-        Sign in
+        {{ t('auth.register.signIn') }}
       </RouterLink>
     </p>
   </AuthShell>

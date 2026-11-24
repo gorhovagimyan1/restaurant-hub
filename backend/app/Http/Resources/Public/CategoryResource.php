@@ -19,8 +19,9 @@ class CategoryResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->name,
-            'description' => $this->description,
+            // In the visitor's language, falling back to the original wording.
+            'name' => $this->translated('name'),
+            'description' => $this->translated('description'),
             'image' => $this->image,
             'products_count' => $this->whenLoaded('products', fn () => $this->products->count()),
             'products' => ProductResource::collection($this->whenLoaded('products')),

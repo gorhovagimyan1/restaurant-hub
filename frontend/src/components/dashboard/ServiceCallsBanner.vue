@@ -1,8 +1,11 @@
 <script setup>
+import { useI18n } from 'vue-i18n'
 import { watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { BellRing, ReceiptText } from 'lucide-vue-next'
 import { useOrdersStore } from '@/stores/orders'
+
+const { t } = useI18n()
 
 defineProps({
   dark: { type: Boolean, default: false },
@@ -55,7 +58,7 @@ async function ack(call) {
       :class="dark ? 'bg-red-950/40 ring-red-500/40' : 'bg-red-50 ring-red-200'"
     >
       <h2 class="mb-3 flex items-center gap-2 text-sm font-bold uppercase tracking-wide" :class="dark ? 'text-red-300' : 'text-red-600'">
-        <BellRing :size="16" /> Service calls
+        <BellRing :size="16" /> {{ t('banners.serviceCalls') }}
         <span class="animate-pulse rounded-full px-2 py-0.5 text-xs" :class="dark ? 'bg-red-500/30' : 'bg-red-100'">
           {{ serviceCalls.length }}
         </span>
@@ -71,9 +74,9 @@ async function ack(call) {
           <div>
             <span class="font-bold" :class="dark ? 'text-white' : 'text-ink-900'">{{ call.name }}</span>
             <span class="ml-2 text-xs" :class="dark ? 'text-ink-400' : 'text-ink-500'">
-              <span v-if="call.waiter_called" class="inline-flex items-center gap-1"><BellRing :size="12" /> Waiter</span>
+              <span v-if="call.waiter_called" class="inline-flex items-center gap-1"><BellRing :size="12" /> {{ t('banners.waiter') }}</span>
               <span v-if="call.waiter_called && call.bill_requested"> · </span>
-              <span v-if="call.bill_requested" class="inline-flex items-center gap-1"><ReceiptText :size="12" /> Bill</span>
+              <span v-if="call.bill_requested" class="inline-flex items-center gap-1"><ReceiptText :size="12" /> {{ t('banners.bill') }}</span>
             </span>
           </div>
           <button
@@ -82,7 +85,7 @@ async function ack(call) {
             :class="dark ? 'bg-red-500 hover:bg-red-400' : 'bg-red-500 hover:bg-red-600'"
             @click="ack(call)"
           >
-            On my way
+            {{ t('banners.onMyWay') }}
           </button>
         </div>
       </div>

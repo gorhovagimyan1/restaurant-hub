@@ -24,7 +24,7 @@ class RestaurantResource extends JsonResource
             'id' => $this->uuid,
             'name' => $this->name,
             'slug' => $this->slug,
-            'description' => $this->description,
+            'description' => $this->translated('description'),
             'logo' => $this->logo,
             'cover_image' => $this->cover_image,
             'phone' => $this->phone,
@@ -34,6 +34,8 @@ class RestaurantResource extends JsonResource
             'city' => $this->city,
             'country' => $this->country,
             'currency' => $this->currency,
+            // The language the guest menu opens in until the guest picks one.
+            'default_language' => $this->settings?->default_language ?? 'hy',
             'business_hours' => BusinessHourResource::collection(
                 $this->whenLoaded('businessHours'),
             ),

@@ -50,6 +50,29 @@ export async function fetchOrderProgress(token, sessionToken) {
 }
 
 /**
+ * Dishes from this visit that were served and not rated yet. Still works for a
+ * short while after the session has closed. Returns { items: [{ id, product_name, quantity }] }.
+ */
+export async function fetchPendingReviews(token, sessionToken) {
+  const { data } = await http.get(`/public/tables/${token}/reviews/pending`, {
+    params: { session_token: sessionToken },
+  })
+  return data.data
+}
+
+/**
+ * Rate dishes that were served this visit.
+ * reviews: [{ order_item_id, rating (1-5), comment? }]
+ */
+export async function submitReviews(token, sessionToken, reviews) {
+  const { data } = await http.post(`/public/tables/${token}/reviews`, {
+    session_token: sessionToken,
+    reviews,
+  })
+  return data
+}
+
+/**
  * Signal staff that the guest is ready to pay and leave.
  */
 export async function requestBill(token, sessionToken) {

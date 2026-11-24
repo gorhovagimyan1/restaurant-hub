@@ -1,5 +1,6 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { computed, ref, watch, onMounted } from 'vue'
 import { RouterView, RouterLink, useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import {
@@ -13,9 +14,13 @@ import {
   LogOut,
   Menu as MenuIcon,
   X,
+  LayoutList,
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
 import { useBillingStore } from '@/stores/billing'
+import LanguageSwitcher from '@/components/ui/LanguageSwitcher.vue'
+
+const { t } = useI18n()
 
 const route = useRoute()
 const router = useRouter()
@@ -26,13 +31,14 @@ const { user } = storeToRefs(auth)
 const navOpen = ref(false)
 watch(() => route.fullPath, () => (navOpen.value = false))
 
-const nav = [
-  { name: 'admin-overview', label: 'Overview', icon: LayoutDashboard, exact: true },
-  { name: 'admin-restaurants', label: 'Restaurants', icon: Store },
-  { name: 'admin-users', label: 'Users', icon: Users },
-  { name: 'admin-payments', label: 'Payments', icon: CreditCard },
-  { name: 'admin-roles', label: 'Roles & Permissions', icon: KeyRound },
-]
+const nav = computed(() => [
+  { name: 'admin-overview', label: t('shell.nav.overview'), icon: LayoutDashboard, exact: true },
+  { name: 'admin-restaurants', label: t('shell.admin.restaurants'), icon: Store },
+  { name: 'admin-users', label: t('shell.admin.users'), icon: Users },
+  { name: 'admin-payments', label: t('shell.admin.payments'), icon: CreditCard },
+  { name: 'admin-roles', label: t('shell.admin.roles'), icon: KeyRound },
+  { name: 'admin-categories', label: t('catalog.nav'), icon: LayoutList },
+])
 
 // Unconfirmed payments are money not yet recognised, so the count sits in the
 // nav rather than waiting to be discovered on the screen itself. It lives in
@@ -80,21 +86,21 @@ async function logout() {
         <RouterLink
           :to="{ name: 'admin-overview' }"
           class="flex min-w-0 flex-1 items-center gap-3 rounded-xl px-2 py-1.5 transition hover:bg-canvas"
-          title="Platform Administration — go to Overview"
+          :title="t('shell.admin.goOverview')"
         >
           <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 text-white shadow-sm">
             <ShieldCheck :size="20" :stroke-width="2.25" />
           </span>
           <span class="min-w-0 flex-1">
             <span class="block text-[11px] font-semibold uppercase tracking-wide text-slate-500">
-              Platform
+              {{ t('shell.admin.platform') }}
             </span>
-            <span class="block truncate font-bold text-ink-900">Administration</span>
+            <span class="block truncate font-bold text-ink-900">{{ t('shell.admin.administration') }}</span>
           </span>
         </RouterLink>
         <button
           class="shrink-0 rounded-lg p-1 text-ink-400 transition hover:bg-canvas sm:hidden"
-          aria-label="Close menu"
+          :aria-label="t('shell.closeMenu')"
           @click="navOpen = false"
         >
           <X :size="20" />
@@ -122,13 +128,14 @@ async function logout() {
       </nav>
 
       <div class="border-t border-hairline/70 p-3">
+        <div class="mb-2 hidden px-1 sm:block"><LanguageSwitcher /></div>
         <RouterLink :to="{ name: 'profile' }" :class="linkClass">
           <CircleUserRound :size="18" class="shrink-0" />
-          <span class="truncate">{{ user?.full_name || 'My Profile' }}</span>
+          <span class="truncate">{{ user?.full_name || t('shell.myProfile') }}</span>
         </RouterLink>
         <button :class="[linkClass, 'mt-1 w-full text-left']" @click="logout">
           <LogOut :size="18" class="shrink-0" />
-          Sign out
+          {{ t('shell.signOut') }}
         </button>
       </div>
     </aside>
@@ -136,12 +143,13 @@ async function logout() {
     <!-- Main -->
     <div class="flex min-w-0 flex-1 flex-col">
       <header class="sticky top-0 z-30 flex items-center gap-3 border-b border-hairline bg-white/90 px-4 py-3 backdrop-blur sm:hidden">
-        <button class="rounded-lg p-1.5 text-ink-600 hover:bg-canvas" aria-label="Open menu" @click="navOpen = true">
+        <button class="rounded-lg p-1.5 text-ink-600 hover:bg-canvas" :aria-label="t('shell.openMenu')" @click="navOpen = true">
           <MenuIcon :size="22" />
         </button>
-        <span class="min-w-0 flex-1 truncate font-bold">Platform Admin</span>
+        <span class="min-w-0 flex-1 truncate font-bold">{{ t('shell.admin.platformAdmin') }}</span>
+        <LanguageSwitcher />
         <button class="flex items-center gap-1.5 text-sm text-ink-500" @click="logout">
-          <LogOut :size="16" /> Sign out
+          <LogOut :size="16" /> {{ t('shell.signOut') }}
         </button>
       </header>
       <main class="flex-1 overflow-y-auto p-5">

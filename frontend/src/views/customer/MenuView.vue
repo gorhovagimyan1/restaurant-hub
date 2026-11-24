@@ -1,13 +1,32 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { Trophy } from 'lucide-vue-next'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
 import { useMenuStore } from '@/stores/menu'
 import MenuItem from '@/components/menu/MenuItem.vue'
 
+const { t } = useI18n()
 const route = useRoute()
 const store = useMenuStore()
-const { categories, currency, theme } = storeToRefs(store)
+const { categories, bestChoices, currency, theme } = storeToRefs(store)
+
+// "Best choices" sits first, as a section of its own. Its id is negative so it
+// can never collide with a real category id.
+const BEST_ID = -1
+const sections = computed(() => [
+  ...(bestChoices.value.length
+    ? [{
+        id: BEST_ID,
+        name: t('customer.bestChoices'),
+        description: t('customer.bestChoicesHint'),
+        products: bestChoices.value,
+        best: true,
+      }]
+    : []),
+  ...categories.value,
+])
 
 const activeId = ref(null)
 const sectionEls = new Map()
@@ -47,8 +66,8 @@ onMounted(async () => {
   const hashId = route.hash ? Number(route.hash.replace('#cat-', '')) : null
   if (hashId) {
     scrollToCategory(hashId)
-  } else if (categories.value.length) {
-    activeId.value = categories.value[0].id
+  } else if (sections.value.length) {
+    activeId.value = sections.value[0].id
   }
 })
 
@@ -63,13 +82,13 @@ onBeforeUnmount(() => observer?.disconnect())
         class="mx-auto flex max-w-3xl gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         <button
-          v-for="category in categories"
+          v-for="category in sections"
           :key="category.id"
           class="m-chip shrink-0 px-4 py-1.5 text-sm font-medium"
           :class="activeId === category.id && 'm-chip-active shadow-sm'"
           @click="scrollToCategory(category.id)"
         >
-          {{ category.name }}
+          <Trophy v-if="category.best" :size="13" class="mr-1 inline -mt-0.5" />{{ category.name }}
         </button>
       </div>
     </div>
@@ -77,7 +96,7 @@ onBeforeUnmount(() => observer?.disconnect())
     <!-- Menu sections -->
     <div class="mx-auto max-w-3xl px-4 pb-16">
       <section
-        v-for="category in categories"
+        v-for="category in sections"
         :key="category.id"
         :ref="(el) => registerSection(category.id, el?.$el ?? el)"
         :data-cat-id="category.id"
@@ -85,9 +104,9 @@ onBeforeUnmount(() => observer?.disconnect())
       >
         <div class="m-border flex items-baseline justify-between border-b pb-2">
           <h2 :id="`cat-${category.id}`" class="m-heading text-xl font-bold">
-            {{ category.name }}
+            <Trophy v-if="category.best" :size="18" class="m-accent mr-1 inline -mt-1" />{{ category.name }}
           </h2>
-          <span class="m-faint text-xs font-medium">{{ category.products.length }} items</span>
+          <span class="m-faint text-xs font-medium">{{ t('customer.itemsCount', { count: category.products.length }, category.products.length) }}</span>
         </div>
         <p v-if="category.description" class="m-muted mt-2 text-sm">
           {{ category.description }}

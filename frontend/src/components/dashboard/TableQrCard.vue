@@ -1,6 +1,7 @@
 <script setup>
 /* oxlint-disable no-useless-escape -- see printQr(): the `<\/script>` escape is required. */
 import { ref, computed, watchEffect } from 'vue'
+import { useI18n } from 'vue-i18n'
 import QRCode from 'qrcode'
 import { X } from 'lucide-vue-next'
 
@@ -8,6 +9,7 @@ const props = defineProps({
   table: { type: Object, required: true },
 })
 
+const { t } = useI18n()
 const emit = defineEmits(['delete'])
 
 // The URL a customer lands on after scanning — resolved by /t/:token.
@@ -16,6 +18,11 @@ const orderUrl = computed(() =>
 )
 
 const dataUrl = ref('')
+
+const { te } = useI18n()
+const statusLabel = computed(() =>
+  te(`tables.status.${props.table.status}`) ? t(`tables.status.${props.table.status}`) : props.table.status,
+)
 
 watchEffect(async () => {
   if (!orderUrl.value) {
@@ -41,6 +48,8 @@ function download() {
   link.click()
 }
 
+const esc = (v) => String(v).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c])
+
 function print() {
   if (!dataUrl.value) return
   const win = window.open('', '_blank')
@@ -50,7 +59,7 @@ function print() {
   // no-useless-escape flags it and its autofix breaks the build, so the rule
   // is turned off for this file rather than obeyed.
   win.document.write(`
-    <html><head><title>${props.table.name} — QR</title>
+    <html><head><title>${esc(t('tables.printTitle', { name: props.table.name }))}</title>
     <style>
       body { font-family: system-ui, sans-serif; text-align:center; padding:40px; }
       h1 { font-size:28px; margin:0 0 4px; }
@@ -58,8 +67,8 @@ function print() {
       img { width:320px; height:320px; }
     </style></head>
     <body>
-      <h1>${props.table.name}</h1>
-      <p>Scan to view the menu &amp; order</p>
+      <h1>${esc(props.table.name)}</h1>
+      <p>${esc(t('tables.scanToOrder'))}</p>
       <img src="${dataUrl.value}" />
       <script>window.onload = () => { window.print(); }<\/script>
     </body></html>
@@ -71,18 +80,18 @@ function print() {
 <template>
   <article class="flex flex-col card p-4">
     <div class="flex items-center justify-between">
-      <h3 class="font-bold text-ink-900">{{ table.name }}</h3>
+      <h3 class="min-w-0 truncate font-bold text-ink-900">{{ table.name }}</h3>
       <span
-        class="rounded-full px-2 py-0.5 text-xs font-medium"
+        class="ml-2 shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
         :class="table.status === 'occupied' ? 'bg-brand-100 text-brand-700' : 'bg-canvas text-ink-500'"
       >
-        {{ table.status }}
+        {{ statusLabel }}
       </span>
     </div>
 
     <div class="mx-auto mt-3 grid aspect-square w-full max-w-[220px] place-items-center rounded-xl bg-canvas p-3">
-      <img v-if="dataUrl" :src="dataUrl" :alt="`QR for ${table.name}`" class="h-full w-full object-contain" />
-      <span v-else class="text-xs text-ink-400">No QR</span>
+      <img v-if="dataUrl" :src="dataUrl" :alt="t('tables.qrAlt', { name: table.name })" class="h-full w-full object-contain" />
+      <span v-else class="text-xs text-ink-400">{{ t('tables.noQr') }}</span>
     </div>
 
     <p class="mt-2 truncate text-xs text-ink-400" :title="orderUrl">{{ orderUrl }}</p>
@@ -92,17 +101,17 @@ function print() {
         class="min-w-0 flex-1 truncate rounded-full bg-brand-500 px-2 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-600"
         @click="print"
       >
-        Print
+        {{ t('tables.print') }}
       </button>
       <button
         class="min-w-0 flex-1 truncate rounded-full border border-hairline px-2 py-1.5 text-xs font-semibold text-ink-600 transition hover:bg-canvas"
         @click="download"
       >
-        Download
+        {{ t('tables.download') }}
       </button>
       <button
         class="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-hairline text-ink-400 transition hover:bg-red-50 hover:text-red-500"
-        title="Delete table"
+        :title="t('tables.deleteTitle')" :aria-label="t('tables.deleteTitle')"
         @click="emit('delete', table)"
       >
         <X :size="14" />

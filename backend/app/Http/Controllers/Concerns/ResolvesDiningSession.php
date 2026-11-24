@@ -41,4 +41,38 @@ trait ResolvesDiningSession
 
         return $session;
     }
+
+    /**
+     * The session a guest may still RATE dishes with: the open one, or one that
+     * closed within config('reviews.window_hours'). Only reviews use this —
+     * every other action keeps requiring an open session.
+     */
+    protected function requireReviewableSession(RestaurantTable $table, ?string $sessionToken): DiningSession
+    {
+        $session = $sessionToken === null
+            ? null
+            : $table->diningSessions()->where('session_token', $sessionToken)->first();
+
+        abort_if(
+            $session === null,
+            Response::HTTP_CONFLICT,
+            'Your dining session has ended. Please scan the QR code again.',
+        );
+
+        if ($session->isOpen()) {
+            $session->touchActivity();
+
+            return $session;
+        }
+
+        $cutoff = now()->subMinutes((int) round((float) config('reviews.window_hours') * 60));
+
+        abort_unless(
+            $session->closed_at !== null && $session->closed_at->greaterThanOrEqualTo($cutoff),
+            Response::HTTP_CONFLICT,
+            'The time to rate this visit has passed.',
+        );
+
+        return $session;
+    }
 }
